@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
+
 
 @theme {
   --font-sans: "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;

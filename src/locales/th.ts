@@ -41,6 +41,7 @@ export const th = {
     saving: 'กำลังบันทึก...',
     scanSlip: 'สแกนสลิป',
     date: 'วันที่',
+    time: 'เวลา',
   },
 
   settings: {

@@ -3,6 +3,9 @@ import { X, Edit3, Trash2, Calendar, Tag, FileText, Banknote } from 'lucide-reac
 import { getCategoryStyle } from '@/utils/categoryStyles';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useAppStore } from '@/store/useAppStore';
+import { useConfirmStore } from '@/store/useConfirmStore';
+import { deleteTransaction } from '@/services/transactionService';
+import { useToastStore } from '@/store/useToastStore';
 import { useEffect, useState } from 'react';
 
 interface Props {
@@ -12,7 +15,6 @@ interface Props {
 
 export default function TransactionDetailsModal({ transactionId, onClose }: Props) {
   const transactions = useTransactionStore(s => s.transactions);
-  const deleteTransaction = useTransactionStore(s => s.deleteTransaction);
   const setCurrentPage = useAppStore(s => s.setCurrentPage);
   const setEditingTransactionId = useAppStore(s => s.setEditingTransactionId);
   const appCategories = useAppStore(s => s.appCategories);
@@ -23,7 +25,7 @@ export default function TransactionDetailsModal({ transactionId, onClose }: Prop
   useEffect(() => {
     if (transactionId) {
       setInternalId(transactionId);
-      requestAnimationFrame(() => setIsVisible(true));
+      setTimeout(() => setIsVisible(true), 10);
     } else {
       setIsVisible(false);
       const timer = setTimeout(() => setInternalId(null), 500);
@@ -54,17 +56,32 @@ export default function TransactionDetailsModal({ transactionId, onClose }: Prop
   };
 
   const handleDelete = () => {
-    if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
-      deleteTransaction(tx.id);
-      onClose();
-    }
+    useConfirmStore.getState().showConfirm({
+      title: 'ลบรายการ',
+      message: 'คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้? ข้อมูลที่ลบจะไม่สามารถกู้คืนได้',
+      confirmText: 'ลบรายการ',
+      cancelText: 'ยกเลิก',
+      isDestructive: true,
+      onConfirm: async () => {
+        try {
+          await deleteTransaction(tx.id);
+          useToastStore.getState().addToast('ลบรายการสำเร็จ', 'success');
+        } catch (e) {
+          useToastStore.getState().addToast('เกิดข้อผิดพลาดในการลบรายการ', 'error');
+        }
+        onClose();
+      }
+    });
   };
 
   const d = new Date(tx.date);
   const thaiDate = d.toLocaleDateString('th-TH', { 
     day: '2-digit', month: 'long', year: 'numeric'
   });
-  const formattedDate = `${thaiDate} เวลา ${tx.time || '00:00'} น.`;
+  
+  // Clean time string to prevent redundant AM/PM text
+  const cleanTime = (tx.time || '00:00').replace(/ am| pm| น./gi, '').trim();
+  const formattedDate = `${thaiDate} เวลา ${cleanTime} น.`;
 
   return createPortal(
     <>

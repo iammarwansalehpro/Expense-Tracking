@@ -1,12 +1,13 @@
-import PageHeader from '@/components/layout/PageHeader';
+import AppHeader from '@/components/layout/AppHeader';
 import SettingsView from '@/components/settings/SettingsView';
 
 export default function SettingsPage() {
   return (
-    <>
-      <PageHeader title="ตั้งค่า" />
-      <SettingsView />
-      <div className="h-4" />
-    </>
+    <div className="flex flex-col h-full bg-transparent animate-fade-in">
+      <AppHeader pageTitle="ตั้งค่า" />
+      <div className="flex-1 overflow-y-auto no-scrollbar">
+        <SettingsView />
+      </div>
+    </div>
   );
 }

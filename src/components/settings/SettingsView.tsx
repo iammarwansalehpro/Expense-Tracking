@@ -73,14 +73,6 @@ export default function SettingsView() {
           iconColor: '#8b5cf6',
           iconBg: '#8b5cf618',
         },
-        {
-          icon: Type,
-          label: t('settings.font', 'ฟอนต์ตัวอักษร'),
-          sublabel: t('settings.fontDesc', 'เปลี่ยนรูปแบบตัวอักษรของแอป'),
-          action: 'font',
-          iconColor: '#f59e0b',
-          iconBg: '#f59e0b18',
-        },
       ],
     },
     {
@@ -180,31 +172,34 @@ export default function SettingsView() {
       {/* Profile card - Tap 5 times to reveal admin */}
       <div className="px-5 mb-8">
         <div 
-          className="bg-white/40 dark:bg-black/20 backdrop-blur-xl border border-white/50 dark:border-white/10 rounded-[32px] shadow-sm p-6 flex items-center gap-5 transition-transform active:scale-95 cursor-pointer"
+          className="bg-gradient-to-tr from-[#A855F7]/10 to-[#3B82F6]/10 dark:from-[#A855F7]/30 dark:to-[#3B82F6]/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-[32px] shadow-sm p-6 flex items-center gap-5 transition-transform active:scale-95 cursor-pointer relative overflow-hidden"
           onClick={handleAvatarTap}
         >
+          {/* Decorative background blur */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-400/20 to-transparent rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
+          
           <div
-            className="w-16 h-16 rounded-[1.25rem] flex items-center justify-center text-3xl font-black shadow-[0_8px_16px_rgba(139,92,246,0.3)] relative overflow-hidden"
+            className="w-[72px] h-[72px] rounded-full flex items-center justify-center text-3xl font-black shadow-[0_8px_24px_rgba(139,92,246,0.25)] border-[3px] border-white dark:border-slate-800 relative overflow-hidden shrink-0"
             style={{ background: 'var(--gradient-hero)', color: 'white' }}
           >
-            <div className="absolute inset-0 bg-white/20" />
-            M
+            {user?.photoURL ? (
+              <img src={user.photoURL} alt={user.displayName || 'Profile'} className="w-full h-full object-cover" />
+            ) : (
+              <>
+                <div className="absolute inset-0 bg-white/20" />
+                {user?.displayName ? user.displayName.charAt(0).toUpperCase() : 'M'}
+              </>
+            )}
           </div>
-          <div className="flex-1 min-w-0">
-            <h2
-              className="text-xl font-bold tracking-tight mb-0.5"
-              style={{ color: 'var(--text-primary)' }}
-            >
+          <div className="flex-1 min-w-0 z-10">
+            <h2 className="text-xl font-bold tracking-tight mb-1 text-[#2E1065] dark:text-white truncate">
               {user?.displayName || 'ผู้ใช้งาน'}
             </h2>
-            <p
-              className="text-sm font-medium opacity-70 mb-2"
-              style={{ color: 'var(--text-secondary)' }}
-            >
+            <p className="text-sm font-medium opacity-70 mb-2.5 text-[#2E1065] dark:text-white/70 truncate">
               {user?.email || 'user@example.com'}
             </p>
             <span
-              className="inline-flex items-center px-2.5 py-1 text-[10px] font-bold rounded-lg uppercase tracking-widest shadow-sm"
+              className="inline-flex items-center px-3 py-1.5 text-[11px] font-black rounded-xl uppercase tracking-widest shadow-sm"
               style={{
                 background: 'var(--gradient-hero)',
                 color: 'white',
@@ -225,7 +220,7 @@ export default function SettingsView() {
           >
             {group.title}
           </p>
-          <div className="bg-white/40 dark:bg-black/20 backdrop-blur-xl border border-white/50 dark:border-white/10 rounded-[24px] shadow-sm overflow-hidden">
+          <div className="bg-white/40 dark:bg-white/10 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-[24px] shadow-sm overflow-hidden">
             {group.items.map((item) => (
               <div
                 key={item.label}
@@ -390,40 +385,40 @@ export default function SettingsView() {
 
           {/* Management Menu Card */}
           <div className="mb-8 animate-slide-up" style={{ animationDelay: '300ms' }}>
-          <h3 className="text-[13px] font-bold text-[#2E1065]/50 mb-3 px-2">
+          <h3 className="text-[13px] font-bold text-[#2E1065]/50 dark:text-white/50 mb-3 px-2">
             {t('settings.adminMode', 'โหมดผู้ดูแลระบบ (Admin)')}
           </h3>
-          <div className="bg-white/40 backdrop-blur-md rounded-[28px] overflow-hidden border border-white/50 shadow-[0_8px_32px_rgba(31,38,135,0.05)]">
+          <div className="bg-white/40 dark:bg-white/10 backdrop-blur-md rounded-[28px] overflow-hidden border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.05)]">
             <button
               onClick={() => setActiveModal('adminApp')}
-              className="w-full p-4 flex items-center justify-between hover:bg-white/50 active:bg-white/60 transition-colors border-b border-[#2E1065]/5"
+              className="w-full p-4 flex items-center justify-between hover:bg-white/50 dark:hover:bg-white/5 active:bg-white/60 dark:active:bg-white/10 transition-colors border-b border-[#2E1065]/5 dark:border-white/5"
             >
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-[14px] bg-indigo-500/10 flex items-center justify-center shrink-0">
                   <SettingsIcon className="w-5 h-5 text-indigo-500" />
                 </div>
                 <div className="text-left">
-                  <div className="font-bold text-[#2E1065] text-[15px]">{t('settings.appInfo', 'ตั้งค่าแอปพลิเคชัน')}</div>
-                  <div className="text-[12px] font-medium text-[#2E1065]/50">ชื่อ, โลโก้, สีธีม</div>
+                  <div className="font-bold text-[#2E1065] dark:text-white text-[15px]">{t('settings.appInfo', 'ตั้งค่าแอปพลิเคชัน')}</div>
+                  <div className="text-[12px] font-medium text-[#2E1065]/50 dark:text-white/50">ชื่อ, โลโก้, สีธีม</div>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-[#2E1065]/30" />
+              <ChevronRight className="w-5 h-5 text-[#2E1065]/30 dark:text-white/30" />
             </button>
             
             <button
               onClick={() => setActiveModal('adminCategory')}
-              className="w-full p-4 flex items-center justify-between hover:bg-white/50 active:bg-white/60 transition-colors"
+              className="w-full p-4 flex items-center justify-between hover:bg-white/50 dark:hover:bg-white/5 active:bg-white/60 dark:active:bg-white/10 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-[14px] bg-rose-500/10 flex items-center justify-center shrink-0">
                   <Tag className="w-5 h-5 text-rose-500" />
                 </div>
                 <div className="text-left">
-                  <div className="font-bold text-[#2E1065] text-[15px]">{t('settings.manageCategories', 'จัดการหมวดหมู่')}</div>
-                  <div className="text-[12px] font-medium text-[#2E1065]/50">เพิ่ม/แก้ไข หมวดหมู่รายการ</div>
+                  <div className="font-bold text-[#2E1065] dark:text-white text-[15px]">{t('settings.manageCategories', 'จัดการหมวดหมู่')}</div>
+                  <div className="text-[12px] font-medium text-[#2E1065]/50 dark:text-white/50">เพิ่ม/แก้ไข หมวดหมู่รายการ</div>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-[#2E1065]/30" />
+              <ChevronRight className="w-5 h-5 text-[#2E1065]/30 dark:text-white/30" />
             </button>
           </div>
         </div>
@@ -478,7 +473,7 @@ export default function SettingsView() {
       <div className="px-5 mb-8">
         <button 
           onClick={handleLogout}
-          className="w-full py-4 rounded-3xl bg-red-50 text-red-600 font-bold hover:bg-red-100 transition-colors flex items-center justify-center gap-2 mb-10 shadow-sm border border-red-100 animate-slide-up"
+          className="w-full py-4 rounded-3xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 font-bold hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors flex items-center justify-center gap-2 mb-10 shadow-sm border border-red-100 dark:border-red-500/20 animate-slide-up"
           style={{ animationDelay: '400ms' }}
         >
           <LogOut className="w-5 h-5" />

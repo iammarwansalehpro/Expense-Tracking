@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { X, CreditCard, Loader2, Sparkles, PlusCircle, MinusCircle, Calendar, AlignLeft, Pencil, FileText, Wallet as WalletIcon } from 'lucide-react';
+import { X, CreditCard, Loader2, Sparkles, PlusCircle, MinusCircle, Calendar, AlignLeft, Pencil, FileText, Wallet as WalletIcon, Clock } from 'lucide-react';
 import CustomSelect from '@/components/ui/CustomSelect';
 import CustomDatePicker from '@/components/ui/CustomDatePicker';
 import CategorySelectModal from '@/components/ui/CategorySelectModal';
@@ -11,6 +11,7 @@ import { useTransactionStore } from '@/store/useTransactionStore';
 import { useWalletStore } from '@/store/useWalletStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { addTransaction, updateTransaction } from '@/services/transactionService';
+import { useToastStore } from '@/store/useToastStore';
 import type { TransactionType, TransactionCategory, Wallet } from '@/types';
 
 export default function AddPage() {
@@ -38,6 +39,10 @@ export default function AddPage() {
     : new Date().toISOString().split('T')[0];
   const [date, setDate] = useState(initDate);
   
+  // Format existing time properly, or use current time
+  const initTime = editingTransaction?.time || new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const [time, setTime] = useState(initTime);
+  
   const [loading, setLoading] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
@@ -49,7 +54,7 @@ export default function AddPage() {
       Object.keys(appCategories).forEach(key => {
         const cat = appCategories[key];
         if (cat.tab === 'income') incomes.push(key);
-        else if (cat.tab === 'expense' || cat.tab === 'fixed' || cat.tab === 'lifestyle' || cat.tab === 'savings' || cat.tab === 'all') expenses.push(key);
+        else if (cat.tab === 'fixed' || cat.tab === 'lifestyle' || cat.tab === 'savings' || cat.tab === 'all') expenses.push(key);
       });
     }
     return { expenseCats: expenses, incomeCats: incomes };
@@ -86,7 +91,7 @@ export default function AddPage() {
 
     setLoading(true);
     try {
-      const timeStr = editingTransaction?.time || new Date().toLocaleTimeString('th-TH', { hour12: false, hour: '2-digit', minute: '2-digit' });
+      const timeStr = time;
       const dateObj = new Date(date);
       const dateStr = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
@@ -104,6 +109,7 @@ export default function AddPage() {
           time: timeStr,
           walletId
         });
+        useToastStore.getState().addToast('อัปเดตรายการสำเร็จ', 'success');
       } else {
         // Add new transaction
         await addTransaction(user.uid, {
@@ -116,12 +122,13 @@ export default function AddPage() {
           iconBgColor: randomColor,
           walletId
         });
+        useToastStore.getState().addToast('บันทึกรายการสำเร็จ', 'success');
       }
 
       handleClose();
     } catch (error) {
       console.error(error);
-      alert("Failed to add transaction");
+      useToastStore.getState().addToast('เกิดข้อผิดพลาดในการบันทึกรายการ', 'error');
     } finally {
       setLoading(false);
     }
@@ -204,6 +211,24 @@ export default function AddPage() {
                 value={date}
                 onChange={(val) => setDate(val)}
               />
+
+              <div>
+                <label className="text-sm font-bold text-[#2E1065] flex items-center gap-2.5 mb-2">
+                  <div className="w-8 h-8 bg-white/60 rounded-xl flex items-center justify-center border border-white/50 shadow-sm">
+                    <Clock className="w-4 h-4 text-[#8B5CF6]" />
+                  </div>
+                  {t('add.time', 'เวลา')}
+                </label>
+                <div className="relative">
+                  <input 
+                    type="time"
+                    required
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                    className="w-full bg-white/60 backdrop-blur-sm rounded-[16px] px-4 py-3.5 text-[#2E1065] font-bold focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-white/50 shadow-inner"
+                  />
+                </div>
+              </div>
 
               <div>
                 <label className="text-sm font-bold text-[#2E1065] flex items-center gap-2.5 mb-2">

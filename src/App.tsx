@@ -14,6 +14,8 @@ import SettingsPage from '@/pages/SettingsPage';
 import LoginPage from '@/pages/LoginPage';
 import BottomNav from '@/components/layout/BottomNav';
 import ReviewSlipModal from '@/components/ui/ReviewSlipModal';
+import ToastProvider from '@/components/ui/ToastProvider';
+import GlobalConfirmModal from '@/components/ui/GlobalConfirmModal';
 import { Loader2 } from 'lucide-react';
 
 function App() {
@@ -68,18 +70,18 @@ function App() {
   }
 
   return (
-    <div className="w-full h-[100dvh] bg-[#FDE8FE] relative overflow-hidden flex flex-col mx-auto md:max-w-md md:shadow-2xl md:border-x border-slate-200">
+    <div className="w-full h-[100dvh] bg-[#FDE8FE] dark:bg-[#0F0720] relative overflow-hidden flex flex-col mx-auto md:max-w-md md:shadow-2xl md:border-x border-slate-200 dark:border-white/10 transition-colors duration-500">
       
       {/* Aurora Mesh Gradient Background Elements */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         {/* Top-right Purple/Blue Orb */}
-        <div className="absolute -top-[10%] -right-[10%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-tr from-purple-400 to-cyan-300 opacity-60 blur-3xl mix-blend-multiply" />
+        <div className="absolute -top-[10%] -right-[10%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-tr from-purple-400 to-cyan-300 opacity-60 dark:opacity-40 blur-[80px] mix-blend-multiply dark:mix-blend-screen transition-opacity duration-500" />
         
         {/* Bottom-left Pink Orb */}
-        <div className="absolute top-[40%] -left-[20%] w-[80vw] h-[80vw] rounded-full bg-gradient-to-br from-pink-300 to-rose-300 opacity-60 blur-3xl mix-blend-multiply" />
+        <div className="absolute top-[40%] -left-[20%] w-[80vw] h-[80vw] rounded-full bg-gradient-to-br from-pink-300 to-rose-300 opacity-60 dark:opacity-30 blur-[80px] mix-blend-multiply dark:mix-blend-screen transition-opacity duration-500" />
         
         {/* Bottom-right Deep Purple Orb */}
-        <div className="absolute -bottom-[10%] -right-[20%] w-[90vw] h-[90vw] rounded-full bg-gradient-to-bl from-purple-500 to-indigo-400 opacity-40 blur-[80px] mix-blend-multiply" />
+        <div className="absolute -bottom-[10%] -right-[20%] w-[90vw] h-[90vw] rounded-full bg-gradient-to-bl from-purple-500 to-indigo-400 opacity-40 dark:opacity-40 blur-[100px] mix-blend-multiply dark:mix-blend-screen transition-opacity duration-500" />
       </div>
       {/* If not logged in, show Login Page */}
       {!user ? (
@@ -98,6 +100,8 @@ function App() {
           {/* Fixed Bottom Navigation */}
           <BottomNav />
           <ReviewSlipModal />
+          <ToastProvider />
+          <GlobalConfirmModal />
         </>
       )}
     </div>

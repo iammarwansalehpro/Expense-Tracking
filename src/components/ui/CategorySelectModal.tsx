@@ -32,7 +32,7 @@ export default function CategorySelectModal({ isOpen, onClose, onSelect, type, s
       return Object.keys(appCategories).filter(key => {
         const cat = appCategories[key];
         if (type === 'income') return cat.tab === 'income';
-        if (type === 'expense') return cat.tab === 'expense' || cat.tab === 'fixed' || cat.tab === 'lifestyle' || cat.tab === 'savings' || cat.tab === 'all';
+        if (type === 'expense') return cat.tab === 'fixed' || cat.tab === 'lifestyle' || cat.tab === 'savings' || cat.tab === 'all';
         if (type === 'savings') return cat.tab === 'savings';
         return false;
       });

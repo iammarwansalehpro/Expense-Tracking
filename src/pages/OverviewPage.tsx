@@ -1,12 +1,14 @@
 import { Activity, ChevronDown, ArrowDown, ArrowUp, Sparkles, PlusCircle, ScanLine, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useAppStore } from '@/store/useAppStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
+import { useTranslation } from '@/hooks/useTranslation';
+import AppHeader from '@/components/layout/AppHeader';
 import { useState, useMemo } from 'react';
 import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import TransactionDetailsModal from '@/components/ui/TransactionDetailsModal';
 import { getCategoryStyle } from '@/utils/categoryStyles';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useSettingsStore } from '@/store/useSettingsStore';
+
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   const { t } = useTranslation();
@@ -200,21 +202,7 @@ export default function OverviewPage() {
 
   return (
     <div className="flex flex-col h-full bg-transparent animate-fade-in">
-      {/* Glass Header */}
-      <div className="w-full pt-12 pb-4 px-6 flex justify-between items-center shrink-0">
-        <div className="w-[68px]" /> {/* Spacer to balance the language toggle width */}
-        <span className="font-bold text-xl tracking-tight text-[#2E1065] drop-shadow-sm">{t('overview.title')}</span>
-        
-        {/* TH-EN Toggle */}
-        <button 
-          onClick={() => useSettingsStore.getState().setLanguage(language === 'th' ? 'en' : 'th')}
-          className="relative px-3 py-2 bg-white/40 backdrop-blur-md rounded-full flex items-center justify-center border border-white/50 active:scale-95 transition-transform shadow-sm gap-1"
-        >
-          <span className={`text-[10px] font-bold ${language === 'th' ? 'text-[#2E1065]' : 'text-[#2E1065]/40'}`}>TH</span>
-          <div className="w-px h-3 bg-[#2E1065]/20 mx-0.5" />
-          <span className={`text-[10px] font-bold ${language === 'en' ? 'text-[#2E1065]' : 'text-[#2E1065]/40'}`}>EN</span>
-        </button>
-      </div>
+      <AppHeader pageTitle={t('overview.title')} />
 
       <div className="px-6 flex-1 flex flex-col pt-2 pb-32 overflow-y-auto no-scrollbar">
         {/* Global Month Selector */}

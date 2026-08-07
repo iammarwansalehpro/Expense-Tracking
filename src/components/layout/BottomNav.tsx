@@ -121,7 +121,7 @@ export default function BottomNav() {
       />
 
       <div 
-        className={`fixed bottom-0 left-0 right-0 z-50 px-6 pb-8 pt-4 pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+        className={`fixed bottom-0 left-0 right-0 z-50 px-6 pt-4 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
           isSettingsModalOpen ? 'translate-y-[200%] opacity-0' : 'translate-y-0 opacity-100'
         }`}
       >

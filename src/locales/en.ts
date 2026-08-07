@@ -43,6 +43,7 @@ export const en: Translations = {
     saving: 'Saving...',
     scanSlip: 'Scan Slip',
     date: 'Date',
+    time: 'Time',
   },
 
   settings: {

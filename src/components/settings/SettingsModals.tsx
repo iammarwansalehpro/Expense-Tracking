@@ -9,6 +9,8 @@ import { useAppStore } from '@/store/useAppStore';
 import { useThemeStore, type AppFont } from '@/store/useThemeStore';
 import { fetchCategories } from '@/services/transactionService';
 import { APP_VERSION } from '@/lib/constants';
+import { useConfirmStore } from '@/store/useConfirmStore';
+import { useToastStore } from '@/store/useToastStore';
 import { getCategoryStyle, getAllCategoriesGrouped, AVAILABLE_ICONS, AVAILABLE_COLORS, getIconComponent, CATEGORY_SEED, type DBCategory, type CategoryTab } from '@/utils/categoryStyles';
 import CustomSelect from '@/components/ui/CustomSelect';
 
@@ -88,16 +90,6 @@ export function EditProfileModal({ isOpen, onClose }: ModalProps) {
               placeholder="กรอกชื่อของคุณ"
             />
           </div>
-          <div>
-            <label className="text-[11px] font-black uppercase tracking-wider mb-2 block text-slate-400 ml-1">รูปโปรไฟล์ (URL)</label>
-            <input 
-              type="text" 
-              value={photoUrl}
-              onChange={e => setPhotoUrl(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800/50 rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-purple-500/50 outline-none border border-slate-200 dark:border-slate-700/50 transition-all"
-              placeholder="https://..."
-            />
-          </div>
         </div>
         
         <div className="flex gap-3">
@@ -158,15 +150,21 @@ export function AboutModal({ isOpen, onClose }: ModalProps) {
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-5 animate-fade-in">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white dark:bg-slate-900 p-8 rounded-[2rem] shadow-2xl w-full max-w-[320px] animate-slide-up text-center">
-        <div className="w-20 h-20 mx-auto rounded-[1.5rem] bg-gradient-to-tr from-[#A855F7] to-[#8B5CF6] shadow-xl flex items-center justify-center mb-5 border-[4px] border-white dark:border-slate-800 overflow-hidden">
+        <div className="w-24 h-24 mx-auto bg-gradient-to-br from-white/90 to-white/40 dark:from-slate-800/90 dark:to-slate-800/40 backdrop-blur-xl rounded-[32px] flex items-center justify-center border border-white/60 dark:border-white/10 shadow-[0_12px_32px_rgba(46,16,101,0.08)] mb-6 relative group overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-tr from-[#A855F7]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-[32px]" />
           {appIconName.startsWith('http') ? (
-            <img src={appIconName} alt="App Icon" className="w-full h-full object-cover" />
+            <img src={appIconName} alt="App Icon" className="w-full h-full object-cover rounded-[32px]" />
           ) : (
-            <AppIcon className="w-10 h-10 text-white" />
+            <AppIcon className="w-12 h-12 text-[#2E1065] dark:text-white drop-shadow-md relative z-10" />
           )}
         </div>
-        <h3 className="text-2xl font-black mb-1 bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">{appName}</h3>
-        <p className="text-sm font-bold text-slate-500 mb-6">เวอร์ชัน {APP_VERSION}</p>
+        <h3 className="text-3xl font-black tracking-tighter mb-1 bg-clip-text text-transparent bg-gradient-to-r from-[#2E1065] to-[#6D28D9] dark:from-purple-400 dark:to-pink-400 drop-shadow-sm">{appName}</h3>
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <span className="px-2 py-0.5 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 text-xs font-bold tracking-widest uppercase border border-purple-200 dark:border-purple-800/50 shadow-sm">
+            v{APP_VERSION}
+          </span>
+          <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Latest</span>
+        </div>
         
         <p className="text-sm text-slate-600 dark:text-slate-400 mb-8 leading-relaxed font-medium">
           แอปพลิเคชันจัดการการเงินระดับมืออาชีพ ที่ผสานเทคโนโลยี AI เพื่อสแกนและวิเคราะห์สลิปธนาคารอัตโนมัติ ช่วยให้การจดบันทึกรายรับรายจ่ายเป็นเรื่องง่ายและแม่นยำ
@@ -271,9 +269,10 @@ export function AdminAppInfoModal({ isOpen, onClose }: ModalProps) {
         appIcon || 'Type'
       );
       
+      useToastStore.getState().addToast('ตั้งค่าแอปพลิเคชันสำเร็จ', 'success');
       onClose();
     } catch (e) {
-      alert("Failed to save app info");
+      useToastStore.getState().addToast('เกิดข้อผิดพลาดในการบันทึกการตั้งค่า', 'error');
     } finally {
       setLoading(false);
     }
@@ -382,7 +381,7 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
   // Add state
   const [isAdding, setIsAdding] = useState(false);
   const [editingKey, setEditingKey] = useState<string | null>(null);
-  const [filterTab, setFilterTab] = useState<CategoryTab | 'all'>('expense');
+  const [filterTab, setFilterTab] = useState<CategoryTab | 'all' | 'expense'>('expense');
   const [newName, setNewName] = useState('');
   const [newTab, setNewTab] = useState<CategoryTab>('lifestyle');
   const [newGroup, setNewGroup] = useState('ไลฟ์สไตล์');
@@ -417,7 +416,7 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
     const filtered: Record<string, DBCategory> = {};
     Object.keys(categories).forEach(k => {
       const catTab = categories[k].tab;
-      if (filterTab === 'expense' && (catTab === 'expense' || catTab === 'lifestyle' || catTab === 'fixed' || catTab === 'savings')) {
+      if (filterTab === 'expense' && (catTab === 'lifestyle' || catTab === 'fixed' || catTab === 'savings')) {
         filtered[k] = categories[k];
       } else if (catTab === filterTab) {
         filtered[k] = categories[k];
@@ -437,9 +436,10 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
     try {
       await set(ref(db, 'app_categories'), categories);
       useAppStore.getState().setAppCategories(categories);
+      useToastStore.getState().addToast('บันทึกหมวดหมู่สำเร็จ', 'success');
       onClose();
     } catch (e) {
-      alert("Failed to save categories");
+      useToastStore.getState().addToast('เกิดข้อผิดพลาดในการบันทึกหมวดหมู่', 'error');
     } finally {
       setSaving(false);
     }
@@ -495,11 +495,20 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
   };
 
   const handleDelete = (catName: string) => {
-    if (!confirm(`ต้องการลบหมวดหมู่ "${catName}" หรือไม่?`)) return;
-    setCategories(prev => {
-      const next = { ...prev };
-      delete next[catName];
-      return next;
+    useConfirmStore.getState().showConfirm({
+      title: 'ลบหมวดหมู่',
+      message: `คุณแน่ใจหรือไม่ว่าต้องการลบหมวดหมู่ "${catName}"?`,
+      confirmText: 'ลบหมวดหมู่',
+      cancelText: 'ยกเลิก',
+      isDestructive: true,
+      onConfirm: () => {
+        setCategories(prev => {
+          const next = { ...prev };
+          delete next[catName];
+          return next;
+        });
+        useToastStore.getState().addToast('ลบหมวดหมู่เรียบร้อยแล้ว', 'success');
+      }
     });
   };
 

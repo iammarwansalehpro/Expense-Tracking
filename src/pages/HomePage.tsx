@@ -6,6 +6,9 @@ import { useSettingsStore } from '@/store/useSettingsStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getIconComponent, getCategoryStyle } from '@/utils/categoryStyles';
 import WalletFormModal from '@/components/ui/WalletFormModal';
+import AppHeader from '@/components/layout/AppHeader';
+import { useConfirmStore } from '@/store/useConfirmStore';
+import { useToastStore } from '@/store/useToastStore';
 import { useRef, useState, useEffect } from 'react';
 
 export default function HomePage() {
@@ -87,34 +90,9 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col h-full bg-transparent animate-fade-in">
-      {/* Header Bar */}
-      <div className="w-full pt-12 pb-6 px-6 flex justify-between items-center shrink-0">
-        {/* Logo */}
-        <div className="flex items-center gap-3 text-[#2E1065]">
-          <div className="w-10 h-10 bg-white/40 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/50 shadow-sm shrink-0 overflow-hidden">
-            {appIconName.startsWith('http') ? (
-              <img src={appIconName} alt="App Icon" className="w-full h-full object-cover" />
-            ) : (
-              <AppIcon className="w-6 h-6 text-[#2E1065]" />
-            )}
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-[22px] leading-none tracking-tight drop-shadow-sm">{appName}</span>
-            <span className="text-[10px] font-medium opacity-70 mt-0.5">{appSlogan}</span>
-          </div>
-        </div>
-        
-        {/* TH-EN Toggle */}
-        <button 
-          onClick={() => setLanguage(language === 'th' ? 'en' : 'th')}
-          className="relative px-3 py-2 bg-white/40 backdrop-blur-md rounded-full flex items-center justify-center border border-white/50 active:scale-95 transition-transform shadow-sm gap-1"
-        >
-          <span className={`text-[10px] font-bold ${language === 'th' ? 'text-[#2E1065]' : 'text-[#2E1065]/40'}`}>TH</span>
-          <div className="w-px h-3 bg-[#2E1065]/20 mx-0.5" />
-          <span className={`text-[10px] font-bold ${language === 'en' ? 'text-[#2E1065]' : 'text-[#2E1065]/40'}`}>EN</span>
-        </button>
-      </div>
+      <AppHeader />
 
+      {/* Main Scrollable Area */}
       <div className="flex-1 flex flex-col pt-2 pb-32 overflow-y-auto no-scrollbar">
         
         {/* Wallet Carousel */}
@@ -146,17 +124,25 @@ export default function HomePage() {
                       {wallets.length > 1 && !wallet.isMain && (
                         <button 
                           onClick={() => {
-                            if (confirm(t('home.confirmDeleteWallet'))) {
-                              deleteWallet(wallet.id);
-                              // Scroll back to main wallet
-                              const mainIdx = wallets.findIndex(w => w.isMain);
-                              if (scrollContainerRef.current) {
-                                scrollContainerRef.current.scrollTo({
-                                  left: Math.max(0, mainIdx) * scrollContainerRef.current.clientWidth,
-                                  behavior: 'smooth'
-                                });
+                            useConfirmStore.getState().showConfirm({
+                              title: t('home.confirmDeleteWallet') || 'Delete Wallet',
+                              message: 'คุณแน่ใจหรือไม่ว่าต้องการลบกระเป๋าเงินนี้? ข้อมูลที่เกี่ยวข้องจะไม่สามารถกู้คืนได้',
+                              confirmText: 'ลบกระเป๋าเงิน',
+                              cancelText: 'ยกเลิก',
+                              isDestructive: true,
+                              onConfirm: () => {
+                                deleteWallet(wallet.id);
+                                useToastStore.getState().addToast('ลบกระเป๋าเงินเรียบร้อยแล้ว', 'success');
+                                // Scroll back to main wallet
+                                const mainIdx = wallets.findIndex(w => w.isMain);
+                                if (scrollContainerRef.current) {
+                                  scrollContainerRef.current.scrollTo({
+                                    left: Math.max(0, mainIdx) * scrollContainerRef.current.clientWidth,
+                                    behavior: 'smooth'
+                                  });
+                                }
                               }
-                            }
+                            });
                           }}
                           className="w-8 h-8 rounded-full bg-white/60 backdrop-blur-md flex items-center justify-center text-[#2E1065]/70 hover:text-red-500 hover:bg-white shadow-sm border border-white/50 transition-all"
                         >
