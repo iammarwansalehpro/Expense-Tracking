@@ -159,11 +159,11 @@ export const setUserFavorites = async (userId: string, favorites: string[]): Pro
 };
 
 // Fetch App Info
-export const getAppInfo = async (): Promise<{ name: string, subtitle: string }> => {
+export const getAppInfo = async (): Promise<{ name: string, subtitle: string, icon?: string }> => {
   try {
     const snapshot = await get(ref(db, 'settings/appInfo'));
-    return snapshot.val() || { name: 'PaySave', subtitle: 'Smart Financial Assistant' };
+    return snapshot.val() || { name: 'PaySave', subtitle: 'Smart Financial Assistant', icon: 'Type' };
   } catch (error) {
-    return { name: 'PaySave', subtitle: 'Smart Financial Assistant' };
+    return { name: 'PaySave', subtitle: 'Smart Financial Assistant', icon: 'Type' };
   }
 };

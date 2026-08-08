@@ -5,7 +5,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useThemeStore } from '@/store/useThemeStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
-import { getUserFavorites, fetchCategories } from '@/services/transactionService';
+import { getUserFavorites, fetchCategories, getAppInfo } from '@/services/transactionService';
 import HomePage from '@/pages/HomePage';
 import OverviewPage from '@/pages/OverviewPage';
 import AnalyticsPage from '@/pages/AnalyticsPage';
@@ -26,18 +26,25 @@ function App() {
 
   // Apply Theme
   useEffect(() => {
-    if (theme === 'dark') {
+    if (theme === 'dark' && user) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [theme]);
+  }, [theme, user]);
 
   // Apply Font
   useEffect(() => {
     document.documentElement.style.setProperty('--font-sans', `"${font}", ui-sans-serif, system-ui, sans-serif`);
     document.body.style.fontFamily = `var(--font-sans)`;
   }, [font]);
+
+  useEffect(() => {
+    // Fetch global app settings once on mount (before login)
+    getAppInfo().then(info => {
+      useAppStore.getState().setAppInfo(info.name, info.subtitle, info.icon || 'Type');
+    }).catch(console.error);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
