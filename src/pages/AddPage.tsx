@@ -19,6 +19,7 @@ export default function AddPage() {
   const setCurrentPage = useAppStore((s) => s.setCurrentPage);
   const user = useAuthStore((s) => s.user);
   const appCategories = useAppStore(s => s.appCategories);
+  const favoriteCategories = useAppStore((s) => s.favoriteCategories);
 
   const editingTransactionId = useAppStore(s => s.editingTransactionId);
   const setEditingTransactionId = useAppStore(s => s.setEditingTransactionId);
@@ -279,8 +280,36 @@ export default function AddPage() {
                   <div className="w-6 h-6 rounded-full bg-[#8B5CF6]/10 flex items-center justify-center">
                     <PlusCircle className="w-4 h-4 text-[#8B5CF6]" />
                   </div>
-                </button>
-              </div>
+                  </button>
+                  
+                  {/* Quick Select Favorites */}
+                  {favoriteCategories.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-4 animate-fade-in">
+                      {favoriteCategories.filter(cat => {
+                        if (type === 'expense') return expenseCats.includes(cat);
+                        if (type === 'income') return incomeCats.includes(cat);
+                        return true;
+                      }).map((cat) => {
+                        const isSelected = category === cat;
+                        const { color, textColor } = getCategoryStyle(cat, appCategories || undefined);
+                        return (
+                          <button
+                            key={cat}
+                            type="button"
+                            onClick={() => setCategory(cat as TransactionCategory)}
+                            className={`px-4 py-2 rounded-full text-[13px] font-bold border transition-all active:scale-95 ${
+                              isSelected 
+                                ? `${color} ${textColor} border-transparent shadow-md scale-105` 
+                                : 'bg-white/50 border-white/60 text-[#2E1065]/70 hover:bg-white/80 shadow-sm'
+                            }`}
+                          >
+                            {cat}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
 
               <div>
                 <label className="text-sm font-bold text-[#2E1065] flex items-center gap-2.5 mb-2">

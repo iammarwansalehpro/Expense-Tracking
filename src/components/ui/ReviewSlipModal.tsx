@@ -265,6 +265,29 @@ export default function ReviewSlipModal() {
                   )}
                 </button>
               </div>
+              
+              {/* Quick Select Favorites */}
+              {favoriteCategories.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-4 animate-fade-in">
+                  {favoriteCategories.map((cat) => {
+                    const isSelected = currentSlip.category === cat;
+                    const { color, textColor } = getCategoryStyle(cat, useAppStore.getState().appCategories || undefined);
+                    return (
+                      <button
+                        key={cat}
+                        onClick={() => setCategory(cat)}
+                        className={`px-4 py-2 rounded-full text-[13px] font-bold border transition-all active:scale-95 ${
+                          isSelected 
+                            ? `${color} ${textColor} border-transparent shadow-md scale-105` 
+                            : 'bg-white/50 border-white/60 text-[#2E1065]/70 hover:bg-white/80 shadow-sm'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {isEditing && (
