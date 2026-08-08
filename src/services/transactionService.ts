@@ -141,8 +141,25 @@ export const setApiKeys = async (keys: string[]): Promise<void> => {
 // Fetch User Favorite Categories
 export const getUserFavorites = async (userId: string): Promise<string[]> => {
   try {
+    // Fetch global defaults first
+    let defaultFavs = ['อาหาร', 'เดินทาง', 'ซื้อของ', 'โอนเงิน'];
+    try {
+      const globalSnap = await get(ref(db, 'settings/defaultFavorites'));
+      if (globalSnap.exists()) {
+        defaultFavs = globalSnap.val();
+      }
+    } catch(e) {}
+
     const snapshot = await get(ref(db, `users/${userId}/favoriteCategories`));
-    return snapshot.val() || ['อาหาร', 'เดินทาง', 'ซื้อของ', 'โอนเงิน'];
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      if (data && data.updated) {
+        return data.list || [];
+      }
+      // Handle legacy array format
+      return Array.isArray(data) ? data : defaultFavs;
+    }
+    return defaultFavs;
   } catch (error) {
     console.error("Error fetching user favorites:", error);
     return ['อาหาร', 'เดินทาง', 'ซื้อของ', 'โอนเงิน'];
@@ -152,7 +169,10 @@ export const getUserFavorites = async (userId: string): Promise<string[]> => {
 // Set User Favorite Categories
 export const setUserFavorites = async (userId: string, favorites: string[]): Promise<void> => {
   try {
-    await set(ref(db, `users/${userId}/favoriteCategories`), favorites);
+    await set(ref(db, `users/${userId}/favoriteCategories`), {
+      list: favorites,
+      updated: true
+    });
   } catch (error) {
     console.error("Error saving user favorites:", error);
   }

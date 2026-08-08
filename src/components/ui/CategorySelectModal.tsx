@@ -158,6 +158,7 @@ export default function CategorySelectModal({ isOpen, onClose, onSelect, type, s
                               {/* Favorite Toggle */}
                               <button 
                                 onClick={(e) => {
+                                  e.preventDefault();
                                   e.stopPropagation();
                                   toggleFavoriteCategory(cat);
                                   if (user) {
@@ -167,7 +168,7 @@ export default function CategorySelectModal({ isOpen, onClose, onSelect, type, s
                                     }, 0);
                                   }
                                 }}
-                                className="absolute -top-2 -left-2 w-7 h-7 flex items-center justify-center bg-white rounded-full shadow-sm border border-slate-200 z-10 active:scale-95 transition-transform"
+                                className="absolute -top-2 -left-2 w-7 h-7 flex items-center justify-center bg-white rounded-full shadow-sm border border-slate-200 z-50 active:scale-95 transition-transform"
                               >
                                 <Heart className={`w-3.5 h-3.5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-[#2E1065]/20 hover:text-red-500 transition-colors'}`} />
                               </button>

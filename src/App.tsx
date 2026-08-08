@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useAppStore } from '@/store/useAppStore';
@@ -17,12 +17,20 @@ import ReviewSlipModal from '@/components/ui/ReviewSlipModal';
 import ToastProvider from '@/components/ui/ToastProvider';
 import GlobalConfirmModal from '@/components/ui/GlobalConfirmModal';
 import { Loader2 } from 'lucide-react';
+import SplashScreen from '@/components/ui/SplashScreen';
 
 function App() {
   const currentPage = useAppStore((s) => s.currentPage);
   const theme = useThemeStore((state) => state.theme);
   const font = useThemeStore((state) => state.font);
   const { user, loading, setUser, setLoading } = useAuthStore();
+  
+  // Ensure splash screen is shown long enough for typing animation
+  const [minSplashTimeDone, setMinSplashTimeDone] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setMinSplashTimeDone(true), 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Apply Theme
   useEffect(() => {
@@ -68,12 +76,10 @@ function App() {
     }
   }, [user]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-bg-app">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
+  const isAppReady = !loading && minSplashTimeDone;
+
+  if (!isAppReady) {
+    return <SplashScreen />;
   }
 
   return (
