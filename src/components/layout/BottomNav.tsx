@@ -132,55 +132,38 @@ export default function BottomNav() {
             isAddMenuOpen ? 'bottom-[120px]' : 'bottom-[80px] pointer-events-none'
           }`}>
             
-            {/* Option 2: Add Manual (Icon: Plus) */}
-            <div className={`relative flex items-center justify-center w-[52px] h-[52px] group transition-all duration-300 delay-[50ms] ${isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}>
-              <div className="absolute right-full mr-4 w-max top-1/2 -translate-y-1/2 flex items-center">
-                <div
-                  className="px-4 py-2 bg-white/40 backdrop-blur-[40px] saturate-[200%] rounded-full shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15),inset_0_2px_3px_-1px_rgba(255,255,255,0.8),inset_0_0_0_1px_rgba(255,255,255,0.5)] cursor-pointer hover:bg-white/60 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] transition-all duration-300"
-                  onClick={() => {
-                    setCurrentPage('add');
-                    setAddMenuOpen(false);
-                  }}
-                >
-                  <div className="flex flex-col items-end">
-                    <span className="text-[13px] font-bold text-[#2E1065] drop-shadow-sm">Add Manual</span>
-                    <span className="text-[10px] font-medium text-[#2E1065]/70">Enter details yourself</span>
-                  </div>
-                </div>
+            {/* Option 2: Add Manual */}
+            <button 
+              onClick={() => {
+                setCurrentPage('add');
+                setAddMenuOpen(false);
+              }}
+              className={`flex items-center gap-4 px-2 py-2 pr-6 bg-white/40 backdrop-blur-[40px] saturate-[200%] rounded-[30px] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15),inset_0_2px_3px_-1px_rgba(255,255,255,0.8),inset_0_0_0_1px_rgba(255,255,255,0.5)] cursor-pointer hover:bg-white/60 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] transition-all duration-300 delay-[50ms] border border-white/40 active:scale-95 ${isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}
+            >
+              <div className="w-[44px] h-[44px] rounded-full flex items-center justify-center bg-white/90 border border-white/60 text-[#2E1065] shrink-0 shadow-sm relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#A855F7]/10 to-transparent" />
+                <PenLine className="w-[20px] h-[20px] relative z-10" />
               </div>
-              
-              <button
-                onClick={() => {
-                  setCurrentPage('add');
-                  setAddMenuOpen(false);
-                }}
-                className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] border bg-white/80 border-white/60 text-[#2E1065] transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
-              >
-                <Plus className="w-[22px] h-[22px] relative z-10" />
-              </button>
-            </div>
+              <div className="flex flex-col items-start text-left">
+                <span className="text-[14px] font-bold text-[#2E1065] drop-shadow-sm leading-tight">Add Manual</span>
+                <span className="text-[11px] font-medium text-[#2E1065]/70">บันทึกข้อมูลด้วยตนเอง</span>
+              </div>
+            </button>
 
-            {/* Option 1: Scan Slip (Icon: ScanLine) */}
-            <div className={`relative flex items-center justify-center w-[52px] h-[52px] group transition-all duration-300 delay-[100ms] ${isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}>
-              <div className="absolute right-full mr-4 w-max top-1/2 -translate-y-1/2 flex items-center">
-                <div
-                  className="px-4 py-2 bg-white/40 backdrop-blur-[40px] saturate-[200%] rounded-full shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15),inset_0_2px_3px_-1px_rgba(255,255,255,0.8),inset_0_0_0_1px_rgba(255,255,255,0.5)] cursor-pointer hover:bg-white/60 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] transition-all duration-300"
-                  onClick={handleScanClick}
-                >
-                  <div className="flex flex-col items-end">
-                    <span className="text-[13px] font-bold text-[#2E1065] drop-shadow-sm">สแกนใบเสร็จ (e-Slip)</span>
-                    <span className="text-[10px] font-medium text-[#2E1065]/70">ดึงข้อมูลอัตโนมัติจากรูปภาพ</span>
-                  </div>
-                </div>
+            {/* Option 1: Scan Slip */}
+            <button 
+              onClick={handleScanClick}
+              className={`flex items-center gap-4 px-2 py-2 pr-6 bg-white/40 backdrop-blur-[40px] saturate-[200%] rounded-[30px] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15),inset_0_2px_3px_-1px_rgba(255,255,255,0.8),inset_0_0_0_1px_rgba(255,255,255,0.5)] cursor-pointer hover:bg-white/60 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] transition-all duration-300 delay-[100ms] border border-white/40 active:scale-95 ${isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}
+            >
+              <div className="w-[44px] h-[44px] rounded-full flex items-center justify-center bg-gradient-to-tr from-[#A855F7] to-[#8B5CF6] text-white shrink-0 shadow-md relative overflow-hidden">
+                <div className="absolute inset-0 bg-white/20 blur-md rounded-full translate-y-[-10px] scale-150" />
+                <ScanLine className="w-[20px] h-[20px] relative z-10" />
               </div>
-              
-              <button
-                onClick={handleScanClick}
-                className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_32px_rgba(139,92,246,0.3)] border bg-gradient-to-tr from-[#A855F7] to-[#8B5CF6] border-white/30 text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
-              >
-                <ScanLine className="w-[22px] h-[22px] relative z-10" />
-              </button>
-            </div>
+              <div className="flex flex-col items-start text-left">
+                <span className="text-[14px] font-bold text-[#2E1065] drop-shadow-sm leading-tight">สแกนใบเสร็จ (e-Slip)</span>
+                <span className="text-[11px] font-medium text-[#2E1065]/70">ดึงข้อมูลอัตโนมัติจากรูป</span>
+              </div>
+            </button>
 
           </div>
 
