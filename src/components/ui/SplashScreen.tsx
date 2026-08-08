@@ -1,8 +1,8 @@
 import { useAppStore } from '@/store/useAppStore';
 import { getIconComponent } from '@/utils/categoryStyles';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
-export default function SplashScreen() {
+export default function SplashScreen({ onFinish }: { onFinish?: () => void }) {
   const appName = useAppStore(s => s.appName);
   const appIconName = useAppStore(s => s.appIcon);
   const AppIcon = getIconComponent(appIconName);
@@ -10,6 +10,11 @@ export default function SplashScreen() {
   const [displayedText, setDisplayedText] = useState('');
 
   // Typing effect
+  const onFinishRef = useRef(onFinish);
+  useEffect(() => {
+    onFinishRef.current = onFinish;
+  }, [onFinish]);
+
   useEffect(() => {
     let i = 0;
     // Slight delay before typing starts
@@ -19,6 +24,9 @@ export default function SplashScreen() {
         i++;
         if (i >= appName.length) {
           clearInterval(interval);
+          if (onFinishRef.current) {
+            setTimeout(onFinishRef.current, 500); // 500ms pause after typing finishes
+          }
         }
       }, 100); // 100ms per character
       return () => clearInterval(interval);
@@ -46,10 +54,10 @@ export default function SplashScreen() {
         </div>
 
         {/* Typing App Name */}
-        <div className="relative inline-block h-[56px] flex items-center justify-center">
-          <h1 className="text-[48px] font-black tracking-tighter leading-none bg-clip-text text-transparent bg-gradient-to-r from-[#2E1065] to-[#6D28D9] dark:from-white dark:to-white/70 drop-shadow-sm whitespace-nowrap">
+        <div className="relative inline-block h-[48px] flex items-center justify-center">
+          <h1 className="text-[36px] font-black tracking-tighter leading-none bg-clip-text text-transparent bg-gradient-to-r from-[#2E1065] to-[#6D28D9] dark:from-white dark:to-white/70 drop-shadow-sm whitespace-nowrap">
             {displayedText}
-            <span className="inline-block w-[4px] h-[40px] ml-1 bg-[#8B5CF6] dark:bg-[#A78BFA] animate-blink align-middle translate-y-[-4px] rounded-full" />
+            <span className="inline-block w-[3.5px] h-[30px] ml-1 bg-[#8B5CF6] dark:bg-[#A78BFA] animate-blink align-middle translate-y-[-3px] rounded-full" />
           </h1>
         </div>
       </div>

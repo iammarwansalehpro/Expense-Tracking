@@ -27,10 +27,6 @@ function App() {
   
   // Ensure splash screen is shown long enough for typing animation
   const [minSplashTimeDone, setMinSplashTimeDone] = useState(false);
-  useEffect(() => {
-    const timer = setTimeout(() => setMinSplashTimeDone(true), 1500);
-    return () => clearTimeout(timer);
-  }, []);
 
   // Apply Theme
   useEffect(() => {
@@ -79,7 +75,7 @@ function App() {
   const isAppReady = !loading && minSplashTimeDone;
 
   if (!isAppReady) {
-    return <SplashScreen />;
+    return <SplashScreen onFinish={() => setMinSplashTimeDone(true)} />;
   }
 
   return (
