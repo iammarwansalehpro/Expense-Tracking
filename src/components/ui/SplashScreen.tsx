@@ -44,12 +44,12 @@ export default function SplashScreen({ onFinish }: { onFinish?: () => void }) {
 
       <div className="flex flex-col items-center z-10">
         {/* Animated Logo Container */}
-        <div className="w-28 h-28 flex items-center justify-center animate-fade-in mb-8 relative group">
+        <div className="w-40 h-40 flex items-center justify-center animate-fade-in mb-8 relative group">
           <div className="absolute inset-0 bg-gradient-to-tr from-[#A855F7]/30 to-transparent blur-[30px] rounded-full animate-pulse-slow" />
           {appIconName.startsWith('http') ? (
-            <img src={appIconName} alt="App Icon" className="w-24 h-24 object-cover rounded-[28px] relative z-10 animate-slide-down drop-shadow-2xl" />
+            <img src={appIconName} alt="App Icon" className="w-36 h-36 object-cover rounded-[36px] relative z-10 animate-slide-down drop-shadow-2xl" />
           ) : (
-            <AppIcon className="w-20 h-20 text-[#2E1065] dark:text-white drop-shadow-2xl relative z-10 animate-slide-down" />
+            <AppIcon className="w-32 h-32 text-[#2E1065] dark:text-white drop-shadow-2xl relative z-10 animate-slide-down" />
           )}
         </div>
 
