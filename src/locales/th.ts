@@ -19,6 +19,10 @@ export const th = {
     add: 'เพิ่ม',
     statistics: 'สถิติ',
     settings: 'ตั้งค่า',
+    addManualTitle: 'เพิ่มรายการเอง',
+    addManualDesc: 'บันทึกข้อมูลด้วยตนเอง',
+    scanSlipTitle: 'สแกนใบเสร็จ (e-Slip)',
+    scanSlipDesc: 'ดึงข้อมูลอัตโนมัติจากรูป',
   },
   add: {
     title: 'เพิ่มรายการ',

@@ -143,8 +143,8 @@ export default function BottomNav() {
                   }}
                 >
                   <div className="flex flex-col items-end text-right w-max max-w-[125px] whitespace-normal break-words">
-                    <span className="text-[13px] font-bold text-[#2E1065] drop-shadow-sm leading-tight">Add Manual</span>
-                    <span className="text-[10px] font-medium text-[#2E1065]/70 leading-tight">Enter details yourself</span>
+                    <span className="text-[13px] font-bold text-[#2E1065] drop-shadow-sm leading-tight">{t('nav.addManualTitle')}</span>
+                    <span className="text-[10px] font-medium text-[#2E1065]/70 leading-tight">{t('nav.addManualDesc')}</span>
                   </div>
                 </div>
               </div>
@@ -168,8 +168,8 @@ export default function BottomNav() {
                   onClick={handleScanClick}
                 >
                   <div className="flex flex-col items-end text-right w-max max-w-[125px] whitespace-normal break-words">
-                    <span className="text-[13px] font-bold text-[#2E1065] drop-shadow-sm leading-tight">สแกนใบเสร็จ (e-Slip)</span>
-                    <span className="text-[10px] font-medium text-[#2E1065]/70 leading-tight">ดึงข้อมูลอัตโนมัติจากรูป</span>
+                    <span className="text-[13px] font-bold text-[#2E1065] drop-shadow-sm leading-tight">{t('nav.scanSlipTitle')}</span>
+                    <span className="text-[10px] font-medium text-[#2E1065]/70 leading-tight">{t('nav.scanSlipDesc')}</span>
                   </div>
                 </div>
               </div>

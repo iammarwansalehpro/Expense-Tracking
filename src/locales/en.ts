@@ -21,6 +21,10 @@ export const en: Translations = {
     add: 'Add',
     statistics: 'Stats',
     settings: 'Settings',
+    addManualTitle: 'Add Manual',
+    addManualDesc: 'Enter details yourself',
+    scanSlipTitle: 'Scan Slip (e-Slip)',
+    scanSlipDesc: 'Auto-extract data from image',
   },
   add: {
     title: 'Add Transaction',
