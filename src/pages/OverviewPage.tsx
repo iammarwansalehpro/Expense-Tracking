@@ -242,7 +242,7 @@ export default function OverviewPage() {
             </div>
             <div className="w-full mt-1">
               <AutoShrinkText className="font-black text-[26px] text-[#2E1065] tracking-tight w-full">
-                <span className="text-emerald-500 mr-1">+</span><span className="opacity-80 text-[20px] mr-0.5">฿</span>
+                <span className="text-emerald-500 mr-1">+</span>
                 {totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </AutoShrinkText>
             </div>
@@ -260,7 +260,7 @@ export default function OverviewPage() {
             </div>
             <div className="w-full mt-1">
               <AutoShrinkText className="font-black text-[26px] text-[#2E1065] tracking-tight w-full">
-                <span className="text-rose-500 mr-1">-</span><span className="opacity-80 text-[20px] mr-0.5">฿</span>
+                <span className="text-rose-500 mr-1">-</span>
                 {totalExpense.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </AutoShrinkText>
             </div>
