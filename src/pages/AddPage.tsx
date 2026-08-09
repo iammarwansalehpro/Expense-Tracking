@@ -94,6 +94,8 @@ export default function AddPage() {
       const colors = ['bg-[#A855F7]/20 text-[#8B5CF6]', 'bg-[#3B82F6]/20 text-[#2563EB]', 'bg-[#F43F5E]/20 text-[#E11D48]'];
       const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
+      if (!user) return;
+
       if (editingTransactionId) {
         // Edit existing transaction
         await updateTransaction(editingTransactionId, {
