@@ -9,6 +9,8 @@ import WalletFormModal from '@/components/ui/WalletFormModal';
 import AppHeader from '@/components/layout/AppHeader';
 import { useConfirmStore } from '@/store/useConfirmStore';
 import { useToastStore } from '@/store/useToastStore';
+import { useTranslation } from '@/hooks/useTranslation';
+import AutoShrinkText from '@/components/ui/AutoShrinkText';
 import { useRef, useState, useEffect } from 'react';
 
 export default function HomePage() {
@@ -171,8 +173,8 @@ export default function HomePage() {
                     {/* Top Row */}
                     <div className="flex items-center justify-between mb-2 relative z-10 pr-10">
                       <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/50 backdrop-blur-sm rounded-full border border-white/40 shadow-sm">
-                          <span className="text-sm font-bold text-[#2E1065] truncate max-w-[120px]">{wallet.name}</span>
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/50 backdrop-blur-sm rounded-full border border-white/40 shadow-sm max-w-[150px]">
+                          <AutoShrinkText className="text-sm font-bold text-[#2E1065] w-full" text={wallet.name} />
                         </div>
                         
                         {wallet.isMain && (
@@ -188,10 +190,10 @@ export default function HomePage() {
                       <span className="text-[13px] font-semibold text-[#2E1065]/70 mb-1 block">
                         {t('home.balance')}
                       </span>
-                      <h1 className="text-[44px] font-bold tracking-tight leading-none drop-shadow-sm truncate">
+                      <AutoShrinkText className="text-[44px] font-bold tracking-tight leading-none drop-shadow-sm w-full">
                         <span className="text-[24px] font-bold opacity-80 mr-1">฿</span>
                         {stats.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                      </h1>
+                      </AutoShrinkText>
                     </div>
 
                     {/* Income & Expense */}
@@ -202,9 +204,7 @@ export default function HomePage() {
                         </div>
                         <div className="overflow-hidden">
                           <p className="text-[11px] font-semibold text-[#2E1065]/60 mb-0.5">{t('home.income')}</p>
-                          <p className="font-bold text-[15px] text-emerald-700 truncate">
-                            +{stats.income.toLocaleString('en-US', { minimumFractionDigits: 0 })}
-                          </p>
+                          <AutoShrinkText className="font-bold text-[15px] text-emerald-700 w-full" text={`+${stats.income.toLocaleString('en-US', { minimumFractionDigits: 0 })}`} />
                         </div>
                       </div>
                       <div className="bg-white/50 backdrop-blur-md rounded-[20px] p-4 border border-white/60 shadow-sm flex items-center gap-3">
@@ -213,9 +213,7 @@ export default function HomePage() {
                         </div>
                         <div className="overflow-hidden">
                           <p className="text-[11px] font-semibold text-[#2E1065]/60 mb-0.5">{t('home.expense')}</p>
-                          <p className="font-bold text-[15px] text-rose-700 truncate">
-                            -{stats.expense.toLocaleString('en-US', { minimumFractionDigits: 0 })}
-                          </p>
+                          <AutoShrinkText className="font-bold text-[15px] text-rose-700 w-full" text={`-${stats.expense.toLocaleString('en-US', { minimumFractionDigits: 0 })}`} />
                         </div>
                       </div>
                     </div>

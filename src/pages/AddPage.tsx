@@ -12,6 +12,7 @@ import { useWalletStore } from '@/store/useWalletStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { addTransaction, updateTransaction } from '@/services/transactionService';
 import { useToastStore } from '@/store/useToastStore';
+import { useConfirmStore } from '@/store/useConfirmStore';
 import type { TransactionType, TransactionCategory, Wallet } from '@/types';
 
 export default function AddPage() {
@@ -85,17 +86,10 @@ export default function AddPage() {
     setEditingTransactionId(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-    if (!amount) return;
-
+  const executeSave = async (parsedAmount: number, dateStr: string) => {
     setLoading(true);
     try {
       const timeStr = time;
-      const dateObj = new Date(date);
-      const dateStr = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-
       const colors = ['bg-[#A855F7]/20 text-[#8B5CF6]', 'bg-[#3B82F6]/20 text-[#2563EB]', 'bg-[#F43F5E]/20 text-[#E11D48]'];
       const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
@@ -103,7 +97,7 @@ export default function AddPage() {
         // Edit existing transaction
         await updateTransaction(editingTransactionId, {
           type,
-          amount: parseFloat(amount),
+          amount: parsedAmount,
           title,
           category,
           date: dateStr,
@@ -115,7 +109,7 @@ export default function AddPage() {
         // Add new transaction
         await addTransaction(user.uid, {
           type,
-          amount: parseFloat(amount),
+          amount: parsedAmount,
           title,
           category,
           date: dateStr,
@@ -133,6 +127,40 @@ export default function AddPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    if (!amount) return;
+
+    const dateObj = new Date(date);
+    const dateStr = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const parsedAmount = parseFloat(amount);
+
+    if (!editingTransactionId) {
+      const isDuplicate = transactions.some(t => 
+        t.type === type &&
+        t.amount === parsedAmount &&
+        t.date === dateStr &&
+        t.title === title
+      );
+
+      if (isDuplicate) {
+        useConfirmStore.getState().showConfirm({
+          title: 'พบรายการซ้ำซ้อน',
+          message: 'มีการบันทึกรายการที่มี ยอดเงิน วันที่ และชื่อเดียวกันไปแล้วในวันนี้ คุณต้องการบันทึกรายการนี้ซ้ำหรือไม่?',
+          confirmText: 'บันทึกซ้ำ',
+          cancelText: 'ยกเลิก',
+          onConfirm: () => {
+            executeSave(parsedAmount, dateStr);
+          }
+        });
+        return; // Stop and wait for confirmation
+      }
+    }
+
+    executeSave(parsedAmount, dateStr);
   };
 
   return createPortal(
@@ -265,7 +293,7 @@ export default function AddPage() {
                   {category ? (
                     <span className="flex items-center gap-3 font-bold text-[#2E1065]">
                       {(() => {
-                        const { icon: Icon, color, textColor } = getCategoryStyle(category);
+                        const { icon: Icon, color, textColor } = getCategoryStyle(category, appCategories || undefined);
                         return (
                           <div className={`w-8 h-8 rounded-xl flex items-center justify-center border shadow-sm ${color} ${textColor}`}>
                             <Icon className="w-4 h-4" />

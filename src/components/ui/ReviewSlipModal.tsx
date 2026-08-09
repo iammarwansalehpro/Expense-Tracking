@@ -5,6 +5,8 @@ import { useAppStore } from '@/store/useAppStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { addTransaction, setUserFavorites } from '@/services/transactionService';
 import { useWalletStore } from '@/store/useWalletStore';
+import { useTransactionStore } from '@/store/useTransactionStore';
+import { useConfirmStore } from '@/store/useConfirmStore';
 import type { TransactionCategory, Wallet } from '@/types';
 import CategorySelectModal from './CategorySelectModal';
 import CustomSelect from './CustomSelect';
@@ -25,7 +27,9 @@ export default function ReviewSlipModal() {
   const removeScannedSlip = useAppStore((s) => s.removeScannedSlip);
   const favoriteCategories = useAppStore((s) => s.favoriteCategories);
   const addFavoriteCategory = useAppStore((s) => s.addFavoriteCategory);
+  const appCategories = useAppStore((s) => s.appCategories);
   const user = useAuthStore((s) => s.user);
+  const transactions = useTransactionStore((s) => s.transactions);
   
   const wallets = useWalletStore((s) => s.wallets);
   const mainWallet = wallets.find(w => w.isMain) || wallets[0];
@@ -67,45 +71,71 @@ export default function ReviewSlipModal() {
       alert(t('review.requireCategory'));
       return;
     }
+    let finalDate = new Date().toISOString().split('T')[0];
+    let finalTime = new Date().toTimeString().split(' ')[0];
     
-    setLoading(true);
-    try {
-      addFavoriteCategory(currentSlip.category);
-      if (user) {
-        setTimeout(() => {
-          setUserFavorites(user.uid, useAppStore.getState().favoriteCategories);
-        }, 0);
+    if (currentSlip.date) {
+      const d = new Date(currentSlip.date);
+      if (!isNaN(d.getTime())) {
+        finalDate = currentSlip.date.split('T')[0] || finalDate;
+        finalTime = currentSlip.date.split('T')[1]?.slice(0,5) || finalTime;
       }
-      
-      let finalDate = new Date().toISOString().split('T')[0];
-      let finalTime = new Date().toTimeString().split(' ')[0];
-      
-      if (currentSlip.date) {
-        const d = new Date(currentSlip.date);
-        if (!isNaN(d.getTime())) {
-          finalDate = currentSlip.date.split('T')[0] || finalDate;
-          finalTime = currentSlip.date.split('T')[1]?.slice(0,5) || finalTime;
-        }
-      }
-
-      await addTransaction(user.uid, {
-        type: 'expense',
-        amount: Number(currentSlip.amount) || 0,
-        title: currentSlip.title || t('review.defaultTitle'),
-        category: currentSlip.category as TransactionCategory,
-        date: finalDate,
-        time: finalTime,
-        note: currentSlip.note || '',
-        walletId: currentSlip.walletId || mainWallet.id,
-      });
-      
-      setIsEditing(false);
-      removeScannedSlip(currentScanIndex);
-    } catch (error) {
-      alert('Failed to save transaction');
-    } finally {
-      setLoading(false);
     }
+
+    const title = currentSlip.title || t('review.defaultTitle');
+    const parsedAmount = Number(currentSlip.amount) || 0;
+
+    const executeSave = async () => {
+      setLoading(true);
+      try {
+        addFavoriteCategory(currentSlip.category!);
+        if (user) {
+          setTimeout(() => {
+            setUserFavorites(user.uid, useAppStore.getState().favoriteCategories);
+          }, 0);
+        }
+
+        await addTransaction(user!.uid, {
+          type: 'expense',
+          amount: parsedAmount,
+          title: title,
+          category: currentSlip.category as TransactionCategory,
+          date: finalDate,
+          time: finalTime,
+          note: currentSlip.note || '',
+          walletId: currentSlip.walletId || mainWallet.id,
+        });
+        
+        setIsEditing(false);
+        removeScannedSlip(currentScanIndex);
+      } catch (error) {
+        alert('Failed to save transaction');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const isDuplicate = transactions.some(t => 
+      t.type === 'expense' &&
+      t.amount === parsedAmount &&
+      t.date === finalDate &&
+      t.title === title
+    );
+
+    if (isDuplicate) {
+      useConfirmStore.getState().showConfirm({
+        title: 'พบรายการซ้ำซ้อน',
+        message: 'มีการบันทึกรายการที่มี ยอดเงิน วันที่ และชื่อเดียวกันไปแล้วในวันนี้ คุณต้องการบันทึกรายการนี้ซ้ำหรือไม่?',
+        confirmText: 'บันทึกซ้ำ',
+        cancelText: 'ยกเลิก',
+        onConfirm: () => {
+          executeSave();
+        }
+      });
+      return;
+    }
+
+    executeSave();
   };
 
   const handleSkipCurrent = () => {
@@ -257,7 +287,7 @@ export default function ReviewSlipModal() {
                   {currentSlip.category ? (
                     <>
                       {(() => {
-                        const { icon: Icon, textColor } = getCategoryStyle(currentSlip.category!);
+                        const { icon: Icon, textColor } = getCategoryStyle(currentSlip.category!, appCategories || undefined);
                         return <Icon className={`w-4 h-4 ${textColor.replace('text-', 'text-')}`} />;
                       })()}
                       {currentSlip.category}

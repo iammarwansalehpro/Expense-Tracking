@@ -1,11 +1,12 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, ReactNode } from 'react';
 
 interface AutoShrinkTextProps {
-  text: string;
+  text?: string;
+  children?: ReactNode;
   className?: string;
 }
 
-export default function AutoShrinkText({ text, className = '' }: AutoShrinkTextProps) {
+export default function AutoShrinkText({ text, children, className = '' }: AutoShrinkTextProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
   const [scale, setScale] = useState(1);
@@ -28,7 +29,7 @@ export default function AutoShrinkText({ text, className = '' }: AutoShrinkTextP
     // Add resize listener just in case container resizes
     window.addEventListener('resize', calculateScale);
     return () => window.removeEventListener('resize', calculateScale);
-  }, [text]);
+  }, [text, children]);
 
   return (
     <div ref={containerRef} className={`w-full overflow-hidden flex items-center ${className}`}>
@@ -42,7 +43,7 @@ export default function AutoShrinkText({ text, className = '' }: AutoShrinkTextP
           willChange: 'transform'
         }}
       >
-        {text}
+        {children || text}
       </span>
     </div>
   );
