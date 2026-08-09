@@ -3,6 +3,7 @@ import { useTransactionStore } from '@/store/useTransactionStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useTranslation } from '@/hooks/useTranslation';
+import AutoShrinkText from '@/components/ui/AutoShrinkText';
 import AppHeader from '@/components/layout/AppHeader';
 import { useMemo, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -242,15 +243,15 @@ export default function AnalyticsPage() {
             )}
           </div>
           
-          <div className="relative z-10">
+          <div className="relative z-10 pr-[85px]">
             <p className="text-[13px] font-bold text-[#2E1065]/70 mb-1 uppercase tracking-wider">
               {activeTab === 'expense' ? t('stats.expenseThisMonth') : t('stats.incomeThisMonth')}
             </p>
-            <div className="flex items-end gap-2 mb-2">
-              <h2 className="text-[48px] leading-[1] font-black text-[#2E1065] tracking-tight drop-shadow-sm">
+            <div className="flex items-end gap-2 mb-2 w-full">
+              <AutoShrinkText className="text-[48px] leading-[1] font-black text-[#2E1065] tracking-tight drop-shadow-sm w-full">
                 {currentMonthTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </h2>
-              <span className="text-xl font-bold text-[#2E1065] mb-1.5">{t('stats.currency')}</span>
+              </AutoShrinkText>
+              <span className="text-xl font-bold text-[#2E1065] mb-1.5 shrink-0">{t('stats.currency')}</span>
             </div>
           </div>
           
