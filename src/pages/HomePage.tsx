@@ -197,22 +197,35 @@ export default function HomePage() {
 
                     {/* Income & Expense */}
                     <div className="grid grid-cols-2 gap-3 relative z-10">
-                      <div className="bg-white/50 backdrop-blur-md rounded-[20px] p-4 border border-white/60 shadow-sm flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                          <ArrowDown className="w-5 h-5 text-emerald-600" />
+                      {/* Income Badge */}
+                      <div className="bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-md rounded-2xl p-3 border border-white/60 shadow-[0_4px_16px_rgba(31,38,135,0.04)] flex flex-col gap-1.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 shadow-sm border border-emerald-50">
+                            <ArrowDown className="w-3.5 h-3.5 text-emerald-600" />
+                          </div>
+                          <p className="text-[11px] font-bold text-[#2E1065]/60 tracking-wide">{t('home.income')}</p>
                         </div>
-                        <div className="overflow-hidden">
-                          <p className="text-[11px] font-semibold text-[#2E1065]/60 mb-0.5">{t('home.income')}</p>
-                          <AutoShrinkText className="font-bold text-[15px] text-emerald-700 w-full" text={`+${stats.income.toLocaleString('en-US', { minimumFractionDigits: 0 })}`} />
+                        <div className="w-full pl-1">
+                          <AutoShrinkText className="font-extrabold text-[17px] text-[#2E1065] tracking-tight w-full">
+                            <span className="text-emerald-500 mr-1">+</span>
+                            {stats.income.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                          </AutoShrinkText>
                         </div>
                       </div>
-                      <div className="bg-white/50 backdrop-blur-md rounded-[20px] p-4 border border-white/60 shadow-sm flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
-                          <ArrowUp className="w-5 h-5 text-rose-600" />
+                      
+                      {/* Expense Badge */}
+                      <div className="bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-md rounded-2xl p-3 border border-white/60 shadow-[0_4px_16px_rgba(31,38,135,0.04)] flex flex-col gap-1.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-rose-100 flex items-center justify-center shrink-0 shadow-sm border border-rose-50">
+                            <ArrowUp className="w-3.5 h-3.5 text-rose-600" />
+                          </div>
+                          <p className="text-[11px] font-bold text-[#2E1065]/60 tracking-wide">{t('home.expense')}</p>
                         </div>
-                        <div className="overflow-hidden">
-                          <p className="text-[11px] font-semibold text-[#2E1065]/60 mb-0.5">{t('home.expense')}</p>
-                          <AutoShrinkText className="font-bold text-[15px] text-rose-700 w-full" text={`-${stats.expense.toLocaleString('en-US', { minimumFractionDigits: 0 })}`} />
+                        <div className="w-full pl-1">
+                          <AutoShrinkText className="font-extrabold text-[17px] text-[#2E1065] tracking-tight w-full">
+                            <span className="text-rose-500 mr-1">-</span>
+                            {stats.expense.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                          </AutoShrinkText>
                         </div>
                       </div>
                     </div>
