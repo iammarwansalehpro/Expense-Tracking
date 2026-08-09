@@ -186,8 +186,8 @@ export default function BottomNav() {
           </div>
 
           {/* Floating Navigation Bar (Glassmorphism) */}
-          <div className="bg-white/30 backdrop-blur-[20px] h-16 shadow-[0_8px_32px_rgba(31,38,135,0.15)] z-50 rounded-[2rem] border border-white/50">
-            <div className="grid grid-cols-5 h-full relative items-center px-2">
+          <div className="bg-white/30 backdrop-blur-[20px] h-16 shadow-[0_8px_32px_rgba(31,38,135,0.15)] z-50 rounded-[2rem] border border-white/50 px-2">
+            <div className="grid grid-cols-5 h-full relative items-center">
               
               {/* Animated Active Pill */}
               <div 
