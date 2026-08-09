@@ -3,7 +3,7 @@
 
 
 @theme {
-  --font-sans: "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
   --color-primary: #8b5cf6;
   --color-primary-light: #a78bfa;
   --color-primary-dark: #7c3aed;
