@@ -1,6 +1,15 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Wallet } from '@/types';
+import { saveUserWallets } from '@/services/walletService';
+import { useAuthStore } from '@/store/useAuthStore';
+
+const syncToFirebase = (wallets: Wallet[]) => {
+  const user = useAuthStore.getState().user;
+  if (user) {
+    saveUserWallets(user.uid, wallets);
+  }
+};
 
 interface WalletState {
   wallets: Wallet[];
@@ -9,6 +18,7 @@ interface WalletState {
   deleteWallet: (id: string) => void;
   setMainWallet: (id: string) => void;
   getMainWallet: () => Wallet;
+  setWallets: (wallets: Wallet[]) => void;
 }
 
 const defaultWallets: Wallet[] = [
@@ -43,7 +53,9 @@ export const useWalletStore = create<WalletState>()(
             newWallet.isMain = true;
             updatedWallets = updatedWallets.map(w => ({ ...w, isMain: false }));
           }
-          return { wallets: [...updatedWallets, newWallet] };
+          const finalWallets = [...updatedWallets, newWallet];
+          syncToFirebase(finalWallets);
+          return { wallets: finalWallets };
         }),
       updateWallet: (id, updates) =>
         set((state) => {
@@ -58,6 +70,7 @@ export const useWalletStore = create<WalletState>()(
             }));
           }
           
+          syncToFirebase(updatedWallets);
           return { wallets: updatedWallets };
         }),
       deleteWallet: (id) =>
@@ -67,19 +80,23 @@ export const useWalletStore = create<WalletState>()(
           if (state.wallets.find(w => w.id === id)?.isMain && filtered.length > 0) {
             filtered[0].isMain = true;
           }
+          syncToFirebase(filtered);
           return { wallets: filtered };
         }),
       setMainWallet: (id) => 
-        set((state) => ({
-          wallets: state.wallets.map((w) => ({
+        set((state) => {
+          const updated = state.wallets.map((w) => ({
             ...w,
             isMain: w.id === id
-          }))
-        })),
+          }));
+          syncToFirebase(updated);
+          return { wallets: updated };
+        }),
       getMainWallet: () => {
         const state = get();
         return state.wallets.find(w => w.isMain) || state.wallets[0] || defaultWallets[0];
-      }
+      },
+      setWallets: (wallets) => set({ wallets })
     }),
     {
       name: 'paysave-wallet-storage',

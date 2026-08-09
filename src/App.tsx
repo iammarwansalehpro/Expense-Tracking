@@ -6,6 +6,8 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useThemeStore } from '@/store/useThemeStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { getUserFavorites, fetchCategories, getAppInfo } from '@/services/transactionService';
+import { getUserWallets } from '@/services/walletService';
+import { useWalletStore } from '@/store/useWalletStore';
 import HomePage from '@/pages/HomePage';
 import OverviewPage from '@/pages/OverviewPage';
 import AnalyticsPage from '@/pages/AnalyticsPage';
@@ -61,6 +63,13 @@ function App() {
   useEffect(() => {
     if (user) {
       useTransactionStore.getState().initSync(user.uid);
+      
+      getUserWallets(user.uid).then(wallets => {
+        if (wallets && wallets.length > 0) {
+          useWalletStore.getState().setWallets(wallets);
+        }
+      });
+
       getUserFavorites(user.uid).then(favs => {
         useAppStore.getState().setFavoriteCategories(favs);
       });
