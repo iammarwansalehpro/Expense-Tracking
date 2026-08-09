@@ -62,6 +62,23 @@ export default function HomePage() {
     }
   }, [wallets, activeWalletId, mainWallet]);
 
+  // Initial scroll to active wallet
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      const activeIdx = wallets.findIndex(w => w.id === activeWalletId);
+      if (activeIdx > 0) { // If it's 0, it's already there
+        setTimeout(() => {
+          if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTo({
+              left: activeIdx * scrollContainerRef.current.clientWidth,
+              behavior: 'instant'
+            });
+          }
+        }, 50);
+      }
+    }
+  }, []);
+
   const activeWallet = wallets.find(w => w.id === activeWalletId) || mainWallet;
   
   const AppIcon = getIconComponent(appIconName);

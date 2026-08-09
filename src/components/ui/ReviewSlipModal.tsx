@@ -8,8 +8,9 @@ import { useWalletStore } from '@/store/useWalletStore';
 import type { TransactionCategory, Wallet } from '@/types';
 import CategorySelectModal from './CategorySelectModal';
 import CustomSelect from './CustomSelect';
-import CustomDatePicker from './CustomDatePicker';
-import CustomTimePicker from './CustomTimePicker';
+import CustomDatePicker from '@/components/ui/CustomDatePicker';
+import CustomTimePicker from '@/components/ui/CustomTimePicker';
+import AutoShrinkText from '@/components/ui/AutoShrinkText';
 import { useRef, useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -212,9 +213,10 @@ export default function ReviewSlipModal() {
                         <h3 className="text-[28px] leading-tight font-bold text-[#2E1065] drop-shadow-sm truncate w-full">
                           {Number(slip.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}<span className="text-xl text-[#2E1065]/50"> {t('stats.currency')}</span>
                         </h3>
-                        <div className="text-sm font-bold text-[#2E1065] truncate">
-                            {slip.title || t('review.noMerchant')}
-                        </div>
+                        <AutoShrinkText 
+                          text={slip.title || t('review.noMerchant')} 
+                          className="text-sm font-bold text-[#2E1065]" 
+                        />
                       </div>
                       <div className="flex flex-col gap-2 text-[13px] text-[#2E1065]/70 font-semibold">
                         <div className="flex items-center gap-2">
@@ -406,13 +408,13 @@ export default function ReviewSlipModal() {
                       {currentSlip.note?.length || 0}/50
                     </span>
                   </div>
-                  <textarea 
-                    maxLength={50}
-                    value={currentSlip.note || ''}
-                    onChange={(e) => setNoteStr(e.target.value)}
-                    className="w-full bg-white/50 border border-white/60 rounded-[20px] px-5 py-4 text-[#2E1065] font-bold focus:outline-none focus:ring-4 focus:ring-purple-500/20 shadow-sm min-h-[100px] resize-none"
-                    placeholder={t('review.memoPlaceholder')}
-                  />
+                    <textarea 
+                      maxLength={50}
+                      value={currentSlip.note || ''}
+                      onChange={(e) => setNoteStr(e.target.value)}
+                      className="w-full bg-white/50 border border-white/60 rounded-[20px] px-5 py-4 text-[#2E1065] font-bold focus:outline-none focus:ring-4 focus:ring-purple-500/20 shadow-sm min-h-[100px] resize-none"
+                      placeholder={`${t('review.memoPlaceholder')} (ไม่บังคับ)`}
+                    />
                 </div>
 
               </div>

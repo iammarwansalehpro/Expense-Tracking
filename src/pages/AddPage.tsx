@@ -88,7 +88,7 @@ export default function AddPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    if (!amount || !title) return;
+    if (!amount) return;
 
     setLoading(true);
     try {
@@ -345,13 +345,12 @@ export default function AddPage() {
                   </span>
                 </div>
                 <textarea 
-                  required
                   maxLength={50}
                   rows={3}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="w-full bg-white/60 backdrop-blur-sm rounded-[16px] px-4 py-3.5 text-[#2E1065] font-bold focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-white/50 shadow-inner resize-none min-h-[100px]"
-                  placeholder="เช่น เงินเดือน, ค่ากาแฟ, ซื้อของเข้าบ้าน"
+                  placeholder="เช่น เงินเดือน, ค่ากาแฟ, ซื้อของเข้าบ้าน (ไม่บังคับ)"
                 />
               </div>
             </div>
