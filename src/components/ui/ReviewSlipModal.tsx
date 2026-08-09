@@ -1,4 +1,5 @@
 import { createPortal } from 'react-dom';
+import * as Icons from 'lucide-react';
 import { AlignLeft, Calendar, FileText, Wallet as WalletIcon, ChevronRight, Check, Search, Pencil, Building2, CreditCard, X, ChevronLeft, ChevronRight as ChevronRightIcon, Trash2 } from 'lucide-react';
 import { getCategoryStyle } from '@/utils/categoryStyles';
 import { useAppStore } from '@/store/useAppStore';
@@ -401,11 +402,14 @@ export default function ReviewSlipModal() {
                   <CustomSelect 
                     value={currentSlip.walletId || mainWallet.id}
                     onChange={setWalletStr}
-                    options={wallets.map(w => ({
-                      label: w.name,
-                      value: w.id,
-                      iconNode: w.icon === 'CreditCard' ? <CreditCard className="w-4 h-4" /> : <WalletIcon className="w-4 h-4" />
-                    }))}
+                    options={wallets.map(w => {
+                      const WIcon = (Icons as any)[w.icon] || Icons.Wallet;
+                      return {
+                        label: w.name,
+                        value: w.id,
+                        iconNode: <WIcon className={`w-4 h-4 ${w.color.replace('bg-', 'text-')}`} />
+                      };
+                    })}
                     placeholder={t('review.walletPlaceholder')}
                   />
                 </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import * as Icons from 'lucide-react';
 import { X, CreditCard, Loader2, Sparkles, PlusCircle, MinusCircle, Calendar, AlignLeft, Pencil, FileText, Wallet as WalletIcon, Clock } from 'lucide-react';
 import CustomSelect from '@/components/ui/CustomSelect';
 import CustomDatePicker from '@/components/ui/CustomDatePicker';
@@ -269,11 +270,14 @@ export default function AddPage() {
                 <CustomSelect 
                   value={walletId}
                   onChange={setWalletId}
-                  options={wallets.map(w => ({
-                    label: w.name,
-                    value: w.id,
-                    iconNode: w.icon === 'CreditCard' ? <CreditCard className="w-4 h-4" /> : <WalletIcon className="w-4 h-4" />
-                  }))}
+                  options={wallets.map(w => {
+                    const WIcon = (Icons as any)[w.icon] || Icons.Wallet;
+                    return {
+                      label: w.name,
+                      value: w.id,
+                      iconNode: <WIcon className={`w-4 h-4 ${w.color.replace('bg-', 'text-')}`} />
+                    };
+                  })}
                   placeholder="เลือกกระเป๋าเงิน"
                 />
               </div>
