@@ -251,6 +251,28 @@ export default function AnalyticsPage() {
       : `ยอดเยี่ยมมาก! คุณใช้เงินน้อยกว่าเวลาที่ผ่านไปอย่างเห็นได้ชัด เป็นโอกาสทองในการเพิ่มสัดส่วนเงินออมเพื่อเป้าหมายในอนาคตครับ`;
   }
 
+  // Recommended Daily Limit Logic
+  let remainingDays = 1;
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  if (viewDate.getFullYear() === now.getFullYear() && viewDate.getMonth() === now.getMonth()) {
+    remainingDays = daysInMonth - now.getDate() + 1; 
+    if (remainingDays <= 0) remainingDays = 1;
+  } else {
+    remainingDays = daysInMonth;
+  }
+  
+  const remainingBudget = smartTotalIncome - smartTotalExpense;
+  const recommendedDailyLimit = remainingBudget > 0 ? remainingBudget / remainingDays : 0;
+
+  if (smartTotalIncome > 0 && viewDate.getFullYear() === now.getFullYear() && viewDate.getMonth() === now.getMonth()) {
+    if (recommendedDailyLimit > 0) {
+      const formattedLimit = recommendedDailyLimit.toLocaleString('en-US', { maximumFractionDigits: 0 });
+      analysisText += language === 'en'
+        ? ` 💡 Tip: Keep your daily spending under ฿${formattedLimit} for the rest of the month.`
+        : ` 💡 แนะนำ: ควรใช้เงินเฉลี่ยไม่เกิน ฿${formattedLimit}/วัน ในช่วงที่เหลือของเดือน`;
+    }
+  }
+
   return (
     <div className="flex flex-col h-full bg-transparent overflow-y-auto no-scrollbar animate-fade-in">
       
@@ -395,11 +417,9 @@ export default function AnalyticsPage() {
               <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mb-2 shrink-0">
                 <Activity className="w-4 h-4 text-blue-600" />
               </div>
-              <div className="w-full">
-                <AutoShrinkText className="text-[10px] font-bold text-[#2E1065]/60 mb-0.5 w-full text-center">
-                  {t('stats.avgPerDay')}
-                </AutoShrinkText>
-              </div>
+              <p className="text-[9.5px] sm:text-[10px] font-bold text-[#2E1065]/60 mb-0.5 w-full text-center whitespace-nowrap overflow-hidden text-ellipsis tracking-tighter">
+                {t('stats.avgPerDay')}
+              </p>
               <p className="text-[13px] sm:text-sm font-black text-[#2E1065]">{avgPerDay.toLocaleString('en-US', { maximumFractionDigits: 0 })}</p>
             </div>
             
@@ -408,11 +428,9 @@ export default function AnalyticsPage() {
               <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center mb-2 shrink-0">
                 <Crown className="w-4 h-4 text-amber-600" />
               </div>
-              <div className="w-full">
-                <AutoShrinkText className="text-[10px] font-bold text-[#2E1065]/60 mb-0.5 w-full text-center">
-                  {t('stats.topCategory')}
-                </AutoShrinkText>
-              </div>
+              <p className="text-[9.5px] sm:text-[10px] font-bold text-[#2E1065]/60 mb-0.5 w-full text-center whitespace-nowrap overflow-hidden text-ellipsis tracking-tighter">
+                {t('stats.topCategory')}
+              </p>
               <div className="w-full overflow-x-auto no-scrollbar text-center">
                  <span className="text-[12px] sm:text-[13px] font-black text-[#2E1065] whitespace-nowrap inline-block px-1">{topCategory}</span>
               </div>
@@ -423,11 +441,9 @@ export default function AnalyticsPage() {
               <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mb-2 shrink-0">
                 <Layers className="w-4 h-4 text-emerald-600" />
               </div>
-              <div className="w-full">
-                <AutoShrinkText className="text-[10px] font-bold text-[#2E1065]/60 mb-0.5 w-full text-center">
-                  {t('stats.txCount')}
-                </AutoShrinkText>
-              </div>
+              <p className="text-[9.5px] sm:text-[10px] font-bold text-[#2E1065]/60 mb-0.5 w-full text-center whitespace-nowrap overflow-hidden text-ellipsis tracking-tighter">
+                {t('stats.txCount')}
+              </p>
               <p className="text-[13px] sm:text-sm font-black text-[#2E1065]">{txCount}</p>
             </div>
           </div>
