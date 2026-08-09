@@ -239,15 +239,17 @@ export default function ReviewSlipModal() {
                       )}
                     </button>
 
-                    <div className="flex-1 py-1 flex flex-col justify-between">
-                      <div>
+                    <div className="flex-1 min-w-0 py-1 flex flex-col justify-between">
+                      <div className="w-full">
                         <h3 className="text-[28px] leading-tight font-bold text-[#2E1065] drop-shadow-sm truncate w-full">
                           {Number(slip.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}<span className="text-xl text-[#2E1065]/50"> {t('stats.currency')}</span>
                         </h3>
-                        <AutoShrinkText 
-                          text={slip.title || t('review.noMerchant')} 
-                          className="text-sm font-bold text-[#2E1065]" 
-                        />
+                        <div className="w-full">
+                          <AutoShrinkText 
+                            text={slip.title || t('review.noMerchant')} 
+                            className="text-sm font-bold text-[#2E1065] block w-full" 
+                          />
+                        </div>
                       </div>
                       <div className="flex flex-col gap-2 text-[13px] text-[#2E1065]/70 font-semibold">
                         <div className="flex items-center gap-2">
