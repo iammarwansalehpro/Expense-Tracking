@@ -297,8 +297,8 @@ export default function OverviewPage() {
                   
                   <defs>
                     <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#A855F7" />
-                      <stop offset="100%" stopColor="#8B5CF6" />
+                      <stop offset="0%" stopColor="#34D399" />
+                      <stop offset="100%" stopColor="#10B981" />
                     </linearGradient>
                     <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#F43F5E" />
