@@ -28,14 +28,18 @@ export default function LoginPage() {
 
       <div className="flex flex-col items-center mb-16 relative z-10 text-center">
         {/* App Icon */}
-        <div className="w-24 h-24 bg-gradient-to-br from-white/90 to-white/40 backdrop-blur-xl rounded-[32px] flex items-center justify-center border border-white/60 shadow-[0_12px_32px_rgba(46,16,101,0.08)] mb-8 relative group">
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#A855F7]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-[32px]" />
-          {appIconName.startsWith('http') ? (
-            <img src={appIconName} alt="App Icon" className="w-full h-full object-cover rounded-[32px]" />
-          ) : (
-            <AppIcon className="w-12 h-12 text-[#2E1065] drop-shadow-md relative z-10" />
-          )}
-        </div>
+        {appIconName.startsWith('http') ? (
+          <img 
+            src={appIconName} 
+            alt="App Icon" 
+            className="w-[180px] h-[180px] object-contain drop-shadow-2xl mb-3 transition-transform duration-500 hover:scale-105" 
+          />
+        ) : (
+          <div className="w-[160px] h-[160px] bg-gradient-to-br from-white/90 to-white/40 backdrop-blur-xl rounded-[48px] flex items-center justify-center border border-white/60 shadow-[0_12px_40px_rgba(46,16,101,0.12)] mb-3 relative group hover:scale-105 transition-transform duration-500">
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#A855F7]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-[48px]" />
+            <AppIcon className="w-[80px] h-[80px] text-[#2E1065] drop-shadow-lg relative z-10" />
+          </div>
+        )}
 
         {/* App Title */}
         <h1 className="text-[42px] font-black tracking-tighter leading-none mb-4 bg-clip-text text-transparent bg-gradient-to-r from-[#2E1065] to-[#6D28D9] drop-shadow-sm">
