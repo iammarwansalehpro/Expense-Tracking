@@ -46,6 +46,7 @@ export const th = {
     scanSlip: 'สแกนสลิป',
     date: 'วันที่',
     time: 'เวลา',
+    dateTime: 'วันที่และเวลา',
   },
 
   settings: {

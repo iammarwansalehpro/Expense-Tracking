@@ -48,6 +48,7 @@ export const en: Translations = {
     scanSlip: 'Scan Slip',
     date: 'Date',
     time: 'Time',
+    dateTime: 'Date and Time',
   },
 
   settings: {
