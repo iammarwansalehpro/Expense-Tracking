@@ -9,7 +9,6 @@ import WalletFormModal from '@/components/ui/WalletFormModal';
 import AppHeader from '@/components/layout/AppHeader';
 import { useConfirmStore } from '@/store/useConfirmStore';
 import { useToastStore } from '@/store/useToastStore';
-import { useTranslation } from '@/hooks/useTranslation';
 import AutoShrinkText from '@/components/ui/AutoShrinkText';
 import { useRef, useState, useEffect } from 'react';
 
