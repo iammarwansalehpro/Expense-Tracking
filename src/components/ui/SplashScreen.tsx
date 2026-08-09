@@ -44,20 +44,20 @@ export default function SplashScreen({ onFinish }: { onFinish?: () => void }) {
 
       <div className="flex flex-col items-center z-10">
         {/* Animated Logo Container */}
-        <div className="w-48 h-48 flex items-center justify-center animate-fade-in mb-5 relative group">
+        <div className="w-56 h-56 flex items-center justify-center animate-fade-in mb-3 relative group">
           <div className="absolute inset-0 bg-gradient-to-tr from-[#A855F7]/30 to-transparent blur-[40px] rounded-full animate-pulse-slow" />
           {appIconName.startsWith('http') ? (
-            <img src={appIconName} alt="App Icon" className="w-44 h-44 object-cover rounded-[44px] relative z-10 animate-slide-down drop-shadow-2xl" />
+            <img src={appIconName} alt="App Icon" className="w-52 h-52 object-cover rounded-[52px] relative z-10 animate-slide-down drop-shadow-2xl" />
           ) : (
-            <AppIcon className="w-40 h-40 text-[#2E1065] dark:text-white drop-shadow-2xl relative z-10 animate-slide-down" />
+            <AppIcon className="w-48 h-48 text-[#2E1065] dark:text-white drop-shadow-2xl relative z-10 animate-slide-down" />
           )}
         </div>
 
         {/* Typing App Name */}
-        <div className="relative inline-block h-[48px] flex items-center justify-center">
-          <h1 className="text-[36px] font-black tracking-tighter leading-none bg-clip-text text-transparent bg-gradient-to-r from-[#2E1065] to-[#6D28D9] dark:from-white dark:to-white/70 drop-shadow-sm whitespace-nowrap">
+        <div className="relative inline-block h-[40px] flex items-center justify-center">
+          <h1 className="text-[28px] font-black tracking-tighter leading-none bg-clip-text text-transparent bg-gradient-to-r from-[#2E1065] to-[#6D28D9] dark:from-white dark:to-white/70 drop-shadow-sm whitespace-nowrap">
             {displayedText}
-            <span className="inline-block w-[3.5px] h-[30px] ml-1 bg-[#8B5CF6] dark:bg-[#A78BFA] animate-blink align-middle translate-y-[-3px] rounded-full" />
+            <span className="inline-block w-[3px] h-[24px] ml-1 bg-[#8B5CF6] dark:bg-[#A78BFA] animate-blink align-middle translate-y-[-2px] rounded-full" />
           </h1>
         </div>
       </div>
