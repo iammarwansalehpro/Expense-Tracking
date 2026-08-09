@@ -3,6 +3,7 @@ import { useTransactionStore } from '@/store/useTransactionStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useTranslation } from '@/hooks/useTranslation';
+import AutoShrinkText from '@/components/ui/AutoShrinkText';
 import AppHeader from '@/components/layout/AppHeader';
 import { useState, useMemo } from 'react';
 import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
@@ -229,27 +230,39 @@ export default function OverviewPage() {
 
         {/* Top Cards (Glassmorphism) */}
         <div className="flex gap-4 mb-8 shrink-0">
-          <div className="flex-1 bg-white/40 backdrop-blur-xl rounded-[24px] p-4 flex flex-col items-center justify-center gap-2 shadow-[0_8px_32px_rgba(31,38,135,0.05)] border border-white/50 relative overflow-hidden min-w-0">
-            <div className="text-[11px] font-semibold text-[#2E1065]/70 whitespace-nowrap">{t('overview.totalIncome')}</div>
-            <div className="flex items-center gap-1.5 relative z-10 w-full justify-center">
-              <div className="w-5 h-5 shrink-0 rounded-full bg-white/60 flex items-center justify-center border border-white/50 shadow-sm">
-                <ArrowDown className="w-3 h-3 text-emerald-600" />
+          {/* Income Card */}
+          <div className="flex-1 bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-xl rounded-[24px] p-4 border border-white/60 shadow-[0_8px_32px_rgba(31,38,135,0.05)] relative overflow-hidden flex flex-col gap-2 min-w-0">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 shadow-sm border border-emerald-50">
+                <ArrowDown className="w-3.5 h-3.5 text-emerald-600" />
               </div>
-              <span className="font-bold text-[clamp(14px,3.5vw,20px)] text-[#2E1065] whitespace-nowrap tracking-tight">
-                ฿{totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </span>
+              <p className="text-[12px] font-bold text-[#2E1065]/70 tracking-wide uppercase truncate">
+                {t('overview.totalIncome')}
+              </p>
+            </div>
+            <div className="w-full mt-1">
+              <AutoShrinkText className="font-black text-[26px] text-[#2E1065] tracking-tight w-full">
+                <span className="text-emerald-500 mr-1">+</span><span className="opacity-80 text-[20px] mr-0.5">฿</span>
+                {totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </AutoShrinkText>
             </div>
           </div>
           
-          <div className="flex-1 bg-white/40 backdrop-blur-xl rounded-[24px] p-4 flex flex-col items-center justify-center gap-2 shadow-[0_8px_32px_rgba(31,38,135,0.05)] border border-white/50 relative overflow-hidden min-w-0">
-            <div className="text-[11px] font-semibold text-[#2E1065]/70 whitespace-nowrap">{t('overview.totalExpenses')}</div>
-            <div className="flex items-center gap-1.5 relative z-10 w-full justify-center">
-              <div className="w-5 h-5 shrink-0 rounded-full bg-white/60 flex items-center justify-center border border-white/50 shadow-sm">
-                <ArrowUp className="w-3 h-3 text-rose-500" />
+          {/* Expense Card */}
+          <div className="flex-1 bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-xl rounded-[24px] p-4 border border-white/60 shadow-[0_8px_32px_rgba(31,38,135,0.05)] relative overflow-hidden flex flex-col gap-2 min-w-0">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-rose-100 flex items-center justify-center shrink-0 shadow-sm border border-rose-50">
+                <ArrowUp className="w-3.5 h-3.5 text-rose-600" />
               </div>
-              <span className="font-bold text-[clamp(14px,3.5vw,20px)] text-[#2E1065] whitespace-nowrap tracking-tight">
-                ฿{totalExpense.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </span>
+              <p className="text-[12px] font-bold text-[#2E1065]/70 tracking-wide uppercase truncate">
+                {t('overview.totalExpenses')}
+              </p>
+            </div>
+            <div className="w-full mt-1">
+              <AutoShrinkText className="font-black text-[26px] text-[#2E1065] tracking-tight w-full">
+                <span className="text-rose-500 mr-1">-</span><span className="opacity-80 text-[20px] mr-0.5">฿</span>
+                {totalExpense.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </AutoShrinkText>
             </div>
           </div>
         </div>
