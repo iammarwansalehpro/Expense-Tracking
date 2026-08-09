@@ -50,11 +50,12 @@ export default function OverviewPage() {
     const currentMonth = viewDate.getMonth();
     const currentYear = viewDate.getFullYear();
 
+    const weekLabel = t('overview.week');
     const data = [
-      { name: 'W1', income: 0, expense: 0 },
-      { name: 'W2', income: 0, expense: 0 },
-      { name: 'W3', income: 0, expense: 0 },
-      { name: 'W4', income: 0, expense: 0 },
+      { name: `${weekLabel} 1`, income: 0, expense: 0 },
+      { name: `${weekLabel} 2`, income: 0, expense: 0 },
+      { name: `${weekLabel} 3`, income: 0, expense: 0 },
+      { name: `${weekLabel} 4`, income: 0, expense: 0 },
     ];
 
     let tIncome = 0;
@@ -82,7 +83,7 @@ export default function OverviewPage() {
     });
 
     return { chartData: data, totalIncome: tIncome, totalExpense: tExpense, dailyTotals: totalsByDay };
-  }, [transactions, viewDate]);
+  }, [transactions, viewDate, t]);
 
   const filteredTransactions = transactions.filter(t => {
     if (t.type !== activeTab) return false;
