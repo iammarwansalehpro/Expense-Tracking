@@ -172,7 +172,7 @@ export default function SettingsView() {
       {/* Profile card - Tap 5 times to reveal admin */}
       <div className="px-5 mb-8">
         <div 
-          className="bg-gradient-to-tr from-[#A855F7]/10 to-[#3B82F6]/10 dark:from-[#A855F7]/30 dark:to-[#3B82F6]/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-[32px] shadow-sm p-6 flex items-center gap-5 transition-transform active:scale-95 cursor-pointer relative overflow-hidden"
+          className="bg-gradient-to-tr from-[#A855F7]/10 to-[#3B82F6]/10 dark:bg-white/30 dark:from-[#A855F7]/30 dark:to-[#3B82F6]/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-[32px] shadow-sm p-6 flex items-center gap-5 transition-transform active:scale-95 cursor-pointer relative overflow-hidden"
           onClick={handleAvatarTap}
         >
           {/* Decorative background blur */}
@@ -220,7 +220,7 @@ export default function SettingsView() {
           >
             {group.title}
           </p>
-          <div className="bg-white/40 dark:bg-white/10 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-[24px] shadow-sm overflow-hidden">
+          <div className="bg-white/40 dark:bg-white/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-[24px] shadow-sm overflow-hidden">
             {group.items.map((item) => (
               <div
                 key={item.label}
@@ -388,7 +388,7 @@ export default function SettingsView() {
           <h3 className="text-[13px] font-bold text-[#2E1065]/50 dark:text-white/50 mb-3 px-2">
             {t('settings.adminMode', 'โหมดผู้ดูแลระบบ (Admin)')}
           </h3>
-          <div className="bg-white/40 dark:bg-white/10 backdrop-blur-md rounded-[28px] overflow-hidden border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.05)]">
+          <div className="bg-white/40 dark:bg-white/30 backdrop-blur-md rounded-[28px] overflow-hidden border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(31,38,135,0.05)]">
             <button
               onClick={() => setActiveModal('adminApp')}
               className="w-full p-4 flex items-center justify-between hover:bg-white/50 dark:hover:bg-white/5 active:bg-white/60 dark:active:bg-white/10 transition-colors border-b border-[#2E1065]/5 dark:border-white/5"

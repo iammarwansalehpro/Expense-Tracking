@@ -20,12 +20,12 @@ export default function AppHeader({ pageTitle }: AppHeaderProps) {
   return (
     <div className="w-full pb-6 px-6 pt-[calc(env(safe-area-inset-top)+1.5rem)] flex justify-between items-center shrink-0">
       {/* Logo & Title */}
-      <div className="flex items-center gap-3.5">
+      <div className="flex items-center gap-2.5">
         {appIconName.startsWith('http') ? (
           <img 
             src={appIconName} 
             alt="App Logo" 
-            className="w-[64px] h-[64px] object-contain drop-shadow-md shrink-0 transition-transform duration-300 hover:scale-105" 
+            className="w-[64px] h-[64px] object-contain drop-shadow-md shrink-0 transition-transform duration-300 hover:scale-105 dark:bg-white/80 dark:p-1.5 dark:rounded-[18px]" 
           />
         ) : (
           <div className="w-[64px] h-[64px] bg-gradient-to-br from-white/90 to-white/40 backdrop-blur-xl rounded-[18px] flex items-center justify-center border border-white/60 shadow-[0_8px_16px_rgba(46,16,101,0.06)] shrink-0 overflow-hidden relative group">
@@ -34,8 +34,8 @@ export default function AppHeader({ pageTitle }: AppHeaderProps) {
           </div>
         )}
         <div className="flex flex-col justify-center">
-          <span className="font-black text-[24px] leading-none tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-[#2E1065] to-[#6D28D9] drop-shadow-sm pb-0.5">{appName}</span>
-          <span className="text-[9.5px] font-bold text-[#2E1065]/50 uppercase tracking-[0.15em] mt-0.5">{appSlogan}</span>
+          <span className="font-black text-[22px] leading-none tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-[#2E1065] to-[#6D28D9] dark:from-white dark:to-purple-200 drop-shadow-sm mb-0.5">{appName}</span>
+          <span className="text-[10px] font-bold text-[#2E1065]/50 dark:text-white/60 uppercase tracking-[0.15em] leading-none">{appSlogan}</span>
         </div>
       </div>
       
