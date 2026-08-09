@@ -13,6 +13,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { PageId } from '@/types';
 import { extractDataFromSlip } from '@/services/ocrService';
+import AnimatedDots from '@/components/ui/AnimatedDots';
 
 export default function BottomNav() {
   const currentPage = useAppStore((s) => s.currentPage);
@@ -287,8 +288,9 @@ export default function BottomNav() {
                 <Loader2 className="w-5 h-5 animate-spin" />
                 <span className="font-bold text-lg tracking-tight">กำลังประมวลผล</span>
               </div>
-              <p className="text-[#2E1065]/70 font-medium h-6 transition-all duration-300 animate-pulse text-[15px]">
-                {scanProgress.total > 1 ? `สลิปที่ ${scanProgress.current} - ${scanText}` : scanText}
+              <p className="text-[#2E1065]/70 font-medium h-6 transition-all duration-300 animate-pulse text-[15px] flex items-baseline justify-center">
+                <span>{scanProgress.total > 1 ? `สลิปที่ ${scanProgress.current} - ${scanText}` : scanText}</span>
+                <AnimatedDots />
               </p>
             </div>
           </div>

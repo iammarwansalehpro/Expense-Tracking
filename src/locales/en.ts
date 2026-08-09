@@ -133,12 +133,12 @@ export const en: Translations = {
     save: 'Save Wallet',
   },
   scanner: {
-    preparing: 'Preparing image...',
-    reading: 'Reading slip details...',
-    analyzing: 'Analyzing transfer data...',
-    extracting: 'Extracting amount and date...',
-    categorizing: 'Categorizing transaction...',
-    verifying: 'Verifying data...',
+    preparing: 'Preparing image',
+    reading: 'Reading slip details',
+    analyzing: 'Analyzing transfer data',
+    extracting: 'Extracting amount and date',
+    categorizing: 'Categorizing transaction',
+    verifying: 'Verifying data',
   },
   review: {
     title: 'Review Slip',
