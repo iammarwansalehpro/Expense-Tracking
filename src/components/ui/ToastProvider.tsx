@@ -10,7 +10,7 @@ export default function ToastProvider() {
   if (toasts.length === 0) return null;
 
   return createPortal(
-    <div className="fixed bottom-24 left-0 right-0 z-[100] flex flex-col items-center gap-2 pointer-events-none px-4">
+    <div className="fixed top-12 md:top-8 left-0 right-0 z-[100] flex flex-col items-center gap-2 pointer-events-none px-4">
       {toasts.map(toast => {
         const isSuccess = toast.type === 'success';
         const isError = toast.type === 'error';
@@ -20,7 +20,7 @@ export default function ToastProvider() {
             key={toast.id}
             className={`
               pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] 
-              backdrop-blur-xl border animate-in slide-in-from-bottom-5 fade-in duration-300
+              backdrop-blur-xl border animate-in slide-in-from-top-5 fade-in duration-300
               ${isSuccess ? 'bg-green-50/80 border-green-200 text-green-800' : 
                 isError ? 'bg-red-50/80 border-red-200 text-red-800' : 
                 'bg-white/80 border-slate-200 text-slate-800'}
