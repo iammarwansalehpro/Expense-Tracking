@@ -321,7 +321,7 @@ export default function HomePage() {
                       <IconComponent className="w-6 h-6" />
                     </div>
                     <div className="flex-1 min-w-0 pr-2">
-                      <h4 className="font-bold text-[#2E1065] text-[15px] mb-0.5 truncate">{tx.title}</h4>
+                      <h4 className="font-bold text-[#2E1065] text-[15px] mb-0.5 truncate">{tx.title || tx.category}</h4>
                       <p className="text-[11px] font-medium text-[#2E1065]/60 whitespace-nowrap">
                         {new Date(tx.date).toLocaleDateString('th-TH', { day: '2-digit', month: 'long', year: 'numeric' })}
                       </p>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import AutoShrinkText from './AutoShrinkText';
 
 interface CustomTimePickerProps {
   value: string; // HH:mm
@@ -44,12 +45,15 @@ export default function CustomTimePicker({ value, onChange }: CustomTimePickerPr
       <button 
         type="button"
         onClick={() => setIsOpen(true)}
-        className="w-full h-full bg-white/60 backdrop-blur-sm border border-white/50 rounded-[16px] px-4 py-3.5 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 transition-all shadow-inner"
+        className="w-full h-full bg-white/60 backdrop-blur-sm border border-white/50 rounded-[16px] px-3 py-3.5 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 transition-all shadow-inner overflow-hidden"
       >
-        <span className="font-bold text-[#2E1065] flex items-center gap-2">
-          <Clock className="w-5 h-5 text-slate-400" />
-          {displayTime}
-        </span>
+        <div className="flex items-center justify-center gap-1.5 min-w-0 w-full">
+          <Clock className="w-5 h-5 text-slate-400 shrink-0" />
+          <AutoShrinkText 
+            className="font-bold text-[#2E1065] w-full text-center"
+            text={displayTime}
+          />
+        </div>
       </button>
 
       {isOpen && createPortal(

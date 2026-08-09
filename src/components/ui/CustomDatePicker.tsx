@@ -13,6 +13,7 @@ import {
   isSameDay, 
   addDays 
 } from 'date-fns';
+import AutoShrinkText from './AutoShrinkText';
 
 interface CustomDatePickerProps {
   label?: React.ReactNode;
@@ -89,13 +90,16 @@ export default function CustomDatePicker({ label, value, onChange }: CustomDateP
       <button 
         type="button"
         onClick={() => setIsOpen(true)}
-        className="w-full bg-white/60 backdrop-blur-sm border border-white/50 rounded-[16px] px-4 py-3.5 text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 transition-all shadow-inner"
+        className="w-full bg-white/60 backdrop-blur-sm border border-white/50 rounded-[16px] px-3 py-3.5 text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 transition-all shadow-inner overflow-hidden"
       >
-        <span className="font-bold text-[#2E1065] flex items-center gap-2">
-          <CalendarIcon className="w-5 h-5 text-slate-400" />
-          {selectedDate.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' })}
-        </span>
-        <ChevronDown className="w-5 h-5 text-slate-400" />
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          <CalendarIcon className="w-5 h-5 text-slate-400 shrink-0" />
+          <AutoShrinkText 
+            className="font-bold text-[#2E1065] w-full" 
+            text={selectedDate.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' })} 
+          />
+        </div>
+        <ChevronDown className="w-4 h-4 text-slate-400 shrink-0 ml-1" />
       </button>
 
       {isOpen && createPortal(
