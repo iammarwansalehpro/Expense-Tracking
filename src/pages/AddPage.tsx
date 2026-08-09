@@ -4,6 +4,7 @@ import * as Icons from 'lucide-react';
 import { X, CreditCard, Loader2, Sparkles, PlusCircle, MinusCircle, Calendar, AlignLeft, Pencil, FileText, Wallet as WalletIcon, Clock } from 'lucide-react';
 import CustomSelect from '@/components/ui/CustomSelect';
 import CustomDatePicker from '@/components/ui/CustomDatePicker';
+import CustomTimePicker from '@/components/ui/CustomTimePicker';
 import CategorySelectModal from '@/components/ui/CategorySelectModal';
 import { getCategoryStyle } from '@/utils/categoryStyles';
 import { useAppStore } from '@/store/useAppStore';
@@ -252,12 +253,9 @@ export default function AddPage() {
                   {t('add.time', 'เวลา')}
                 </label>
                 <div className="relative">
-                  <input 
-                    type="time"
-                    required
+                  <CustomTimePicker 
                     value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    className="w-full bg-white/60 backdrop-blur-sm rounded-[16px] px-4 py-3.5 text-[#2E1065] font-bold focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-white/50 shadow-inner"
+                    onChange={(val) => setTime(val)}
                   />
                 </div>
               </div>
