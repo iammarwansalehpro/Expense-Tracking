@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, TrendingUp, Info, Sparkles, PlusCircle, ScanLine, TrendingDown, Activity, Crown, Layers, Lightbulb, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, TrendingUp, Info, Sparkles, PlusCircle, ScanLine, TrendingDown, Activity, Crown, Layers, Lightbulb, AlertTriangle, CheckCircle2, Star } from 'lucide-react';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -169,6 +169,15 @@ export default function AnalyticsPage() {
     return { smartTotalIncome: inc, smartTotalExpense: exp };
   }, [transactions, viewDate]);
 
+  let monthProgress = 100;
+  const now = new Date();
+  if (viewDate.getFullYear() === now.getFullYear() && viewDate.getMonth() === now.getMonth()) {
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    monthProgress = (now.getDate() / daysInMonth) * 100;
+  } else if (viewDate > now) {
+    monthProgress = 0;
+  }
+
   let analysisLevel = "info"; 
   let analysisTitle = "";
   let analysisText = "";
@@ -176,8 +185,10 @@ export default function AnalyticsPage() {
   let bgGradient = "from-purple-500/10 to-indigo-500/5";
   let borderColor = "border-purple-200/50";
   let progressColor = "bg-purple-500";
+  let starRating = 0;
   
   const expenseRatio = smartTotalIncome > 0 ? (smartTotalExpense / smartTotalIncome) * 100 : (smartTotalExpense > 0 ? 100 : 0);
+  const burnRateDiff = monthProgress - expenseRatio;
 
   if (smartTotalIncome === 0 && smartTotalExpense === 0) {
     analysisLevel = "info";
@@ -185,44 +196,59 @@ export default function AnalyticsPage() {
     analysisText = language === 'en' ? "Add income and expenses to see your financial health analysis." : "เพิ่มข้อมูลรายรับและรายจ่ายเพื่อดูการวิเคราะห์สุขภาพการเงินครับ";
   } else if (smartTotalExpense > smartTotalIncome) {
     analysisLevel = "critical";
+    starRating = 1;
     iconColor = "text-rose-600";
     bgGradient = "from-rose-500/10 to-red-500/5";
     borderColor = "border-rose-200/50";
     progressColor = "bg-rose-500";
     analysisTitle = language === 'en' ? "Critical: Overspending" : "⚠️ วิกฤต: รายจ่ายสูงกว่ารายรับ";
     analysisText = language === 'en' 
-      ? "Your expenses have exceeded your income this month. We highly recommend halting unnecessary spending and reviewing your top expenses."
-      : "เดือนนี้คุณมีรายจ่ายสูงกว่ารายรับแล้ว ขอแนะนำให้ชะลอการใช้จ่ายที่ไม่จำเป็นและตรวจสอบหมวดหมู่ที่ใช้เงินมากที่สุดด่วนครับ";
-  } else if (expenseRatio >= 80) {
+      ? "Your expenses have exceeded your income. Halt unnecessary spending immediately."
+      : "รายจ่ายเกินรายรับทั้งหมดไปแล้ว ขอแนะนำให้ชะลอการใช้จ่ายที่ไม่จำเป็นด่วนที่สุดครับ";
+  } else if (burnRateDiff < -20) {
     analysisLevel = "warning";
-    iconColor = "text-amber-600";
-    bgGradient = "from-amber-500/10 to-orange-500/5";
-    borderColor = "border-amber-300/50";
-    progressColor = "bg-amber-500";
-    analysisTitle = language === 'en' ? "Warning: High Spending" : "⚡ เฝ้าระวัง: รายจ่ายค่อนข้างสูง";
+    starRating = 2;
+    iconColor = "text-orange-500";
+    bgGradient = "from-orange-500/10 to-amber-500/5";
+    borderColor = "border-orange-300/50";
+    progressColor = "bg-orange-500";
+    analysisTitle = language === 'en' ? "Warning: High Burn Rate" : "⚡ เฝ้าระวัง: ใช้เงินเร็วกว่าเวลา";
     analysisText = language === 'en'
-      ? `You have spent ${expenseRatio.toFixed(0)}% of your income. Be careful with your remaining budget to avoid a deficit.`
-      : `เดือนนี้คุณใช้เงินไปแล้ว ${expenseRatio.toFixed(0)}% ของรายรับ ควรระมัดระวังการใช้จ่ายในช่วงเวลาที่เหลือของเดือนเพื่อป้องกันเงินขาดมือครับ`;
-  } else if (expenseRatio >= 50) {
+      ? `You have spent ${expenseRatio.toFixed(0)}% of your income, but only ${monthProgress.toFixed(0)}% of the month has passed. Slow down to avoid a deficit.`
+      : `คุณใช้เงินไปแล้ว ${expenseRatio.toFixed(0)}% ทั้งที่เพิ่งผ่านไปเพียง ${monthProgress.toFixed(0)}% ของเดือน ควรระมัดระวังการใช้จ่ายเพื่อป้องกันเงินขาดมือครับ`;
+  } else if (burnRateDiff < 0) {
+    analysisLevel = "moderate";
+    starRating = 3;
+    iconColor = "text-amber-600";
+    bgGradient = "from-amber-500/10 to-yellow-500/5";
+    borderColor = "border-amber-200/50";
+    progressColor = "bg-amber-400";
+    analysisTitle = language === 'en' ? "Moderate: Slightly Over Track" : "📊 ปานกลาง: ค่อนข้างตึงมือ";
+    analysisText = language === 'en'
+      ? `Your spending (${expenseRatio.toFixed(0)}%) is slightly ahead of the time passed (${monthProgress.toFixed(0)}%). Keep a close eye on your budget.`
+      : `อัตราการใช้จ่าย (${expenseRatio.toFixed(0)}%) นำหน้าเวลาที่ผ่านไปเล็กน้อย (${monthProgress.toFixed(0)}%) ถือว่าตึงมือแต่ยังอยู่ในวิสัยที่ปรับลดได้ครับ`;
+  } else if (burnRateDiff < 20) {
     analysisLevel = "good";
+    starRating = 4;
     iconColor = "text-emerald-600";
     bgGradient = "from-emerald-500/10 to-teal-500/5";
     borderColor = "border-emerald-200/50";
     progressColor = "bg-emerald-500";
-    analysisTitle = language === 'en' ? "Good: Healthy Finances" : "✨ สุขภาพทางการเงินดี";
+    analysisTitle = language === 'en' ? "Good: On Track" : "✨ ดี: บริหารเงินได้พอดี";
     analysisText = language === 'en'
-      ? "Your finances are in a good shape. You are controlling your expenses well within your income proportion."
-      : "สุขภาพทางการเงินของคุณอยู่ในเกณฑ์ดี มีการควบคุมรายจ่ายได้เหมาะสมตามสัดส่วนรายรับ ลองจัดสรรเงินส่วนที่เหลือเพื่อการลงทุนเพิ่มเติมนะครับ";
+      ? `Your spending matches the month's progress nicely. You are controlling your expenses well.`
+      : `อัตราการใช้จ่ายสอดคล้องกับเวลาที่ผ่านไปอย่างเหมาะสม คุณกำลังควบคุมค่าใช้จ่ายได้ดีเลยครับ`;
   } else {
     analysisLevel = "great";
+    starRating = 5;
     iconColor = "text-blue-600";
     bgGradient = "from-blue-500/10 to-cyan-500/5";
     borderColor = "border-blue-200/50";
     progressColor = "bg-blue-500";
-    analysisTitle = language === 'en' ? "Excellent: High Savings" : "🌟 ยอดเยี่ยม: ควบคุมรายจ่ายได้ดีเยี่ยม";
+    analysisTitle = language === 'en' ? "Excellent: High Savings" : "🌟 ยอดเยี่ยม: เงินออมสูง";
     analysisText = language === 'en'
-      ? `Incredible! You have only spent ${expenseRatio.toFixed(0)}% of your income. This is a great opportunity to increase your savings.`
-      : `ยอดเยี่ยมมาก! เดือนนี้คุณควบคุมรายจ่ายได้ดีเยี่ยม (ใช้ไปเพียง ${expenseRatio.toFixed(0)}% ของรายรับ) เป็นโอกาสทองในการเพิ่มสัดส่วนเงินออมครับ`;
+      ? `Incredible! You have only spent ${expenseRatio.toFixed(0)}% of your income while ${monthProgress.toFixed(0)}% of the month passed. Great savings potential!`
+      : `ยอดเยี่ยมมาก! คุณใช้เงินน้อยกว่าเวลาที่ผ่านไปอย่างเห็นได้ชัด เป็นโอกาสทองในการเพิ่มสัดส่วนเงินออมเพื่อเป้าหมายในอนาคตครับ`;
   }
 
   return (
