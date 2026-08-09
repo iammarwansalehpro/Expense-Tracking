@@ -232,31 +232,26 @@ export default function AddPage() {
 
             <div className="bg-white/40 backdrop-blur-xl p-6 rounded-[32px] border border-white/50 shadow-[0_8px_32px_rgba(31,38,135,0.05)] flex flex-col gap-5">
               
-              <CustomDatePicker 
-                label={
-                  <span className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 bg-white/60 rounded-xl flex items-center justify-center border border-white/50 shadow-sm">
-                      <Calendar className="w-4 h-4 text-[#8B5CF6]" />
-                    </div>
-                    {t('add.date')}
-                  </span>
-                }
-                value={date}
-                onChange={(val) => setDate(val)}
-              />
-
-              <div>
+              <div className="mb-2">
                 <label className="text-sm font-bold text-[#2E1065] flex items-center gap-2.5 mb-2">
                   <div className="w-8 h-8 bg-white/60 rounded-xl flex items-center justify-center border border-white/50 shadow-sm">
-                    <Clock className="w-4 h-4 text-[#8B5CF6]" />
+                    <Calendar className="w-4 h-4 text-[#8B5CF6]" />
                   </div>
-                  {t('add.time', 'เวลา')}
+                  {t('add.dateTime', 'วันที่และเวลา')}
                 </label>
-                <div className="relative">
-                  <CustomTimePicker 
-                    value={time}
-                    onChange={(val) => setTime(val)}
-                  />
+                <div className="flex gap-2">
+                  <div className="flex-[5]">
+                    <CustomDatePicker 
+                      value={date}
+                      onChange={(val) => setDate(val)}
+                    />
+                  </div>
+                  <div className="flex-[3]">
+                    <CustomTimePicker 
+                      value={time}
+                      onChange={(val) => setTime(val)}
+                    />
+                  </div>
                 </div>
               </div>
 
