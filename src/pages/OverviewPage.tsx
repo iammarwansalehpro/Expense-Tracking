@@ -359,7 +359,7 @@ export default function OverviewPage() {
                     </p>
                   </div>
                 </div>
-                <div className={`font-bold text-[clamp(14px,3.5vw,16px)] shrink-0 whitespace-nowrap pl-2 ${tx.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]'}`}>
+                <div className={`font-bold text-[clamp(14px,3.5vw,16px)] shrink-0 whitespace-nowrap pl-2 ${tx.type === 'income' ? 'text-emerald-600' : 'text-rose-500'}`}>
                   {tx.type === 'income' ? '+' : '-'}฿{tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </div>
               </div>
