@@ -87,9 +87,21 @@ export default function HomePage() {
   // Dynamic balance calculation
   const getWalletStats = (walletId: string) => {
     const txs = transactions.filter(t => t.walletId === walletId || (!t.walletId && mainWallet.id === walletId));
-    const income = txs.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-    const expense = txs.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-    return { balance: income - expense, income, expense };
+    
+    const allTimeIncome = txs.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+    const allTimeExpense = txs.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+    const balance = allTimeIncome - allTimeExpense;
+
+    const now = new Date();
+    const currentMonthTxs = txs.filter(t => {
+      const d = new Date(t.date);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
+
+    const income = currentMonthTxs.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+    const expense = currentMonthTxs.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+    
+    return { balance, income, expense };
   };
 
   const totalStats = wallets.reduce((acc, w) => {
@@ -203,7 +215,9 @@ export default function HomePage() {
                           <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 shadow-sm border border-emerald-50">
                             <ArrowDown className="w-3.5 h-3.5 text-emerald-600" />
                           </div>
-                          <p className="text-[11px] font-bold text-[#2E1065]/60 tracking-wide">{t('home.income')}</p>
+                          <p className="text-[11px] font-bold text-[#2E1065]/60 tracking-wide">
+                            {t('home.income')} <span className="text-[9px] font-medium opacity-80">{t('home.thisMonth')}</span>
+                          </p>
                         </div>
                         <div className="w-full pl-1">
                           <AutoShrinkText className="font-extrabold text-[17px] text-[#2E1065] tracking-tight w-full">
@@ -219,7 +233,9 @@ export default function HomePage() {
                           <div className="w-6 h-6 rounded-full bg-rose-100 flex items-center justify-center shrink-0 shadow-sm border border-rose-50">
                             <ArrowUp className="w-3.5 h-3.5 text-rose-600" />
                           </div>
-                          <p className="text-[11px] font-bold text-[#2E1065]/60 tracking-wide">{t('home.expense')}</p>
+                          <p className="text-[11px] font-bold text-[#2E1065]/60 tracking-wide">
+                            {t('home.expense')} <span className="text-[9px] font-medium opacity-80">{t('home.thisMonth')}</span>
+                          </p>
                         </div>
                         <div className="w-full pl-1">
                           <AutoShrinkText className="font-extrabold text-[17px] text-[#2E1065] tracking-tight w-full">

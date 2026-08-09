@@ -11,7 +11,8 @@ export const th = {
     income: 'รายรับ',
     expense: 'รายจ่าย',
     addWalletBtn: 'เพิ่มกระเป๋าเงินใหม่',
-    confirmDeleteWallet: 'คุณแน่ใจหรือไม่ที่จะลบกระเป๋าเงินนี้?'
+    confirmDeleteWallet: 'คุณแน่ใจหรือไม่ที่จะลบกระเป๋าเงินนี้?',
+    thisMonth: '(เดือนนี้)'
   },
   nav: {
     home: 'หน้าหลัก',

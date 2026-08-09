@@ -13,7 +13,8 @@ export const en: Translations = {
     income: 'Income',
     expense: 'Expense',
     addWalletBtn: 'Add New Wallet',
-    confirmDeleteWallet: 'Are you sure you want to delete this wallet?'
+    confirmDeleteWallet: 'Are you sure you want to delete this wallet?',
+    thisMonth: '(This month)'
   },
   nav: {
     home: 'Home',
