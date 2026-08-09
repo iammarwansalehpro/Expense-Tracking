@@ -334,19 +334,58 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Analysis & Insights Section */}
-        <div className="bg-white/40 backdrop-blur-xl rounded-[32px] p-6 shadow-[0_8px_32px_rgba(31,38,135,0.05)] border border-white/50 shrink-0">
+        <div className={`bg-gradient-to-br ${bgGradient} backdrop-blur-xl rounded-[32px] p-6 shadow-[0_8px_32px_rgba(31,38,135,0.05)] border ${borderColor} shrink-0`}>
           <div className="flex items-center gap-3 mb-4">
-             <div className="w-10 h-10 bg-gradient-to-tr from-yellow-400 to-amber-500 rounded-[14px] flex items-center justify-center shadow-sm">
-                <Lightbulb className="w-5 h-5 text-white" />
+             <div className="w-10 h-10 bg-white/50 rounded-[14px] flex items-center justify-center shadow-sm border border-white/50 shrink-0">
+                {analysisLevel === 'critical' || analysisLevel === 'warning' ? (
+                  <AlertTriangle className={`w-5 h-5 ${iconColor}`} />
+                ) : analysisLevel === 'info' ? (
+                  <Info className={`w-5 h-5 ${iconColor}`} />
+                ) : (
+                  <CheckCircle2 className={`w-5 h-5 ${iconColor}`} />
+                )}
              </div>
-             <h3 className="text-[17px] font-bold text-[#2E1065]">
-                {language === 'th' ? 'บทวิเคราะห์การเงิน' : 'Financial Insights'}
+             <h3 className={`text-[15px] sm:text-[17px] font-bold ${iconColor.replace('text-', 'text-').replace('-600', '-800').replace('-500', '-800')} opacity-90 flex-1 leading-tight`}>
+                {analysisTitle}
              </h3>
+             {analysisLevel !== 'info' && (
+               <div className="flex gap-0.5 shrink-0">
+                 {[1, 2, 3, 4, 5].map((star) => (
+                   <Star 
+                     key={star} 
+                     className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${star <= starRating ? 'fill-yellow-400 text-yellow-500' : 'fill-[#2E1065]/10 text-[#2E1065]/20'}`} 
+                   />
+                 ))}
+               </div>
+             )}
           </div>
           
-          <div className="text-[13.5px] font-medium text-[#2E1065]/80 leading-relaxed mb-6 bg-white/50 p-4 rounded-2xl border border-white/60 shadow-inner">
+          <div className="text-[13.5px] leading-relaxed text-[#2E1065]/80 font-medium mb-5 bg-white/30 p-4 rounded-2xl border border-white/40 shadow-inner">
              {analysisText}
           </div>
+          
+          {analysisLevel !== 'info' && (
+            <div className="space-y-4 mb-4">
+              <div>
+                <div className="flex justify-between items-center text-[11px] font-bold text-[#2E1065]/60 mb-1.5 uppercase tracking-wide">
+                  <span>{language === 'en' ? 'Month Progress' : 'เวลาของเดือนที่ผ่านไป'}</span>
+                  <span className="bg-white/50 px-2 py-0.5 rounded-full">{monthProgress.toFixed(0)}%</span>
+                </div>
+                <div className="w-full bg-white/40 rounded-full h-2.5 overflow-hidden border border-white/30 shadow-inner">
+                  <div className="h-full rounded-full bg-[#2E1065]/20 transition-all duration-1000" style={{ width: `${Math.min(monthProgress, 100)}%` }}></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between items-center text-[11px] font-bold text-[#2E1065]/60 mb-1.5 uppercase tracking-wide">
+                  <span>{t('overview.expense')} (Burn Rate)</span>
+                  <span className={`bg-white/50 px-2 py-0.5 rounded-full ${iconColor}`}>{expenseRatio.toFixed(0)}%</span>
+                </div>
+                <div className="w-full bg-white/40 rounded-full h-2.5 overflow-hidden border border-white/30 shadow-inner">
+                  <div className={`h-full rounded-full ${progressColor} transition-all duration-1000`} style={{ width: `${Math.min(expenseRatio, 100)}%` }}></div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-3 gap-3">
             {/* Average/Day */}
