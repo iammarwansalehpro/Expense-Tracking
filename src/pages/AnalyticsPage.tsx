@@ -391,32 +391,44 @@ export default function AnalyticsPage() {
 
           <div className="grid grid-cols-3 gap-3">
             {/* Average/Day */}
-            <div className="bg-white/50 rounded-[20px] p-3 flex flex-col items-center justify-center text-center shadow-sm border border-white/60">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+            <div className="bg-white/50 rounded-[20px] p-2 sm:p-3 flex flex-col items-center justify-center text-center shadow-sm border border-white/60 overflow-hidden">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mb-2 shrink-0">
                 <Activity className="w-4 h-4 text-blue-600" />
               </div>
-              <p className="text-[10px] font-bold text-[#2E1065]/60 mb-0.5">{t('stats.avgPerDay')}</p>
-              <p className="text-sm font-black text-[#2E1065]">{avgPerDay.toLocaleString('en-US', { maximumFractionDigits: 0 })}</p>
+              <div className="w-full">
+                <AutoShrinkText className="text-[10px] font-bold text-[#2E1065]/60 mb-0.5 w-full text-center">
+                  {t('stats.avgPerDay')}
+                </AutoShrinkText>
+              </div>
+              <p className="text-[13px] sm:text-sm font-black text-[#2E1065]">{avgPerDay.toLocaleString('en-US', { maximumFractionDigits: 0 })}</p>
             </div>
             
             {/* Top Category */}
-            <div className="bg-white/50 rounded-[20px] p-3 flex flex-col items-center justify-center text-center shadow-sm border border-white/60">
+            <div className="bg-white/50 rounded-[20px] p-2 sm:p-3 flex flex-col items-center justify-center text-center shadow-sm border border-white/60 overflow-hidden">
               <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center mb-2 shrink-0">
                 <Crown className="w-4 h-4 text-amber-600" />
               </div>
-              <p className="text-[10px] font-bold text-[#2E1065]/60 mb-0.5 shrink-0">{t('stats.topCategory')}</p>
+              <div className="w-full">
+                <AutoShrinkText className="text-[10px] font-bold text-[#2E1065]/60 mb-0.5 w-full text-center">
+                  {t('stats.topCategory')}
+                </AutoShrinkText>
+              </div>
               <div className="w-full overflow-x-auto no-scrollbar text-center">
-                 <span className="text-[13px] font-black text-[#2E1065] whitespace-nowrap inline-block px-1">{topCategory}</span>
+                 <span className="text-[12px] sm:text-[13px] font-black text-[#2E1065] whitespace-nowrap inline-block px-1">{topCategory}</span>
               </div>
             </div>
             
             {/* Transaction Count */}
-            <div className="bg-white/50 rounded-[20px] p-3 flex flex-col items-center justify-center text-center shadow-sm border border-white/60">
-              <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mb-2">
+            <div className="bg-white/50 rounded-[20px] p-2 sm:p-3 flex flex-col items-center justify-center text-center shadow-sm border border-white/60 overflow-hidden">
+              <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mb-2 shrink-0">
                 <Layers className="w-4 h-4 text-emerald-600" />
               </div>
-              <p className="text-[10px] font-bold text-[#2E1065]/60 mb-0.5">{t('stats.txCount')}</p>
-              <p className="text-sm font-black text-[#2E1065]">{txCount}</p>
+              <div className="w-full">
+                <AutoShrinkText className="text-[10px] font-bold text-[#2E1065]/60 mb-0.5 w-full text-center">
+                  {t('stats.txCount')}
+                </AutoShrinkText>
+              </div>
+              <p className="text-[13px] sm:text-sm font-black text-[#2E1065]">{txCount}</p>
             </div>
           </div>
         </div>
