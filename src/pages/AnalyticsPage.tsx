@@ -250,8 +250,8 @@ export default function AnalyticsPage() {
             <div className="flex items-end gap-2 mb-2 w-full">
               <AutoShrinkText className="text-[48px] leading-[1] font-black text-[#2E1065] tracking-tight drop-shadow-sm w-full">
                 {currentMonthTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <span className="text-2xl font-bold opacity-80 ml-2">{t('stats.currency')}</span>
               </AutoShrinkText>
-              <span className="text-xl font-bold text-[#2E1065] mb-1.5 shrink-0">{t('stats.currency')}</span>
             </div>
           </div>
           
