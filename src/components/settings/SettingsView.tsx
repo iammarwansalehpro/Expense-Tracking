@@ -14,7 +14,8 @@ import {
   CheckCircle2,
   Type,
   Plus,
-  Trash2
+  Trash2,
+  Crown
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useThemeStore } from '@/store/useThemeStore';
@@ -198,15 +199,12 @@ export default function SettingsView() {
             <p className="text-sm font-medium opacity-70 mb-2.5 text-[#2E1065] dark:text-white/70 truncate">
               {user?.email || 'user@example.com'}
             </p>
-            <span
-              className="inline-flex items-center px-3 py-1.5 text-[11px] font-black rounded-xl uppercase tracking-widest shadow-sm"
-              style={{
-                background: 'var(--gradient-hero)',
-                color: 'white',
-              }}
-            >
-              Pro Member
-            </span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500 rounded-full shadow-[0_4px_12px_rgba(251,191,36,0.25)] border border-white/60 dark:border-white/20">
+              <Crown className="w-3.5 h-3.5 text-amber-950 drop-shadow-sm" />
+              <span className="text-[10px] font-black text-amber-950 uppercase tracking-[0.2em] pt-[1px] drop-shadow-sm">
+                Pro Member
+              </span>
+            </div>
           </div>
         </div>
       </div>
