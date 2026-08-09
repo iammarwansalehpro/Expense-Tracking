@@ -1,8 +1,9 @@
 import { createPortal } from 'react-dom';
-import { X, Edit3, Trash2, Calendar, Tag, FileText, Banknote } from 'lucide-react';
+import * as Icons from 'lucide-react';
 import { getCategoryStyle } from '@/utils/categoryStyles';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useAppStore } from '@/store/useAppStore';
+import { useWalletStore } from '@/store/useWalletStore';
 import { useConfirmStore } from '@/store/useConfirmStore';
 import { deleteTransaction } from '@/services/transactionService';
 import { useToastStore } from '@/store/useToastStore';
@@ -18,6 +19,7 @@ export default function TransactionDetailsModal({ transactionId, onClose }: Prop
   const setCurrentPage = useAppStore(s => s.setCurrentPage);
   const setEditingTransactionId = useAppStore(s => s.setEditingTransactionId);
   const appCategories = useAppStore(s => s.appCategories);
+  const wallets = useWalletStore(s => s.wallets);
 
   const [internalId, setInternalId] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -101,7 +103,7 @@ export default function TransactionDetailsModal({ transactionId, onClose }: Prop
           onClick={onClose}
           className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 transition-colors"
         >
-          <X className="w-5 h-5" />
+          <Icons.X className="w-5 h-5" />
         </button>
 
         <div className="flex flex-col items-center mb-8">
@@ -117,7 +119,7 @@ export default function TransactionDetailsModal({ transactionId, onClose }: Prop
         <div className="flex flex-col gap-3 mb-8 overflow-y-auto no-scrollbar">
           <div className="flex items-center gap-4 bg-white/50 p-4 rounded-2xl border border-white/50">
             <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
-              <Calendar className="w-5 h-5 text-purple-600" />
+              <Icons.Calendar className="w-5 h-5 text-purple-600" />
             </div>
             <div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">วันเวลา</p>
@@ -127,7 +129,7 @@ export default function TransactionDetailsModal({ transactionId, onClose }: Prop
 
           <div className="flex items-center gap-4 bg-white/50 p-4 rounded-2xl border border-white/50">
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-              <Tag className="w-5 h-5 text-blue-600" />
+              <Icons.Tag className="w-5 h-5 text-blue-600" />
             </div>
             <div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">หมวดหมู่</p>
@@ -135,22 +137,30 @@ export default function TransactionDetailsModal({ transactionId, onClose }: Prop
             </div>
           </div>
 
-          {tx.bank && (
-            <div className="flex items-center gap-4 bg-white/50 p-4 rounded-2xl border border-white/50">
-              <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                <Banknote className="w-5 h-5 text-emerald-600" />
+          {(() => {
+            const txWallet = tx.walletId ? wallets.find(w => w.id === tx.walletId) : undefined;
+            const displayWalletName = txWallet ? txWallet.name : (tx.bank || 'เงินสด');
+            const displayWalletColor = txWallet ? txWallet.color : 'bg-emerald-500';
+            const displayWalletIconName = txWallet ? txWallet.icon : (tx.bank ? 'Banknote' : 'Wallet');
+            const WalletIcon = (Icons as any)[displayWalletIconName] || Icons.Wallet;
+
+            return (
+              <div className="flex items-center gap-4 bg-white/50 p-4 rounded-2xl border border-white/50">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm ${displayWalletColor}`}>
+                  <WalletIcon className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">กระเป๋าเงิน / ช่องทาง</p>
+                  <p className="text-[14px] font-semibold text-[#2E1065]">{displayWalletName}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">บัญชี/ช่องทาง</p>
-                <p className="text-[14px] font-semibold text-[#2E1065]">{tx.bank}</p>
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
           {tx.note && (
             <div className="flex items-center gap-4 bg-white/50 p-4 rounded-2xl border border-white/50">
               <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
-                <FileText className="w-5 h-5 text-orange-600" />
+                <Icons.FileText className="w-5 h-5 text-orange-600" />
               </div>
               <div>
                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">บันทึกช่วยจำ</p>
@@ -165,14 +175,14 @@ export default function TransactionDetailsModal({ transactionId, onClose }: Prop
             onClick={handleEdit}
             className="flex-1 py-4 bg-purple-100 text-purple-700 font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-purple-200 active:scale-[0.98] transition-all"
           >
-            <Edit3 className="w-5 h-5" />
+            <Icons.Edit3 className="w-5 h-5" />
             แก้ไขข้อมูล
           </button>
           <button 
             onClick={handleDelete}
-            className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center shrink-0 hover:bg-rose-100 active:scale-[0.98] transition-all"
+            className="w-[72px] h-[56px] bg-red-100 text-red-600 rounded-2xl flex items-center justify-center hover:bg-red-200 active:scale-[0.95] transition-all"
           >
-            <Trash2 className="w-5 h-5" />
+            <Icons.Trash2 className="w-5 h-5" />
           </button>
         </div>
       </div>
