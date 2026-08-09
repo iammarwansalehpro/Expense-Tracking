@@ -403,7 +403,8 @@ export default function ReviewSlipModal() {
                     value={currentSlip.walletId || mainWallet.id}
                     onChange={setWalletStr}
                     options={wallets.map(w => {
-                      const WIcon = (Icons as any)[w.icon] || Icons.Wallet;
+                      const iconName = w.icon === 'CreditCard' ? 'Landmark' : w.icon;
+                      const WIcon = (Icons as any)[iconName] || Icons.Wallet;
                       return {
                         label: w.name,
                         value: w.id,

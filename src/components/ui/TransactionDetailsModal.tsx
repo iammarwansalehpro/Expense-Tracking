@@ -141,7 +141,8 @@ export default function TransactionDetailsModal({ transactionId, onClose }: Prop
             const txWallet = tx.walletId ? wallets.find(w => w.id === tx.walletId) : undefined;
             const displayWalletName = txWallet ? txWallet.name : (tx.bank || 'เงินสด');
             const displayWalletColor = txWallet ? txWallet.color : 'bg-emerald-500';
-            const displayWalletIconName = txWallet ? txWallet.icon : (tx.bank ? 'Banknote' : 'Wallet');
+            const rawIconName = txWallet ? txWallet.icon : (tx.bank ? 'Banknote' : 'Wallet');
+            const displayWalletIconName = rawIconName === 'CreditCard' ? 'Landmark' : rawIconName;
             const WalletIcon = (Icons as any)[displayWalletIconName] || Icons.Wallet;
 
             return (

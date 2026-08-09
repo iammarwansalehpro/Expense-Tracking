@@ -6,7 +6,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useThemeStore } from '@/store/useThemeStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { getUserFavorites, fetchCategories, getAppInfo } from '@/services/transactionService';
-import { getUserWallets } from '@/services/walletService';
+import { getUserWallets, saveUserWallets } from '@/services/walletService';
 import { useWalletStore } from '@/store/useWalletStore';
 import HomePage from '@/pages/HomePage';
 import OverviewPage from '@/pages/OverviewPage';
@@ -67,6 +67,11 @@ function App() {
       getUserWallets(user.uid).then(wallets => {
         if (wallets && wallets.length > 0) {
           useWalletStore.getState().setWallets(wallets);
+        } else {
+          const localWallets = useWalletStore.getState().wallets;
+          if (localWallets.length > 0) {
+            saveUserWallets(user.uid, localWallets);
+          }
         }
       });
 
