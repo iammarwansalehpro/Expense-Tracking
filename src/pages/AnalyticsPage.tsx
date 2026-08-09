@@ -201,7 +201,7 @@ export default function AnalyticsPage() {
     bgGradient = "from-rose-500/10 to-red-500/5";
     borderColor = "border-rose-200/50";
     progressColor = "bg-rose-500";
-    analysisTitle = language === 'en' ? "Critical: Overspending" : "⚠️ วิกฤต: รายจ่ายสูงกว่ารายรับ";
+    analysisTitle = language === 'en' ? "Critical: Overspending" : "วิกฤต: รายจ่ายสูงกว่ารายรับ";
     analysisText = language === 'en' 
       ? "Your expenses have exceeded your income. Halt unnecessary spending immediately."
       : "รายจ่ายเกินรายรับทั้งหมดไปแล้ว ขอแนะนำให้ชะลอการใช้จ่ายที่ไม่จำเป็นด่วนที่สุดครับ";
@@ -212,7 +212,7 @@ export default function AnalyticsPage() {
     bgGradient = "from-orange-500/10 to-amber-500/5";
     borderColor = "border-orange-300/50";
     progressColor = "bg-orange-500";
-    analysisTitle = language === 'en' ? "Warning: High Burn Rate" : "⚡ เฝ้าระวัง: ใช้เงินเร็วกว่าเวลา";
+    analysisTitle = language === 'en' ? "Warning: High Burn Rate" : "เฝ้าระวัง: ใช้เงินเร็วกว่าเวลา";
     analysisText = language === 'en'
       ? `You have spent ${expenseRatio.toFixed(0)}% of your income, but only ${monthProgress.toFixed(0)}% of the month has passed. Slow down to avoid a deficit.`
       : `คุณใช้เงินไปแล้ว ${expenseRatio.toFixed(0)}% ทั้งที่เพิ่งผ่านไปเพียง ${monthProgress.toFixed(0)}% ของเดือน ควรระมัดระวังการใช้จ่ายเพื่อป้องกันเงินขาดมือครับ`;
@@ -223,7 +223,7 @@ export default function AnalyticsPage() {
     bgGradient = "from-amber-500/10 to-yellow-500/5";
     borderColor = "border-amber-200/50";
     progressColor = "bg-amber-400";
-    analysisTitle = language === 'en' ? "Moderate: Slightly Over Track" : "📊 ปานกลาง: ค่อนข้างตึงมือ";
+    analysisTitle = language === 'en' ? "Moderate: Slightly Over Track" : "ปานกลาง: ค่อนข้างตึงมือ";
     analysisText = language === 'en'
       ? `Your spending (${expenseRatio.toFixed(0)}%) is slightly ahead of the time passed (${monthProgress.toFixed(0)}%). Keep a close eye on your budget.`
       : `อัตราการใช้จ่าย (${expenseRatio.toFixed(0)}%) นำหน้าเวลาที่ผ่านไปเล็กน้อย (${monthProgress.toFixed(0)}%) ถือว่าตึงมือแต่ยังอยู่ในวิสัยที่ปรับลดได้ครับ`;
@@ -234,7 +234,7 @@ export default function AnalyticsPage() {
     bgGradient = "from-emerald-500/10 to-teal-500/5";
     borderColor = "border-emerald-200/50";
     progressColor = "bg-emerald-500";
-    analysisTitle = language === 'en' ? "Good: On Track" : "✨ ดี: บริหารเงินได้พอดี";
+    analysisTitle = language === 'en' ? "Good: On Track" : "ดี: บริหารเงินได้พอดี";
     analysisText = language === 'en'
       ? `Your spending matches the month's progress nicely. You are controlling your expenses well.`
       : `อัตราการใช้จ่ายสอดคล้องกับเวลาที่ผ่านไปอย่างเหมาะสม คุณกำลังควบคุมค่าใช้จ่ายได้ดีเลยครับ`;
@@ -245,7 +245,7 @@ export default function AnalyticsPage() {
     bgGradient = "from-blue-500/10 to-cyan-500/5";
     borderColor = "border-blue-200/50";
     progressColor = "bg-blue-500";
-    analysisTitle = language === 'en' ? "Excellent: High Savings" : "🌟 ยอดเยี่ยม: เงินออมสูง";
+    analysisTitle = language === 'en' ? "Excellent: High Savings" : "ยอดเยี่ยม: เงินออมสูง";
     analysisText = language === 'en'
       ? `Incredible! You have only spent ${expenseRatio.toFixed(0)}% of your income while ${monthProgress.toFixed(0)}% of the month passed. Great savings potential!`
       : `ยอดเยี่ยมมาก! คุณใช้เงินน้อยกว่าเวลาที่ผ่านไปอย่างเห็นได้ชัด เป็นโอกาสทองในการเพิ่มสัดส่วนเงินออมเพื่อเป้าหมายในอนาคตครับ`;
@@ -345,9 +345,11 @@ export default function AnalyticsPage() {
                   <CheckCircle2 className={`w-5 h-5 ${iconColor}`} />
                 )}
              </div>
-             <h3 className={`text-[15px] sm:text-[17px] font-bold ${iconColor.replace('text-', 'text-').replace('-600', '-800').replace('-500', '-800')} opacity-90 flex-1 leading-tight`}>
-                {analysisTitle}
-             </h3>
+             <div className="flex-1 min-w-0 pr-2">
+               <AutoShrinkText className={`text-[15px] sm:text-[17px] font-bold ${iconColor.replace('text-', 'text-').replace('-600', '-800').replace('-500', '-800')} opacity-90 leading-tight w-full`}>
+                  {analysisTitle}
+               </AutoShrinkText>
+             </div>
              {analysisLevel !== 'info' && (
                <div className="flex gap-0.5 shrink-0">
                  {[1, 2, 3, 4, 5].map((star) => (
