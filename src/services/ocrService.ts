@@ -1,4 +1,4 @@
-
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import Tesseract from 'tesseract.js';
 import { getApiKeys, fetchCategories } from './transactionService';
 
@@ -67,6 +67,9 @@ function extractAmount(text: string): number | undefined {
     /ยอดเง[ิี]น\s*[:\s]*([0-9,]+(?:\.[0-9]{1,2})?)/,
     /จ[ํำ]านวน\s*[:\s]*([0-9,]+(?:\.[0-9]{1,2})?)\s*(?:บาท|un|uv|บ\.)/,
     /amount\s*[:\s]*([0-9,]+(?:\.[0-9]{1,2})?)/i,
+    /รวมเง[ิี]นท[ีี่]ช[ำํ]ระ\s*[:\s]*([0-9,]+(?:\.[0-9]{1,2})?)/,
+    /ยอดช[ำํ]ระ\s*[:\s]*([0-9,]+(?:\.[0-9]{1,2})?)/,
+    /ยอดรวมส[ุุ]ทธ[ิิ]\s*[:\s]*([0-9,]+(?:\.[0-9]{1,2})?)/,
   ];
 
   for (const pattern of amountPatterns) {
@@ -336,60 +339,115 @@ export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> =
   let currentKey = keys[activeKeyIndex];
   let attempt = 0;
 
+  const fileToBase64Url = async (file: File) => {
+    return new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const fileToGenerativePart = async (file: File) => {
+    const base64Url = await fileToBase64Url(file);
+    const base64Data = base64Url.split(',')[1];
+    return {
+      inlineData: { data: base64Data, mimeType: file.type },
+    };
+  };
+
   while (attempt < keys.length) {
     try {
-      console.log(`[OCR] Using Groq API Key index ${activeKeyIndex}...`);
-      
       let result;
       let lastError;
       let hasQuotaError = false;
+      let text = "";
 
-      try {
-        console.log(`[OCR] Trying model: llama-3.3-70b-versatile on Groq`);
-        
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${currentKey}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            model: "llama-3.3-70b-versatile",
-            messages: [
-              { role: "system", content: "You are a JSON extractor. Always return valid JSON." },
-              { role: "user", content: finalPrompt }
-            ],
-            response_format: { type: "json_object" },
-            temperature: 0.1
-          })
-        });
+      if (currentKey.startsWith('gsk_')) {
+        // --- GROQ API (Vision) ---
+        console.log(`[OCR] Using Groq API Key index ${activeKeyIndex}...`);
+        try {
+          console.log(`[OCR] Trying model: llama-3.2-90b-vision-preview on Groq`);
+          const base64Url = await fileToBase64Url(imageFile);
+          const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${currentKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              model: "llama-3.2-90b-vision-preview",
+              messages: [
+                { role: "system", content: "You are a JSON extractor. Always return valid JSON." },
+                { role: "user", content: [
+                    { type: "text", text: finalPrompt },
+                    { type: "image_url", image_url: { url: base64Url } }
+                  ]
+                }
+              ],
+              temperature: 0.1
+            })
+          });
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error("Groq API Error:", response.status, errorData);
-          if (response.status === 429) {
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error("Groq API Error:", response.status, errorData);
+            if (response.status === 429) {
+              hasQuotaError = true;
+            }
+            throw new Error(`HTTP ${response.status}: ${errorData.error?.message || 'Groq request failed'}`);
+          }
+
+          result = await response.json();
+          text = result.choices[0].message.content;
+        } catch (e: any) {
+          lastError = e;
+          if (e?.message?.includes('429') || hasQuotaError) {
             hasQuotaError = true;
           }
-          throw new Error(`HTTP ${response.status}: ${errorData.error?.message || 'Groq request failed'}`);
+          console.warn(`[OCR] Groq failed (${e?.message || e?.status}).`);
         }
+      } else {
+        // --- GEMINI API (Vision) ---
+        console.log(`[OCR] Using Gemini API Key index ${activeKeyIndex}...`);
+        const genAI = new GoogleGenerativeAI(currentKey);
+        const imagePart = await fileToGenerativePart(imageFile);
 
-        result = await response.json();
-      } catch (e: any) {
-        lastError = e;
-        if (e?.message?.includes('429') || hasQuotaError) {
-          hasQuotaError = true;
+        const modelConfigs = [
+          { model: "gemini-2.5-flash", apiVersion: "v1beta" },
+          { model: "gemini-2.0-flash", apiVersion: "v1beta" }
+        ];
+
+        for (const config of modelConfigs) {
+          try {
+            console.log(`[OCR] Trying model: ${config.model} (API: ${config.apiVersion})`);
+            const model = genAI.getGenerativeModel(
+              { model: config.model },
+              { apiVersion: config.apiVersion }
+            );
+            // Send both prompt AND image
+            result = await model.generateContent([finalPrompt, imagePart]);
+            break;
+          } catch (e: any) {
+            lastError = e;
+            if (e?.message?.includes('429') || e?.status === 429) {
+              hasQuotaError = true;
+            }
+            console.warn(`[OCR] Model ${config.model} (${config.apiVersion}) failed (${e?.message || e?.status}). Trying next...`);
+          }
         }
-        console.warn(`[OCR] Groq failed (${e?.message || e?.status}).`);
+        
+        if (result) {
+          const response = await result.response;
+          text = response.text();
+        }
       }
 
-      if (!result || !result.choices || !result.choices[0]) {
+      if (!text) {
         if (hasQuotaError) {
           throw new Error("429: Quota exceeded on one or more models");
         }
-        throw new Error(`Groq failed. Last error: ${lastError?.message}`);
+        throw new Error(`API failed. Last error: ${lastError?.message}`);
       }
-
-      let text = result.choices[0].message.content;
 
       text = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
