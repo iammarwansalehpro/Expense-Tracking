@@ -94,7 +94,7 @@ export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> =
         // --- GROQ API (Vision) ---
         console.log(`[OCR] Using Groq API Key index ${activeKeyIndex}...`);
         try {
-          console.log(`[OCR] Trying model: llama-3.2-90b-vision-preview on Groq`);
+          console.log(`[OCR] Trying model: llama-3.2-11b-vision-preview on Groq`);
           const base64Url = await fileToBase64Url(imageFile);
           const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
@@ -103,7 +103,7 @@ export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> =
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              model: "llama-3.2-90b-vision-preview",
+              model: "llama-3.2-11b-vision-preview",
               messages: [
                 { role: "system", content: "You are a JSON extractor. Always return valid JSON." },
                 { role: "user", content: [
