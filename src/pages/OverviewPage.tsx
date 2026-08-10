@@ -193,7 +193,7 @@ export default function OverviewPage() {
     }
 
     return (
-      <div className="bg-white/30 backdrop-blur-md rounded-[32px] p-5 shadow-inner border border-white/40 mb-6 mx-6">
+      <div className="bg-white/30 backdrop-blur-md rounded-[32px] p-5 shadow-inner border border-white/40 mb-6">
         <div className="grid grid-cols-7 gap-1">
           {headers}
           {days}
@@ -268,7 +268,7 @@ export default function OverviewPage() {
         </div>
 
         {/* View Toggle */}
-        <div className="flex bg-white/20 backdrop-blur-xl border border-white/30 p-1.5 rounded-[20px] mb-6 shadow-inner mx-6 shrink-0">
+        <div className="flex bg-white/20 backdrop-blur-xl border border-white/30 p-1.5 rounded-[20px] mb-6 shadow-inner shrink-0">
           <button 
             className={`flex-1 py-2.5 rounded-[16px] text-sm font-bold transition-all duration-300 ${viewMode === 'chart' ? 'bg-white/60 text-[#2E1065] shadow-sm border border-white/50' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80'}`}
             onClick={() => setViewMode('chart')}
@@ -286,11 +286,11 @@ export default function OverviewPage() {
         {/* Dynamic Content Area */}
         {viewMode === 'chart' ? (
           <>
-            <div className="flex items-center justify-between mb-4 px-7 shrink-0">
+            <div className="flex items-center justify-between mb-4 px-1 shrink-0">
               <h3 className="font-bold text-[#2E1065] text-lg">{t('overview.weeklyStats')}</h3>
             </div>
 
-            <div className="h-48 w-full shrink-0 mb-8 bg-white/20 backdrop-blur-md rounded-[32px] p-4 border border-white/30 shadow-inner px-6">
+            <div className="h-48 w-full shrink-0 mb-8 bg-white/20 backdrop-blur-md rounded-[32px] p-4 border border-white/30 shadow-inner">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} barSize={12} barGap={4}>
                   <XAxis 
@@ -327,7 +327,7 @@ export default function OverviewPage() {
         )}
 
         {/* Transaction Type Toggle */}
-        <div className="flex bg-white/20 backdrop-blur-xl border border-white/30 p-1.5 rounded-[20px] mb-6 shadow-inner mx-6">
+        <div className="flex bg-white/20 backdrop-blur-xl border border-white/30 p-1.5 rounded-[20px] mb-6 shadow-inner">
           <button 
             className={`flex-1 py-3 rounded-[16px] text-sm font-bold transition-all duration-300 ${activeTab === 'income' ? 'bg-white/60 text-[#2E1065] shadow-sm border border-white/50' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80'}`}
             onClick={() => setActiveTab('income')}
@@ -343,7 +343,7 @@ export default function OverviewPage() {
         </div>
 
         {/* List Below */}
-        <div className="flex flex-col gap-3 px-6">
+        <div className="flex flex-col gap-3">
           {viewMode === 'calendar' && (
             <div className="mb-2 text-sm font-bold text-[#2E1065]/70 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
