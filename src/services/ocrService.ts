@@ -94,7 +94,30 @@ export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> =
         // --- GROQ API (Vision) ---
         console.log(`[OCR] Using Groq API Key index ${activeKeyIndex}...`);
         try {
-          console.log(`[OCR] Trying model: llama-3.2-11b-vision-preview on Groq`);
+          // Dynamically fetch available models to find the current Vision model
+          let groqVisionModel = "llama-3.2-11b-vision-preview"; // Default fallback
+          try {
+            const modelsRes = await fetch('https://api.groq.com/openai/v1/models', {
+              headers: { 'Authorization': `Bearer ${currentKey}` }
+            });
+            if (modelsRes.ok) {
+              const data = await modelsRes.json();
+              const visionModels = data.data.filter((m: any) => 
+                m.id.toLowerCase().includes('vision') || 
+                m.id.toLowerCase().includes('-vl') ||
+                m.id.toLowerCase().includes('scout')
+              );
+              if (visionModels.length > 0) {
+                // Prefer non-preview models if available
+                const prodModel = visionModels.find((m: any) => !m.id.includes('preview'));
+                groqVisionModel = prodModel ? prodModel.id : visionModels[0].id;
+              }
+            }
+          } catch (e) {
+            console.warn("Could not fetch Groq model list, using fallback:", e);
+          }
+
+          console.log(`[OCR] Trying model: ${groqVisionModel} on Groq`);
           const base64Url = await fileToBase64Url(imageFile);
           const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
@@ -103,7 +126,7 @@ export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> =
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              model: "llama-3.2-11b-vision-preview",
+              model: groqVisionModel,
               messages: [
                 { role: "system", content: "You are a JSON extractor. Always return valid JSON." },
                 { role: "user", content: [
