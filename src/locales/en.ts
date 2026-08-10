@@ -71,7 +71,7 @@ export const en: Translations = {
     version: 'Version',
     account: 'Account',
     editProfile: 'Edit Profile',
-    profileDesc: 'Name, Photo',
+    profileDesc: 'Username',
     customize: 'Customize',
     theme: 'Theme',
     themeDesc: 'Switch Dark / Light Mode',

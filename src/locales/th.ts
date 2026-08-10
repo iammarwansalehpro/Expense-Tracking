@@ -69,7 +69,7 @@ export const th = {
     version: 'เวอร์ชัน',
     account: 'บัญชีผู้ใช้',
     editProfile: 'แก้ไขโปรไฟล์',
-    profileDesc: 'ชื่อ, รูปภาพ',
+    profileDesc: 'ชื่อผู้ใช้งาน',
     customize: 'ปรับแต่ง',
     theme: 'ธีม',
     themeDesc: 'สลับ Dark / Light Mode',
