@@ -108,8 +108,8 @@ export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> =
       const imagePart = await fileToGenerativePart(imageFile);
       
       const modelConfigs = [
-        { model: "gemini-2.0-flash", apiVersion: "v1beta" },
-        { model: "gemini-1.5-flash", apiVersion: "v1beta" }
+        { model: "gemini-2.5-flash", apiVersion: "v1beta" }, // Added back per user request
+        { model: "gemini-2.0-flash", apiVersion: "v1beta" }
       ];
       let result;
       let lastError;
