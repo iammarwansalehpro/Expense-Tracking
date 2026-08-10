@@ -232,7 +232,14 @@ export default function ReviewSlipModal() {
                       className="w-[110px] shrink-0 bg-white/50 border border-white/50 rounded-2xl p-2 relative overflow-hidden flex flex-col items-center group cursor-pointer active:scale-95 transition-transform shadow-sm"
                     >
                       {slip.imageUrl ? (
-                        <img src={slip.imageUrl} alt="Slip" className="w-full h-32 object-cover rounded-lg group-hover:opacity-90 transition-opacity" />
+                        <>
+                          <img src={slip.imageUrl} alt="Slip" className="w-full h-32 object-cover rounded-lg group-hover:opacity-80 transition-opacity" />
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center">
+                              <Search className="w-4 h-4 text-white" />
+                            </div>
+                          </div>
+                        </>
                       ) : (
                         <div className="w-full h-32 bg-white/40 rounded-lg flex items-center justify-center text-xs font-semibold text-[#2E1065]/40">No Image</div>
                       )}
@@ -521,7 +528,7 @@ export default function ReviewSlipModal() {
           />
           <button 
             onClick={() => setIsImageViewerOpen(false)}
-            className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white backdrop-blur-md border border-white/20 transition-all z-10"
+            className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white backdrop-blur-md border border-white/20 transition-all z-50 shadow-lg"
           >
             <X className="w-6 h-6" />
           </button>
