@@ -172,14 +172,27 @@ function extractDate(text: string): string | undefined {
  * Extract bank name from OCR text.
  */
 function extractBank(text: string): string | undefined {
+  let earliestMatch: { name: string, index: number } | null = null;
+  
   for (const bank of BANK_PATTERNS) {
     for (const pattern of bank.patterns) {
-      if (pattern.test(text)) {
-        console.log(`[LocalParser] Bank found: ${bank.name}`);
-        return bank.name;
+      // Need to execute the regex to get the index. 
+      // Ensure we have 'g' or 'i' flag without 'g' messing up lastIndex
+      const regex = new RegExp(pattern.source, pattern.flags.replace('g', '') + 'g');
+      let match;
+      while ((match = regex.exec(text)) !== null) {
+        if (!earliestMatch || match.index < earliestMatch.index) {
+          earliestMatch = { name: bank.name, index: match.index };
+        }
       }
     }
   }
+
+  if (earliestMatch) {
+    console.log(`[LocalParser] Bank found (earliest in text): ${earliestMatch.name}`);
+    return earliestMatch.name;
+  }
+  
   return undefined;
 }
 
