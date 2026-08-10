@@ -343,7 +343,7 @@ export default function SettingsView() {
                       value={key}
                       onChange={(e) => updateKeyField(index, e.target.value)}
                       disabled={!isEditingKeys}
-                      placeholder="AIzaSy..."
+                      placeholder="gsk_..."
                       className={`w-full rounded-2xl px-4 py-3.5 text-sm font-bold transition-all outline-none border ${
                         isEditingKeys 
                           ? 'bg-white dark:bg-slate-900 border-purple-200 dark:border-purple-900/50 focus:ring-2 focus:ring-purple-500/30 shadow-inner' 

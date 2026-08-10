@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+
 import Tesseract from 'tesseract.js';
 import { getApiKeys, fetchCategories } from './transactionService';
 
@@ -338,44 +338,58 @@ export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> =
 
   while (attempt < keys.length) {
     try {
-      console.log(`[OCR] Using Gemini API Key index ${activeKeyIndex}...`);
-      const genAI = new GoogleGenerativeAI(currentKey);
-
-      const modelConfigs = [
-        { model: "gemini-2.5-flash", apiVersion: "v1beta" },
-        { model: "gemini-2.0-flash", apiVersion: "v1beta" }
-      ];
+      console.log(`[OCR] Using Groq API Key index ${activeKeyIndex}...`);
+      
       let result;
       let lastError;
       let hasQuotaError = false;
 
-      for (const config of modelConfigs) {
-        try {
-          console.log(`[OCR] Trying model: ${config.model} (API: ${config.apiVersion})`);
-          const model = genAI.getGenerativeModel(
-            { model: config.model },
-            { apiVersion: config.apiVersion }
-          );
-          result = await model.generateContent([finalPrompt]);
-          break;
-        } catch (e: any) {
-          lastError = e;
-          if (e?.message?.includes('429') || e?.status === 429) {
+      try {
+        console.log(`[OCR] Trying model: llama-3.3-70b-versatile on Groq`);
+        
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${currentKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: "llama-3.3-70b-versatile",
+            messages: [
+              { role: "system", content: "You are a JSON extractor. Always return valid JSON." },
+              { role: "user", content: finalPrompt }
+            ],
+            response_format: { type: "json_object" },
+            temperature: 0.1
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Groq API Error:", response.status, errorData);
+          if (response.status === 429) {
             hasQuotaError = true;
           }
-          console.warn(`[OCR] Model ${config.model} (${config.apiVersion}) failed (${e?.message || e?.status}). Trying next...`);
+          throw new Error(`HTTP ${response.status}: ${errorData.error?.message || 'Groq request failed'}`);
         }
+
+        result = await response.json();
+      } catch (e: any) {
+        lastError = e;
+        if (e?.message?.includes('429') || hasQuotaError) {
+          hasQuotaError = true;
+        }
+        console.warn(`[OCR] Groq failed (${e?.message || e?.status}).`);
       }
 
-      if (!result) {
+      if (!result || !result.choices || !result.choices[0]) {
         if (hasQuotaError) {
           throw new Error("429: Quota exceeded on one or more models");
         }
-        throw new Error(`All models failed. Last error: ${lastError?.message}`);
+        throw new Error(`Groq failed. Last error: ${lastError?.message}`);
       }
 
-      const response = await result.response;
-      let text = response.text();
+      let text = result.choices[0].message.content;
 
       text = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
@@ -406,7 +420,7 @@ export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> =
         attempt++;
       } else {
         // If AI fails, still return local result instead of crashing
-        console.warn("[OCR] Gemini failed. Returning local parser result.");
+        console.warn("[OCR] Groq failed. Returning local parser result.");
         return localResult;
       }
     }
