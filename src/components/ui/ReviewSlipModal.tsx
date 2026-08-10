@@ -119,14 +119,13 @@ export default function ReviewSlipModal() {
     const isDuplicate = transactions.some(t => 
       t.type === 'expense' &&
       t.amount === parsedAmount &&
-      t.date === finalDate &&
-      t.title === title
+      t.date === finalDate
     );
 
     if (isDuplicate) {
       useConfirmStore.getState().showConfirm({
         title: 'พบรายการซ้ำซ้อน',
-        message: 'มีการบันทึกรายการที่มี ยอดเงิน วันที่ และชื่อเดียวกันไปแล้วในวันนี้ คุณต้องการบันทึกรายการนี้ซ้ำหรือไม่?',
+        message: 'มีการบันทึกรายการที่มี ยอดเงิน และ วันที่ เดียวกันไปแล้ว คุณต้องการบันทึกรายการนี้ซ้ำหรือไม่?',
         confirmText: 'บันทึกซ้ำ',
         cancelText: 'ยกเลิก',
         onConfirm: () => {

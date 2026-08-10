@@ -146,14 +146,13 @@ export default function AddPage() {
       const isDuplicate = transactions.some(t => 
         t.type === type &&
         t.amount === parsedAmount &&
-        t.date === dateStr &&
-        t.title === title
+        t.date === dateStr
       );
 
       if (isDuplicate) {
         useConfirmStore.getState().showConfirm({
           title: 'พบรายการซ้ำซ้อน',
-          message: 'มีการบันทึกรายการที่มี ยอดเงิน วันที่ และชื่อเดียวกันไปแล้วในวันนี้ คุณต้องการบันทึกรายการนี้ซ้ำหรือไม่?',
+          message: 'มีการบันทึกรายการที่มี ยอดเงิน และ วันที่ เดียวกันไปแล้ว คุณต้องการบันทึกรายการนี้ซ้ำหรือไม่?',
           confirmText: 'บันทึกซ้ำ',
           cancelText: 'ยกเลิก',
           onConfirm: () => {
