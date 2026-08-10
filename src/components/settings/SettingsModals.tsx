@@ -7,7 +7,8 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useThemeStore, type AppFont } from '@/store/useThemeStore';
-import { fetchCategories } from '@/services/transactionService';
+import { fetchCategories, getApiKeys, setApiKeys as saveApiKeysToDb } from '@/services/transactionService';
+import { Settings as SettingsIcon, Info, Users } from 'lucide-react';
 import { APP_VERSION } from '@/lib/constants';
 import { useConfirmStore } from '@/store/useConfirmStore';
 import { useToastStore } from '@/store/useToastStore';
@@ -167,7 +168,7 @@ export function AboutModal({ isOpen, onClose }: ModalProps) {
         </div>
         
         <p className="text-sm text-slate-600 dark:text-slate-400 mb-8 leading-relaxed font-medium">
-          แอปพลิเคชันจัดการการเงินระดับมืออาชีพ ที่ผสานเทคโนโลยี AI เพื่อสแกนและวิเคราะห์สลิปธนาคารอัตโนมัติ ช่วยให้การจดบันทึกรายรับรายจ่ายเป็นเรื่องง่ายและแม่นยำ
+          แอปพลิเคชันจัดการการเงินระดับมืออาชีพ ที่ช่วยให้การจดบันทึกรายรับรายจ่ายของคุณเป็นเรื่องง่าย รวดเร็ว และแม่นยำมากยิ่งขึ้น
         </p>
         
         <button onClick={onClose} className="w-full py-3 rounded-xl font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
@@ -687,6 +688,224 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
           </button>
         </div>
 
+      </div>
+    </div>
+  );
+}
+
+export function AdminAiModal({ isOpen, onClose }: ModalProps) {
+  const [apiKeys, setApiKeys] = useState<string[]>(['']);
+  const [isEditingKeys, setIsEditingKeys] = useState(false);
+  const [loadingKeys, setLoadingKeys] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      const fetchKeys = async () => {
+        const keys = await getApiKeys();
+        if (keys.length > 0) {
+          setApiKeys(keys);
+        } else {
+          setApiKeys(['']); 
+        }
+      };
+      fetchKeys();
+    } else {
+      setIsEditingKeys(false);
+    }
+  }, [isOpen]);
+
+  const handleSaveKeys = async () => {
+    setLoadingKeys(true);
+    try {
+      const validKeys = apiKeys.filter(k => k.trim() !== '');
+      await saveApiKeysToDb(validKeys);
+      setApiKeys(validKeys.length > 0 ? validKeys : ['']);
+      setIsEditingKeys(false);
+    } catch (e) {
+      alert('Failed to save API keys');
+    } finally {
+      setLoadingKeys(false);
+    }
+  };
+
+  const addKeyField = () => setApiKeys([...apiKeys, '']);
+  const removeKeyField = (index: number) => setApiKeys(apiKeys.filter((_, i) => i !== index));
+  const updateKeyField = (index: number, val: string) => {
+    const newKeys = [...apiKeys];
+    newKeys[index] = val;
+    setApiKeys(newKeys);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-5 animate-fade-in">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white dark:bg-slate-900 p-6 rounded-[2rem] shadow-2xl w-full max-w-md animate-slide-up flex flex-col max-h-[90vh]">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-[14px] bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+              <SettingsIcon size={20} className="text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>ตั้งค่าระบบ AI</h3>
+              <p className="text-xs text-purple-500 font-semibold">เฉพาะผู้ดูแลระบบ</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+            <X size={20} className="text-slate-500" />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto no-scrollbar pb-4 flex-1">
+          <div className="space-y-3">
+            {apiKeys.map((key, index) => (
+              <div key={index} className="flex items-center gap-2 group">
+                <div className="relative flex-1">
+                  <input 
+                    type="password" 
+                    value={key}
+                    onChange={(e) => updateKeyField(index, e.target.value)}
+                    disabled={!isEditingKeys}
+                    placeholder="gsk_..."
+                    className={`w-full rounded-2xl px-4 py-3.5 text-sm font-bold transition-all outline-none border ${
+                      isEditingKeys 
+                        ? 'bg-white dark:bg-slate-900 border-purple-200 dark:border-purple-900/50 focus:ring-2 focus:ring-purple-500/30 shadow-inner' 
+                        : 'bg-slate-50 dark:bg-slate-800/50 border-transparent opacity-80'
+                    }`}
+                    style={{ color: 'var(--text-primary)' }}
+                  />
+                </div>
+                {isEditingKeys && (
+                  <button 
+                    onClick={() => removeKeyField(index)}
+                    className="w-[50px] h-[50px] rounded-2xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition-colors shrink-0 shadow-sm border border-red-100"
+                  >
+                    <Trash2 size={20} strokeWidth={2.5} />
+                  </button>
+                )}
+              </div>
+            ))}
+            
+            {isEditingKeys && (
+              <button 
+                onClick={addKeyField}
+                className="w-full py-3.5 rounded-2xl border-2 border-dashed border-purple-300 dark:border-purple-700 text-purple-600 dark:text-purple-400 font-bold text-sm flex items-center justify-center gap-2 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors mt-2"
+              >
+                <Plus size={18} strokeWidth={3} /> เพิ่ม API Key
+              </button>
+            )}
+            
+            <div className="mt-4 flex items-start gap-2 bg-purple-50 dark:bg-purple-900/20 p-3 rounded-2xl border border-purple-100 dark:border-purple-800/50">
+              <Info size={16} className="text-purple-500 shrink-0 mt-0.5" />
+              <p className="text-[11px] font-semibold text-purple-700 dark:text-purple-300 leading-relaxed">
+                * เพิ่มกี่อันก็ได้! ระบบจะสลับ API Key วนลูปให้อัตโนมัติเมื่อโควต้าเต็ม (Unlimited Usage)
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-4 flex gap-3 shrink-0">
+          {isEditingKeys ? (
+            <button 
+              onClick={handleSaveKeys} 
+              disabled={loadingKeys}
+              className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-md hover:shadow-lg hover:shadow-purple-500/20 transition-all disabled:opacity-50 active:scale-95 flex justify-center items-center gap-2"
+            >
+              <CheckCircle2 size={18} /> {loadingKeys ? 'กำลังบันทึก...' : 'บันทึก'}
+            </button>
+          ) : (
+            <button 
+              onClick={() => setIsEditingKeys(true)} 
+              className="flex-1 py-3.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors active:scale-95 flex justify-center items-center gap-2" 
+            >
+              แก้ไข API Keys
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+import { get } from 'firebase/database';
+export function AdminUsersModal({ isOpen, onClose }: ModalProps) {
+  const [usersList, setUsersList] = useState<{uid: string, name: string, email: string, photo: string}[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (isOpen) {
+      setLoading(true);
+      get(ref(db, 'users')).then(snapshot => {
+        if (snapshot.exists()) {
+          const usersObj = snapshot.val();
+          const list = Object.keys(usersObj).map(uid => {
+            const profile = usersObj[uid]?.profile || {};
+            return {
+              uid,
+              name: profile.displayName || `User (${uid.substring(0, 6)}...)`,
+              email: profile.email || 'ยังไม่มีข้อมูล (รอผู้ใช้เข้าสู่ระบบใหม่)',
+              photo: profile.photoURL || ''
+            };
+          });
+          setUsersList(list);
+        } else {
+          setUsersList([]);
+        }
+      }).catch(console.error).finally(() => setLoading(false));
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-5 animate-fade-in">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white dark:bg-slate-900 p-6 rounded-[2rem] shadow-2xl w-full max-w-md animate-slide-up flex flex-col max-h-[85vh]">
+        
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-[14px] bg-blue-500/10 flex items-center justify-center">
+              <Users size={20} className="text-blue-500" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>ผู้ใช้งานทั้งหมด</h3>
+              <p className="text-xs text-blue-500 font-semibold">{usersList.length} บัญชีในระบบ</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+            <X size={20} className="text-slate-500" />
+          </button>
+        </div>
+        
+        {loading ? (
+          <p className="text-sm text-slate-500 py-10 text-center">กำลังโหลดข้อมูล...</p>
+        ) : (
+          <div className="overflow-y-auto no-scrollbar flex-1 -mx-2 px-2 mb-4">
+            <div className="space-y-3">
+              {usersList.map((u) => (
+                <div key={u.uid} className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                  <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex-shrink-0 overflow-hidden">
+                    {u.photo ? (
+                      <img src={u.photo} alt={u.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-500 font-bold">
+                        {u.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[14px] font-bold text-slate-800 dark:text-slate-200 truncate">{u.name}</div>
+                    <div className="text-[12px] text-slate-500 truncate">{u.email}</div>
+                  </div>
+                </div>
+              ))}
+              {usersList.length === 0 && (
+                <div className="text-center py-10 text-slate-400 text-sm">ไม่พบผู้ใช้งาน</div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

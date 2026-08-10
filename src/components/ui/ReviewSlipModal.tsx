@@ -239,6 +239,10 @@ export default function ReviewSlipModal() {
                               <Search className="w-4 h-4 text-white" />
                             </div>
                           </div>
+                          {/* Persistent Zoom Icon */}
+                          <div className="absolute bottom-3 right-3 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.15)] border border-black/5 z-10">
+                            <Search className="w-3.5 h-3.5 text-[#2E1065]" />
+                          </div>
                         </>
                       ) : (
                         <div className="w-full h-32 bg-white/40 rounded-lg flex items-center justify-center text-xs font-semibold text-[#2E1065]/40">No Image</div>

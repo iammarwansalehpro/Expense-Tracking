@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { ref, set } from 'firebase/database';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useThemeStore } from '@/store/useThemeStore';
@@ -56,6 +57,16 @@ function App() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
+      
+      // Save profile for admin dashboard
+      if (currentUser) {
+        set(ref(db, `users/${currentUser.uid}/profile`), {
+          displayName: currentUser.displayName || 'Unknown',
+          email: currentUser.email || '-',
+          photoURL: currentUser.photoURL || '',
+          lastLogin: new Date().toISOString()
+        }).catch(console.error);
+      }
     });
     return () => unsubscribe();
   }, [setUser, setLoading]);

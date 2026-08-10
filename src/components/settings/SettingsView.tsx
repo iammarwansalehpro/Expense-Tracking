@@ -15,7 +15,8 @@ import {
   Type,
   Plus,
   Trash2,
-  Crown
+  Crown,
+  Users
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useThemeStore } from '@/store/useThemeStore';
@@ -25,9 +26,9 @@ import { APP_VERSION } from '@/lib/constants';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useTranslation } from '@/hooks/useTranslation';
-import { EditProfileModal, FontSelectModal, AboutModal, ExportImportModal, AdminAppInfoModal, AdminCategoryModal } from './SettingsModals';
+import { EditProfileModal, FontSelectModal, AboutModal, ExportImportModal, AdminAppInfoModal, AdminCategoryModal, AdminAiModal, AdminUsersModal } from './SettingsModals';
 
-type ModalType = 'none' | 'profile' | 'font' | 'about' | 'export' | 'adminApp' | 'adminCategory';
+type ModalType = 'none' | 'profile' | 'font' | 'about' | 'export' | 'adminApp' | 'adminCategory' | 'adminAi' | 'adminUsers';
 
 interface SettingItem {
   icon: typeof User;
@@ -301,86 +302,6 @@ export default function SettingsView() {
       {isAdminUnlocked && (
         <div className="px-5 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-4">
           
-          {/* AI Settings Card */}
-          <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/60 dark:border-white/10 rounded-[28px] shadow-[0_8px_32px_rgba(0,0,0,0.04)] p-6 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
-            
-            <div className="flex items-start justify-between mb-6 mt-2">
-              <div className="flex gap-3">
-                <div className="w-10 h-10 rounded-[14px] bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
-                  <SettingsIcon size={20} className="text-white" />
-                </div>
-                <div>
-                  <h3 className="text-[15px] font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>ตั้งค่าระบบ AI</h3>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-purple-500">เฉพาะผู้ดูแลระบบ</p>
-                </div>
-              </div>
-              
-              {isEditingKeys ? (
-                <button 
-                  onClick={handleSaveKeys} 
-                  disabled={loadingKeys}
-                  className="flex items-center gap-1.5 text-[11px] px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-md hover:shadow-lg hover:shadow-purple-500/20 transition-all disabled:opacity-50 active:scale-95"
-                >
-                  <CheckCircle2 size={14} /> {loadingKeys ? 'กำลังบันทึก...' : 'บันทึก'}
-                </button>
-              ) : (
-                <button 
-                  onClick={() => setIsEditingKeys(true)} 
-                  className="flex items-center gap-1.5 text-[11px] px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors active:scale-95" 
-                >
-                  แก้ไข
-                </button>
-              )}
-            </div>
-            
-            <div className="space-y-3">
-              {apiKeys.map((key, index) => (
-                <div key={index} className="flex items-center gap-2 group">
-                  <div className="relative flex-1">
-                    <input 
-                      type="password" 
-                      value={key}
-                      onChange={(e) => updateKeyField(index, e.target.value)}
-                      disabled={!isEditingKeys}
-                      placeholder="gsk_..."
-                      className={`w-full rounded-2xl px-4 py-3.5 text-sm font-bold transition-all outline-none border ${
-                        isEditingKeys 
-                          ? 'bg-white dark:bg-slate-900 border-purple-200 dark:border-purple-900/50 focus:ring-2 focus:ring-purple-500/30 shadow-inner' 
-                          : 'bg-slate-50 dark:bg-slate-800/50 border-transparent opacity-80'
-                      }`}
-                      style={{ color: 'var(--text-primary)' }}
-                    />
-                  </div>
-                  {isEditingKeys && (
-                    <button 
-                      onClick={() => removeKeyField(index)}
-                      className="w-[50px] h-[50px] rounded-2xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition-colors shrink-0 shadow-sm border border-red-100"
-                    >
-                      <Trash2 size={20} strokeWidth={2.5} />
-                    </button>
-                  )}
-                </div>
-              ))}
-              
-              {isEditingKeys && (
-                <button 
-                  onClick={addKeyField}
-                  className="w-full py-3.5 rounded-2xl border-2 border-dashed border-purple-300 dark:border-purple-700 text-purple-600 dark:text-purple-400 font-bold text-sm flex items-center justify-center gap-2 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors mt-2"
-                >
-                  <Plus size={18} strokeWidth={3} /> เพิ่ม API Key
-                </button>
-              )}
-              
-              <div className="mt-4 flex items-start gap-2 bg-purple-50 dark:bg-purple-900/20 p-3 rounded-2xl border border-purple-100 dark:border-purple-800/50">
-                <Info size={16} className="text-purple-500 shrink-0 mt-0.5" />
-                <p className="text-[11px] font-semibold text-purple-700 dark:text-purple-300 leading-relaxed">
-                  * เพิ่มกี่อันก็ได้! ระบบจะสลับ API Key วนลูปให้อัตโนมัติเมื่อโควต้าเต็ม (Unlimited Usage)
-                </p>
-              </div>
-            </div>
-          </div>
-
           {/* Management Menu Card */}
           <div className="mb-8 animate-slide-up" style={{ animationDelay: '300ms' }}>
           <h3 className="text-[13px] font-bold text-[#2E1065]/50 dark:text-white/50 mb-3 px-2">
@@ -405,7 +326,7 @@ export default function SettingsView() {
             
             <button
               onClick={() => setActiveModal('adminCategory')}
-              className="w-full p-4 flex items-center justify-between hover:bg-white/50 dark:hover:bg-white/5 active:bg-white/60 dark:active:bg-white/10 transition-colors"
+              className="w-full p-4 flex items-center justify-between hover:bg-white/50 dark:hover:bg-white/5 active:bg-white/60 dark:active:bg-white/10 transition-colors border-b border-[#2E1065]/5 dark:border-white/5"
             >
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-[14px] bg-rose-500/10 flex items-center justify-center shrink-0">
@@ -414,6 +335,38 @@ export default function SettingsView() {
                 <div className="text-left">
                   <div className="font-bold text-[#2E1065] dark:text-white text-[15px]">{t('settings.manageCategories', 'จัดการหมวดหมู่')}</div>
                   <div className="text-[12px] font-medium text-[#2E1065]/50 dark:text-white/50">เพิ่ม/แก้ไข หมวดหมู่รายการ</div>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-[#2E1065]/30 dark:text-white/30" />
+            </button>
+            
+            <button
+              onClick={() => setActiveModal('adminAi')}
+              className="w-full p-4 flex items-center justify-between hover:bg-white/50 dark:hover:bg-white/5 active:bg-white/60 dark:active:bg-white/10 transition-colors border-b border-[#2E1065]/5 dark:border-white/5"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-[14px] bg-purple-500/10 flex items-center justify-center shrink-0">
+                  <SettingsIcon className="w-5 h-5 text-purple-500" />
+                </div>
+                <div className="text-left">
+                  <div className="font-bold text-[#2E1065] dark:text-white text-[15px]">ตั้งค่าระบบ AI</div>
+                  <div className="text-[12px] font-medium text-[#2E1065]/50 dark:text-white/50">จัดการ API Keys</div>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-[#2E1065]/30 dark:text-white/30" />
+            </button>
+
+            <button
+              onClick={() => setActiveModal('adminUsers')}
+              className="w-full p-4 flex items-center justify-between hover:bg-white/50 dark:hover:bg-white/5 active:bg-white/60 dark:active:bg-white/10 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-[14px] bg-blue-500/10 flex items-center justify-center shrink-0">
+                  <Users className="w-5 h-5 text-blue-500" />
+                </div>
+                <div className="text-left">
+                  <div className="font-bold text-[#2E1065] dark:text-white text-[15px]">ผู้ใช้งานทั้งหมด</div>
+                  <div className="text-[12px] font-medium text-[#2E1065]/50 dark:text-white/50">ดูจำนวนผู้ใช้ในระบบ</div>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-[#2E1065]/30 dark:text-white/30" />
@@ -484,6 +437,8 @@ export default function SettingsView() {
       <ExportImportModal isOpen={activeModal === 'export'} onClose={() => setActiveModal('none')} />
       <AdminAppInfoModal isOpen={activeModal === 'adminApp'} onClose={() => setActiveModal('none')} />
       <AdminCategoryModal isOpen={activeModal === 'adminCategory'} onClose={() => setActiveModal('none')} />
+      <AdminAiModal isOpen={activeModal === 'adminAi'} onClose={() => setActiveModal('none')} />
+      <AdminUsersModal isOpen={activeModal === 'adminUsers'} onClose={() => setActiveModal('none')} />
     </div>
   );
 }
