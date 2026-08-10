@@ -82,7 +82,7 @@ export function EditProfileModal({ isOpen, onClose }: ModalProps) {
 
         <div className="space-y-4 mb-8">
           <div>
-            <label className="text-[11px] font-black uppercase tracking-wider mb-2 block text-slate-400 ml-1">ชื่อแสดงผล</label>
+            <label className="text-[11px] font-black uppercase tracking-wider mb-2 block text-slate-400 ml-1">ชื่อผู้ใช้งาน</label>
             <input 
               type="text" 
               value={name}

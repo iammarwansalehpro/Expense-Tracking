@@ -57,7 +57,7 @@ export default function SettingsView() {
         {
           icon: User,
           label: t('settings.editProfile', 'แก้ไขโปรไฟล์'),
-          sublabel: t('settings.profileDesc', 'ชื่อ, รูปภาพ'),
+          sublabel: t('settings.profileDesc', 'ชื่อผู้ใช้งาน'),
           action: 'profile',
           iconColor: '#3b82f6',
           iconBg: '#3b82f618',
