@@ -104,8 +104,13 @@ export default function BottomNav() {
       
       // Open the new Review Modal
       setReviewModalOpen(true);
-    } catch (error) {
-      alert("Failed to scan slips. Please try again or add manually.");
+    } catch (error: any) {
+      console.error("Scan error:", error);
+      if (error?.message?.includes('429') || String(error).includes('429')) {
+        alert("โควต้าสแกนสลิปเต็มชั่วคราว (Rate Limit)\nกรุณารอ 1 นาทีแล้วสแกนใหม่อีกครั้งครับ");
+      } else {
+        alert("สแกนสลิปไม่สำเร็จ กรุณาลองใหม่อีกครั้ง หรือเพิ่มข้อมูลด้วยตนเอง");
+      }
     } finally {
       setIsScanning(false);
       // Reset input so the same files can be selected again
