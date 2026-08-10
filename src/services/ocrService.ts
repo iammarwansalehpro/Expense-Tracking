@@ -95,7 +95,7 @@ export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> =
         console.log(`[OCR] Using Groq API Key index ${activeKeyIndex}...`);
         try {
           // Dynamically fetch available models to find the current Vision model
-          let groqVisionModel = "llama-3.2-11b-vision-preview"; // Default fallback
+          let groqVisionModel = null;
           try {
             const modelsRes = await fetch('https://api.groq.com/openai/v1/models', {
               headers: { 'Authorization': `Bearer ${currentKey}` }
@@ -108,36 +108,56 @@ export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> =
                 m.id.toLowerCase().includes('scout')
               );
               if (visionModels.length > 0) {
-                // Prefer non-preview models if available
                 const prodModel = visionModels.find((m: any) => !m.id.includes('preview'));
                 groqVisionModel = prodModel ? prodModel.id : visionModels[0].id;
               }
             }
           } catch (e) {
-            console.warn("Could not fetch Groq model list, using fallback:", e);
+            console.warn("Could not fetch Groq model list:", e);
           }
 
-          console.log(`[OCR] Trying model: ${groqVisionModel} on Groq`);
-          const base64Url = await fileToBase64Url(imageFile);
-          const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${currentKey}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              model: groqVisionModel,
-              messages: [
-                { role: "system", content: "You are a JSON extractor. Always return valid JSON." },
-                { role: "user", content: [
-                    { type: "text", text: finalPrompt },
-                    { type: "image_url", image_url: { url: base64Url } }
-                  ]
-                }
-              ],
-              temperature: 0.1
-            })
-          });
+          let response;
+          if (groqVisionModel) {
+            console.log(`[OCR] Trying VISION model: ${groqVisionModel} on Groq`);
+            const base64Url = await fileToBase64Url(imageFile);
+            response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${currentKey}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                model: groqVisionModel,
+                messages: [
+                  { role: "system", content: "You are a JSON extractor. Always return valid JSON." },
+                  { role: "user", content: [
+                      { type: "text", text: finalPrompt },
+                      { type: "image_url", image_url: { url: base64Url } }
+                    ]
+                  }
+                ],
+                temperature: 0.1
+              })
+            });
+          } else {
+            console.log(`[OCR] No Vision model found on Groq. Falling back to TEXT-ONLY model: llama-3.3-70b-versatile`);
+            response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${currentKey}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                messages: [
+                  { role: "system", content: "You are a JSON extractor. Always return valid JSON." },
+                  { role: "user", content: finalPrompt }
+                ],
+                response_format: { type: "json_object" },
+                temperature: 0.1
+              })
+            });
+          }
 
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
