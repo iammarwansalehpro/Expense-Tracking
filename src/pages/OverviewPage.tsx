@@ -1,4 +1,4 @@
-import { Activity, ChevronDown, ArrowDown, ArrowUp, Sparkles, PlusCircle, ScanLine, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Activity, ChevronDown, ArrowDown, ArrowUp, Sparkles, PlusCircle, ScanLine, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Search, XCircle } from 'lucide-react';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -45,6 +45,8 @@ export default function OverviewPage() {
   const [selectedDate, setSelectedDate] = useState<Date>(now);
   const [viewDate, setViewDate] = useState<Date>(now);
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
 
   // Compute dynamic chart data and totals
   const { chartData, totalIncome, totalExpense, dailyTotals } = useMemo(() => {
@@ -95,15 +97,31 @@ export default function OverviewPage() {
     
     if (effectiveType !== activeTab) return false;
     
-    // If in calendar mode, filter by selected date
+    const tDate = new Date(t.date);
+
+    // Search query filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const matchTitle = (t.title || '').toLowerCase().includes(q);
+      const matchCat = (t.category || '').toLowerCase().includes(q);
+      const matchNote = (t.note || '').toLowerCase().includes(q);
+      if (!matchTitle && !matchCat && !matchNote) return false;
+    }
+
+    // Date filtering
     if (viewMode === 'calendar') {
-      const tDate = new Date(t.date);
       return tDate.getDate() === selectedDate.getDate() && 
              tDate.getMonth() === selectedDate.getMonth() && 
              tDate.getFullYear() === selectedDate.getFullYear();
     }
     
-    return true; // Chart mode shows all for the month (we'll just show all filtered by tab for now)
+    // In chart mode, filter by viewDate (month)
+    return tDate.getMonth() === viewDate.getMonth() && 
+           tDate.getFullYear() === viewDate.getFullYear();
+  }).sort((a, b) => {
+    const timeA = new Date(a.date).getTime();
+    const timeB = new Date(b.date).getTime();
+    return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
   });
 
   if (transactions.length === 0) {
@@ -350,6 +368,35 @@ export default function OverviewPage() {
 
         {/* List Below */}
         <div className="flex flex-col gap-3">
+          
+          {/* Smart Search & Sort Row */}
+          <div className="flex items-center gap-3 mb-2 shrink-0">
+            <div className="flex-1 bg-white/40 backdrop-blur-xl border border-white/50 rounded-2xl px-4 py-3 flex items-center gap-3 shadow-inner relative transition-all focus-within:bg-white/60 focus-within:border-purple-300">
+              <Search className="w-5 h-5 text-[#2E1065]/50 shrink-0" />
+              <input 
+                type="text"
+                placeholder={language === 'en' ? "Search transactions..." : "ค้นหารายการ..."}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-transparent border-none outline-none text-[15px] font-medium text-[#2E1065] placeholder-[#2E1065]/40 w-full"
+              />
+              {searchQuery && (
+                <button 
+                  onClick={() => setSearchQuery('')}
+                  className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-black/5 active:scale-95 transition-all text-[#2E1065]/40 hover:text-[#2E1065]/70 absolute right-3"
+                >
+                  <XCircle className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+            <button 
+              onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+              className="w-12 h-[48px] shrink-0 bg-white/40 backdrop-blur-xl border border-white/50 rounded-2xl flex items-center justify-center shadow-sm hover:bg-white/60 active:scale-95 transition-all text-[#2E1065]"
+              title={language === 'en' ? "Toggle Sort Order" : "สลับการเรียงลำดับ"}
+            >
+              {sortOrder === 'desc' ? <ArrowDown className="w-5 h-5" /> : <ArrowUp className="w-5 h-5" />}
+            </button>
+          </div>
           {viewMode === 'calendar' && (
             <div className="mb-2 text-sm font-bold text-[#2E1065]/70 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
