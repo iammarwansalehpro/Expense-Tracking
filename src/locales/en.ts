@@ -26,7 +26,8 @@ export const en: Translations = {
     installment: 'Installment',
     day: 'Day',
     showDetails: 'Show Limit Details',
-    hideDetails: 'Hide Details'
+    hideDetails: 'Hide Details',
+    noCreditLimitSet: 'No credit limit set'
   },
   nav: {
     home: 'Home',

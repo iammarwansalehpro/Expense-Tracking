@@ -7,7 +7,7 @@ import { useWalletStore } from '@/store/useWalletStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTranslation } from '@/hooks/useTranslation';
-import { addTransferTransaction } from '@/services/transactionService';
+import { addTransferTransaction, updateTransaction } from '@/services/transactionService';
 import { useToastStore } from '@/store/useToastStore';
 import { useDragToClose } from '@/hooks/useDragToClose';
 
@@ -120,7 +120,7 @@ export default function CreditCardPaymentModal({ isOpen, onClose, creditCardId }
         // Note: In a real app we'd await these, but since transactionService updates local state immediately,
         // we can just call them. We import updateTransaction for this.
         for (const tx of activeInstallments) {
-          useTransactionStore.getState().updateTransaction(tx.id, {
+          await updateTransaction(tx.id, {
             installmentPaidMonths: (tx.installmentPaidMonths || 0) + 1
           });
         }

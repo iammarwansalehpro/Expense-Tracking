@@ -24,7 +24,8 @@ export const th = {
     installment: 'ผ่อนชำระ',
     day: 'วันที่',
     showDetails: 'ดูรายละเอียดวงเงิน',
-    hideDetails: 'ซ่อนรายละเอียด'
+    hideDetails: 'ซ่อนรายละเอียด',
+    noCreditLimitSet: 'ไม่ระบุวงเงิน'
   },
   nav: {
     home: 'หน้าหลัก',
