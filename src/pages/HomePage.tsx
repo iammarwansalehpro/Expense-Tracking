@@ -287,7 +287,7 @@ export default function HomePage() {
                     {/* Actions / Stats */}
                     <div className="relative z-10">
                       {isCreditCard ? (
-                        <div className="flex flex-col w-full min-h-[76px]">
+                        <div className="flex flex-col w-full h-[76px]">
                           <div className="flex flex-col justify-center h-full gap-2">
                             {wallet.creditLimit ? (
                                 !wallet.installmentCreditLimit ? (
@@ -375,7 +375,7 @@ export default function HomePage() {
                           </div>
                         </div>
                       ) : (
-                        <div className="grid grid-cols-2 gap-3 min-h-[76px]">
+                        <div className="grid grid-cols-2 gap-3 h-[76px]">
                           <div className="bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-md rounded-2xl px-3 py-2 border border-white/60 shadow-[0_4px_16px_rgba(31,38,135,0.04)] flex flex-col justify-center min-w-0">
                             <AutoShrinkText className="mb-0.5 w-full">
                               <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#2E1065]/60 tracking-wide">
