@@ -13,7 +13,7 @@ import AutoShrinkText from '@/components/ui/AutoShrinkText';
 import { useRef, useState, useEffect } from 'react';
 import CreditCardDueAlert from '@/components/home/CreditCardDueAlert';
 import CreditCardPaymentModal from '@/components/ui/CreditCardPaymentModal';
-
+import TransactionDetailsModal from '@/components/ui/TransactionDetailsModal';
 export default function HomePage() {
   const transactions = useTransactionStore((s) => s.transactions);
   const appName = useAppStore(s => s.appName);
@@ -37,6 +37,7 @@ export default function HomePage() {
   const [paymentCreditCardId, setPaymentCreditCardId] = useState<string | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [expandedWalletId, setExpandedWalletId] = useState<string | null>(null);
+  const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
   const toggleExpand = (walletId: string) => {
     setExpandedWalletId(prev => prev === walletId ? null : walletId);
@@ -473,7 +474,8 @@ export default function HomePage() {
               return (
                 <div 
                   key={tx.id} 
-                  className="flex items-center justify-between bg-white/40 backdrop-blur-md p-4 rounded-3xl shadow-[0_4px_20px_rgba(31,38,135,0.05)] border border-white/50 active:scale-[0.98] transition-transform"
+                  onClick={() => setSelectedTransactionId(tx.id)}
+                  className="flex items-center justify-between bg-white/40 backdrop-blur-md p-4 rounded-3xl shadow-[0_4px_20px_rgba(31,38,135,0.05)] border border-white/50 cursor-pointer hover:bg-white/60 active:scale-[0.98] transition-all"
                 >
                   <div className="flex items-center gap-4 flex-1 min-w-0">
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${catStyle.color} ${catStyle.textColor} shadow-sm border border-white/50`}>
@@ -511,6 +513,11 @@ export default function HomePage() {
           isOpen={isPaymentModalOpen}
           onClose={() => setIsPaymentModalOpen(false)}
           creditCardId={paymentCreditCardId}
+        />
+
+        <TransactionDetailsModal
+          transactionId={selectedTransactionId}
+          onClose={() => setSelectedTransactionId(null)}
         />
       </div>
     </div>
