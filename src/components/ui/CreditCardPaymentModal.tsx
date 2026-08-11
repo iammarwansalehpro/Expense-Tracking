@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import * as Icons from 'lucide-react';
-import { X, ArrowRight, Loader2, CreditCard as CreditCardIcon, CheckCircle2, Calendar } from 'lucide-react';
+import { CheckCircle2, X, CreditCard as CreditCardIcon, Calendar, ArrowRight } from 'lucide-react';
+import { calculateCreditCardStats } from '@/utils/creditCardUtils';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { useWalletStore } from '@/store/useWalletStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
@@ -37,49 +38,15 @@ export default function CreditCardPaymentModal({ isOpen, onClose, creditCardId }
     onClose,
   });
 
-  const outstandingBalance = useMemo(() => {
-    if (!creditCardId) return 0;
-    const txs = transactions.filter(t => t.walletId === creditCardId || t.toWalletId === creditCardId);
-    const income = txs.filter(t => t.type === 'income' || (t.type === 'transfer' && t.toWalletId === creditCardId)).reduce((sum, t) => sum + t.amount, 0);
-    const expense = txs.filter(t => t.type === 'expense' || (t.type === 'transfer' && t.fromWalletId === creditCardId)).reduce((sum, t) => sum + t.amount, 0);
-    const bal = income - expense;
-    return bal < 0 ? Math.abs(bal) : 0;
-  }, [creditCardId, transactions]);
+  const stats = useMemo(() => {
+    if (!creditCard || !creditCardId) return null;
+    return calculateCreditCardStats(creditCard, transactions);
+  }, [creditCard, creditCardId, transactions]);
 
-  // Statement balance is the amount due this month (normal expenses + installment monthly amounts)
-  const statementBalance = useMemo(() => {
-    if (!creditCardId) return 0;
-    const txs = transactions.filter(t => t.walletId === creditCardId || t.toWalletId === creditCardId);
-    
-    // Sum of normal expenses (not installments) + Transfers from this card
-    const normalExpense = txs.filter(t => !t.isInstallment && (t.type === 'expense' || (t.type === 'transfer' && t.fromWalletId === creditCardId))).reduce((sum, t) => sum + t.amount, 0);
-    
-    // Installments: sum of (amount / totalMonths) for each active installment
-    const installmentExpense = txs.filter(t => 
-      t.isInstallment && 
-      t.type === 'expense' && 
-      (t.installmentPaidMonths || 0) < (t.installmentMonths || 1)
-    ).reduce((sum, t) => {
-        if (!t.installmentMonths) return sum;
-        const principalPerMonth = t.amount / t.installmentMonths;
-        const interestPerMonth = t.amount * ((t.installmentInterestRate || 0) / 100);
-        return sum + principalPerMonth + interestPerMonth;
-    }, 0);
-
-    const totalBilled = normalExpense + installmentExpense;
-    
-    // Total paid to this card (transfers to this card)
-    const paid = txs.filter(t => t.type === 'income' || (t.type === 'transfer' && t.toWalletId === creditCardId)).reduce((sum, t) => sum + t.amount, 0);
-    
-    const bal = paid - totalBilled;
-    return bal < 0 ? Math.abs(bal) : 0;
-  }, [creditCardId, transactions]);
-
-  const minimumPayment = useMemo(() => {
-    if (outstandingBalance <= 0) return 0;
-    const tenPercent = outstandingBalance * 0.10;
-    return Math.max(1000, tenPercent) > outstandingBalance ? outstandingBalance : Math.max(1000, tenPercent);
-  }, [outstandingBalance]);
+  const outstandingBalance = stats?.outstandingBalance || 0;
+  const statementBalance = stats?.statementBalance || 0;
+  const minimumPayment = stats?.minimumPayment || 0;
+  const revolvingInterest = stats?.revolvingInterest || 0;
 
   useEffect(() => {
     if (isOpen) {
@@ -110,21 +77,8 @@ export default function CreditCardPaymentModal({ isOpen, onClose, creditCardId }
       // Create transfer from cash/bank to credit card
       await addTransferTransaction(user.uid, fromWalletId, creditCardId, parsedAmount, 'ชำระค่าบัตรเครดิต');
       
-      // Increment paidMonths for all active installments if paying full or minimum
-      if (paymentType !== 'custom') {
-        const activeInstallments = transactions.filter(t => 
-          t.walletId === creditCardId && 
-          t.isInstallment && 
-          (t.installmentPaidMonths || 0) < (t.installmentMonths || 1)
-        );
-        // Note: In a real app we'd await these, but since transactionService updates local state immediately,
-        // we can just call them. We import updateTransaction for this.
-        for (const tx of activeInstallments) {
-          await updateTransaction(tx.id, {
-            installmentPaidMonths: (tx.installmentPaidMonths || 0) + 1
-          });
-        }
-      }
+      // No need to manually increment installmentPaidMonths anymore.
+      // creditCardUtils dynamically calculates billed installments based on statement dates.
       
       setShowSuccess(true);
       setTimeout(() => {
@@ -244,6 +198,22 @@ export default function CreditCardPaymentModal({ isOpen, onClose, creditCardId }
                 </div>
               </div>
             </div>
+
+            {revolvingInterest > 0 && (
+              <div className="bg-red-50/80 backdrop-blur-md border border-red-200 p-4 rounded-[20px] flex gap-3 shadow-sm shrink-0 items-start">
+                <div className="mt-0.5">
+                  <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center">
+                    <span className="text-red-500 font-bold text-xs">%</span>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-[13px] font-bold text-red-700">มีดอกเบี้ยค้างชำระ</h4>
+                  <p className="text-[11px] text-red-600/80 mt-0.5 leading-relaxed">
+                    คุณมียอดค้างชำระจากรอบบิลก่อนหน้า ทำให้เกิดดอกเบี้ยประมาณ ฿{revolvingInterest.toLocaleString('th-TH', { minimumFractionDigits: 2 })} ซึ่งถูกรวมในยอดขั้นต่ำและเต็มจำนวนแล้ว
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Payment Options */}
             <div className="bg-white/50 backdrop-blur-xl p-5 rounded-[32px] border border-white/60 shadow-sm shrink-0">

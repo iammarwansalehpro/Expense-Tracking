@@ -14,6 +14,7 @@ import { useRef, useState, useEffect } from 'react';
 import CreditCardDueAlert from '@/components/home/CreditCardDueAlert';
 import CreditCardPaymentModal from '@/components/ui/CreditCardPaymentModal';
 import TransactionDetailsModal from '@/components/ui/TransactionDetailsModal';
+import { calculateCreditCardStats } from '@/utils/creditCardUtils';
 export default function HomePage() {
   const transactions = useTransactionStore((s) => s.transactions);
   const appName = useAppStore(s => s.appName);
@@ -160,20 +161,13 @@ export default function HomePage() {
               
               let installmentDebt = 0;
               let normalDebt = 0;
+              let outstandingBalance = Math.abs(stats.balance < 0 ? stats.balance : 0);
               
               if (isCreditCard) {
-                const txs = transactions.filter(t => t.walletId === wallet.id || t.toWalletId === wallet.id);
-                const instTxs = txs.filter(t => t.isInstallment && t.type === 'expense');
-                
-                installmentDebt = instTxs.reduce((sum, t) => {
-                  const months = t.installmentMonths || 1;
-                  const paid = t.installmentPaidMonths || 0;
-                  const remaining = Math.max(0, months - paid);
-                  return sum + (t.amount * (remaining / months));
-                }, 0);
-                
-                const totalDebt = Math.abs(stats.balance < 0 ? stats.balance : 0);
-                normalDebt = Math.max(0, totalDebt - installmentDebt);
+                const cardStats = calculateCreditCardStats(wallet, transactions);
+                installmentDebt = cardStats.installmentDebt;
+                normalDebt = cardStats.normalDebt;
+                outstandingBalance = cardStats.outstandingBalance;
               }
               
               const hasInstallment = installmentDebt > 0;
@@ -271,7 +265,7 @@ export default function HomePage() {
                           <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
                             <AutoShrinkText className="text-[44px] font-bold tracking-tight leading-none drop-shadow-sm w-full">
                               <span className="text-[24px] font-bold opacity-80 mr-1">฿</span>
-                              {Math.abs(stats.balance < 0 ? stats.balance : 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                              {outstandingBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                             </AutoShrinkText>
                           </div>
                           <button onClick={() => handlePayClick(wallet.id)} className="px-3.5 h-[36px] bg-gradient-to-br from-[#2E1065] to-[#4c1d95] text-white flex flex-row items-center justify-center gap-1.5 shadow-md rounded-[18px] hover:scale-[0.96] active:scale-95 transition-transform group shrink-0">
