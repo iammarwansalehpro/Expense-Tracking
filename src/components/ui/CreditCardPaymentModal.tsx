@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import * as Icons from 'lucide-react';
-import { CheckCircle2, X, CreditCard as CreditCardIcon, Calendar, ArrowRight } from 'lucide-react';
+import { CheckCircle2, X, CreditCard as CreditCardIcon, Calendar, ArrowRight, Loader2 } from 'lucide-react';
 import { calculateCreditCardStats } from '@/utils/creditCardUtils';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { useWalletStore } from '@/store/useWalletStore';
@@ -32,7 +32,6 @@ export default function CreditCardPaymentModal({ isOpen, onClose, creditCardId }
   const [amount, setAmount] = useState<string>('');
   const [paymentType, setPaymentType] = useState<'full' | 'minimum' | 'custom'>('full');
   const [loading, setLoading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
 
   const { handlers: dragHandlers, style: dragStyle } = useDragToClose({
     onClose,
@@ -52,7 +51,6 @@ export default function CreditCardPaymentModal({ isOpen, onClose, creditCardId }
     if (isOpen) {
       setPaymentType('full');
       setAmount(statementBalance.toString());
-      setShowSuccess(false);
     }
   }, [isOpen, statementBalance]);
 
@@ -80,10 +78,8 @@ export default function CreditCardPaymentModal({ isOpen, onClose, creditCardId }
       // No need to manually increment installmentPaidMonths anymore.
       // creditCardUtils dynamically calculates billed installments based on statement dates.
       
-      setShowSuccess(true);
-      setTimeout(() => {
-        handleClose();
-      }, 2000);
+      useToastStore.getState().addToast(`ชำระบัตรเครดิต ${creditCard.name} เรียบร้อยแล้ว`, 'success');
+      handleClose();
     } catch (error) {
       console.error(error);
       useToastStore.getState().addToast('เกิดข้อผิดพลาดในการชำระเงิน', 'error');
@@ -99,23 +95,6 @@ export default function CreditCardPaymentModal({ isOpen, onClose, creditCardId }
 
   if (!isOpen || !creditCard) return null;
 
-  if (showSuccess) {
-    return createPortal(
-      <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-        <div className="bg-white/90 backdrop-blur-xl rounded-[32px] p-8 w-full max-w-sm relative z-10 flex flex-col items-center shadow-2xl animate-scale-in">
-          <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
-            <CheckCircle2 className="w-10 h-10 text-emerald-500" />
-          </div>
-          <h3 className="text-2xl font-bold text-[#2E1065] mb-2">ชำระเงินสำเร็จ!</h3>
-          <p className="text-[#2E1065]/60 text-center mb-6">
-            คุณได้ชำระบัตรเครดิต {creditCard.name} <br/>จำนวน ฿{parseFloat(amount).toLocaleString('th-TH', { minimumFractionDigits: 2 })} เรียบร้อยแล้ว
-          </p>
-        </div>
-      </div>,
-      document.body
-    );
-  }
 
   return createPortal(
     <div className="fixed inset-0 z-[200] flex flex-col justify-end">
