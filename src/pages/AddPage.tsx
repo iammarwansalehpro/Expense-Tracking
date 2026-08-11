@@ -325,7 +325,7 @@ export default function AddPage() {
                   {isInstallment && (
                     <div className="mt-4 animate-fade-in flex flex-col gap-3">
                       <div>
-                        <label className="block text-[12px] font-bold text-[#2E1065] mb-2">จำนวนงวด</label>
+                        <label className="block text-sm font-bold text-[#2E1065] mb-2">จำนวนงวด</label>
                         <input
                           type="number"
                           value={installmentMonths}
@@ -335,7 +335,7 @@ export default function AddPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-[12px] font-bold text-[#2E1065] mb-2">อัตราดอกเบี้ยต่อเดือน (%)</label>
+                        <label className="block text-sm font-bold text-[#2E1065] mb-2">อัตราดอกเบี้ยต่อเดือน (%)</label>
                         <input
                           type="number"
                           step="0.01"
