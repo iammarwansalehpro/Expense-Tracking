@@ -104,8 +104,8 @@ export default function HomePage() {
   const getWalletStats = (walletId: string) => {
     const txs = transactions.filter(t => t.walletId === walletId || (!t.walletId && mainWallet.id === walletId));
     
-    const allTimeIncome = txs.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-    const allTimeExpense = txs.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+    const allTimeIncome = txs.filter(t => t.type === 'income' || (t.type === 'transfer' && t.toWalletId === walletId)).reduce((sum, t) => sum + t.amount, 0);
+    const allTimeExpense = txs.filter(t => t.type === 'expense' || (t.type === 'transfer' && t.fromWalletId === walletId)).reduce((sum, t) => sum + t.amount, 0);
     const balance = allTimeIncome - allTimeExpense;
 
     const now = new Date();
@@ -114,8 +114,8 @@ export default function HomePage() {
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     });
 
-    const income = currentMonthTxs.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-    const expense = currentMonthTxs.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+    const income = currentMonthTxs.filter(t => t.type === 'income' || (t.type === 'transfer' && t.toWalletId === walletId)).reduce((sum, t) => sum + t.amount, 0);
+    const expense = currentMonthTxs.filter(t => t.type === 'expense' || (t.type === 'transfer' && t.fromWalletId === walletId)).reduce((sum, t) => sum + t.amount, 0);
     
     return { balance, income, expense };
   };
