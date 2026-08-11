@@ -1,4 +1,4 @@
-import { Activity, ChevronDown, ArrowDown, ArrowUp, Sparkles, PlusCircle, ScanLine, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Search, XCircle } from 'lucide-react';
+import { Activity, ChevronDown, ArrowDownWideNarrow, ArrowUpNarrowWide, Sparkles, PlusCircle, ScanLine, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Search, XCircle } from 'lucide-react';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -394,7 +394,7 @@ export default function OverviewPage() {
               className="w-12 h-[48px] shrink-0 bg-white/40 backdrop-blur-xl border border-white/50 rounded-2xl flex items-center justify-center shadow-sm hover:bg-white/60 active:scale-95 transition-all text-[#2E1065]"
               title={language === 'en' ? "Toggle Sort Order" : "สลับการเรียงลำดับ"}
             >
-              {sortOrder === 'desc' ? <ArrowDown className="w-5 h-5" /> : <ArrowUp className="w-5 h-5" />}
+              {sortOrder === 'desc' ? <ArrowDownWideNarrow className="w-5 h-5" /> : <ArrowUpNarrowWide className="w-5 h-5" />}
             </button>
           </div>
           {viewMode === 'calendar' && (
