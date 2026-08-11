@@ -41,10 +41,18 @@ export default function AddPage() {
   const [installmentMonths, setInstallmentMonths] = useState<string>(editingTransaction?.installmentMonths?.toString() || '');
   const [installmentInterestRate, setInstallmentInterestRate] = useState<string>(editingTransaction?.installmentInterestRate?.toString() || '0');
   
-  // Format existing date properly, or use today
+  // Helper to get local date string YYYY-MM-DD
+  const getLocalDateString = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Format existing date properly in local timezone, or use today
   const initDate = editingTransaction 
-    ? new Date(editingTransaction.date).toISOString().split('T')[0] 
-    : new Date().toISOString().split('T')[0];
+    ? getLocalDateString(new Date(editingTransaction.date))
+    : getLocalDateString(new Date());
   const [date, setDate] = useState(initDate);
   
   // Format existing time properly, or use current time

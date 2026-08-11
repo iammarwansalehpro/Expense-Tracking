@@ -405,7 +405,13 @@ export default function ReviewSlipModal() {
                       <CustomTimePicker 
                         value={dateStr && dateStr.includes('T') ? dateStr.split('T')[1].slice(0,5) : ''}
                         onChange={(newTime) => {
-                          const d = dateStr ? dateStr.split('T')[0] : new Date().toISOString().split('T')[0];
+                          const getLocalDateString = (d: Date) => {
+                            const year = d.getFullYear();
+                            const month = String(d.getMonth() + 1).padStart(2, '0');
+                            const day = String(d.getDate()).padStart(2, '0');
+                            return `${year}-${month}-${day}`;
+                          };
+                          const d = dateStr ? dateStr.split('T')[0] : getLocalDateString(new Date());
                           if (newTime) {
                             setDateStr(`${d}T${newTime}`);
                           }
