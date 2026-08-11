@@ -132,7 +132,9 @@ export default function HomePage() {
   const activeWalletStats = getWalletStats(activeWallet?.id || '');
 
   // Take only first 4 items for home screen
-  const recentTransactions = transactions.slice(0, 4);
+  // Filter out the destination side of transfers for global display to avoid duplicates
+  const displayTransactions = transactions.filter(t => t.type !== 'transfer' || t.walletId === t.fromWalletId);
+  const recentTransactions = displayTransactions.slice(0, 4);
 
   return (
     <div className="flex flex-col h-full bg-transparent animate-fade-in">
@@ -471,6 +473,12 @@ export default function HomePage() {
             {recentTransactions.map((tx) => {
               const catStyle = getCategoryStyle(tx.category || '', appCategories || undefined);
               const IconComponent = catStyle.icon;
+              
+              let displayType = tx.type;
+              if (tx.type === 'transfer') {
+                displayType = 'expense';
+              }
+
               return (
                 <div 
                   key={tx.id} 
@@ -488,8 +496,8 @@ export default function HomePage() {
                       </p>
                     </div>
                   </div>
-                  <div className={`font-bold text-[clamp(14px,3.5vw,16px)] shrink-0 whitespace-nowrap pl-2 ${tx.type === 'income' ? 'text-emerald-600' : 'text-rose-500'}`}>
-                    {tx.type === 'income' ? '+' : '-'}฿{tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  <div className={`font-bold text-[clamp(14px,3.5vw,16px)] shrink-0 whitespace-nowrap pl-2 ${displayType === 'income' ? 'text-emerald-600' : 'text-rose-500'}`}>
+                    {displayType === 'income' ? '+' : '-'}฿{tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </div>
                 </div>
               );
