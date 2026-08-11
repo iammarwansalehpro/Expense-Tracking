@@ -7,6 +7,26 @@ import AutoShrinkText from '@/components/ui/AutoShrinkText';
 import AppHeader from '@/components/layout/AppHeader';
 import { useMemo, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { Transaction } from '@/types';
+
+const getEffectiveAmountForMonth = (tx: Transaction, targetMonth: number, targetYear: number): number => {
+  const txDate = new Date(tx.date);
+  const m = txDate.getMonth();
+  const y = txDate.getFullYear();
+  
+  if (!tx.installmentMonths || tx.installmentMonths <= 1) {
+    return (m === targetMonth && y === targetYear) ? tx.amount : 0;
+  }
+  
+  const monthsDiff = (targetYear - y) * 12 + (targetMonth - m);
+  if (monthsDiff >= 0 && monthsDiff < tx.installmentMonths) {
+    const principalPerMonth = tx.amount / tx.installmentMonths;
+    const rate = (tx.installmentInterestRate || 0) / 100;
+    const interestPerMonth = tx.amount * rate;
+    return principalPerMonth + interestPerMonth;
+  }
+  return 0;
+};
 
 const COLORS = ['#8B5CF6', '#EC4899', '#F43F5E', '#F59E0B', '#10B981', '#3B82F6', '#6366F1', '#A855F7', '#14B8A6'];
 
@@ -45,27 +65,21 @@ export default function AnalyticsPage() {
     transactions.forEach(t => {
       if (t.type !== activeTab) return;
       
-      const tDate = new Date(t.date);
-      const m = tDate.getMonth();
-      const y = tDate.getFullYear();
-
-      const monthDiff = (cYear - y) * 12 + (cMonth - m);
-
-      // Current Month
-      if (monthDiff === 0) {
-        total += t.amount;
+      const currentAmount = getEffectiveAmountForMonth(t, cMonth, cYear);
+      if (currentAmount > 0) {
+        total += currentAmount;
         count++;
-        catMap[t.category] = (catMap[t.category] || 0) + t.amount;
-        compare[2] += t.amount;
+        catMap[t.category] = (catMap[t.category] || 0) + currentAmount;
+        compare[2] += currentAmount;
       }
-      // Previous Month (-1)
-      else if (monthDiff === 1) {
-        compare[1] += t.amount;
-      }
-      // Previous Month (-2)
-      else if (monthDiff === 2) {
-        compare[0] += t.amount;
-      }
+      
+      const prev1 = new Date(cYear, cMonth - 1, 1);
+      const prev1Amount = getEffectiveAmountForMonth(t, prev1.getMonth(), prev1.getFullYear());
+      if (prev1Amount > 0) compare[1] += prev1Amount;
+      
+      const prev2 = new Date(cYear, cMonth - 2, 1);
+      const prev2Amount = getEffectiveAmountForMonth(t, prev2.getMonth(), prev2.getFullYear());
+      if (prev2Amount > 0) compare[0] += prev2Amount;
     });
 
     const avg = total / daysToDivide;
@@ -160,10 +174,13 @@ export default function AnalyticsPage() {
     const cMonth = viewDate.getMonth();
     const cYear = viewDate.getFullYear();
     transactions.forEach(t => {
-      const tDate = new Date(t.date);
-      if (tDate.getMonth() === cMonth && tDate.getFullYear() === cYear) {
-        if (t.type === 'income') inc += t.amount;
-        if (t.type === 'expense') exp += t.amount;
+      if (t.type === 'income') {
+        const tDate = new Date(t.date);
+        if (tDate.getMonth() === cMonth && tDate.getFullYear() === cYear) {
+          inc += t.amount;
+        }
+      } else if (t.type === 'expense') {
+        exp += getEffectiveAmountForMonth(t, cMonth, cYear);
       }
     });
     return { smartTotalIncome: inc, smartTotalExpense: exp };
