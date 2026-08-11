@@ -23,7 +23,7 @@ function ScrollPicker({
   const padding = ((VISIBLE_ITEMS - 1) / 2) * ITEM_HEIGHT;
   
   const isScrolling = useRef(false);
-  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+  const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (isScrolling.current) return;
