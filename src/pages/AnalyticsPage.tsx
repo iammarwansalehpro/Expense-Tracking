@@ -7,7 +7,7 @@ import AutoShrinkText from '@/components/ui/AutoShrinkText';
 import AppHeader from '@/components/layout/AppHeader';
 import { useMemo, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Transaction } from '@/types';
+import type { Transaction } from '@/types';
 
 const getEffectiveAmountForMonth = (tx: Transaction, targetMonth: number, targetYear: number): number => {
   const txDate = new Date(tx.date);
