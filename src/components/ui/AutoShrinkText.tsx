@@ -5,9 +5,10 @@ interface AutoShrinkTextProps {
   text?: string;
   children?: ReactNode;
   className?: string;
+  origin?: 'left' | 'center' | 'right';
 }
 
-export default function AutoShrinkText({ text, children, className = '' }: AutoShrinkTextProps) {
+export default function AutoShrinkText({ text, children, className = '', origin = 'left' }: AutoShrinkTextProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
   const [scale, setScale] = useState(1);
@@ -32,13 +33,16 @@ export default function AutoShrinkText({ text, children, className = '' }: AutoS
     return () => window.removeEventListener('resize', calculateScale);
   }, [text, children]);
 
+  const justifyClass = origin === 'right' ? 'justify-end' : origin === 'center' ? 'justify-center' : 'justify-start';
+  const transformOrigin = origin === 'right' ? 'right center' : origin === 'center' ? 'center center' : 'left center';
+
   return (
-    <div ref={containerRef} className={`w-full overflow-hidden flex items-center ${className}`}>
+    <div ref={containerRef} className={`w-full overflow-hidden flex items-center ${justifyClass} ${className}`}>
       <span 
         ref={textRef} 
         style={{ 
           transform: `scale(${scale})`, 
-          transformOrigin: 'left center', 
+          transformOrigin, 
           whiteSpace: 'nowrap', 
           display: 'inline-block',
           willChange: 'transform'

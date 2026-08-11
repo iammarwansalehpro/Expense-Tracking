@@ -300,63 +300,6 @@ export default function AddPage() {
                 />
               </div>
 
-              {type === 'expense' && wallets.find(w => w.id === walletId)?.type === 'credit_card' && (
-                <div className="bg-amber-50/50 p-4 rounded-[20px] border border-amber-200/50 animate-fade-in relative z-10">
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <h4 className="font-bold text-[#2E1065] text-sm">ทำรายการผ่อนชำระ</h4>
-                      <p className="text-[11px] text-[#2E1065]/50 mt-0.5">แบ่งจ่ายรายเดือน</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setIsInstallment(!isInstallment)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        isInstallment ? 'bg-amber-500' : 'bg-slate-300'
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          isInstallment ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  {isInstallment && (
-                    <div className="mt-4 animate-fade-in flex flex-col gap-3">
-                      <div>
-                        <label className="block text-sm font-bold text-[#2E1065] mb-2">จำนวนงวด</label>
-                        <input
-                          type="number"
-                          value={installmentMonths}
-                          onChange={(e) => setInstallmentMonths(e.target.value)}
-                          className="w-full bg-white/70 backdrop-blur-md rounded-[16px] px-4 py-3 text-[#2E1065] font-bold focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#8B5CF6]/40 border border-amber-100/50 shadow-inner text-lg placeholder:text-[#2E1065]/30"
-                          placeholder="เช่น 10"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-bold text-[#2E1065] mb-2">อัตราดอกเบี้ยต่อเดือน (%)</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={installmentInterestRate}
-                          onChange={(e) => setInstallmentInterestRate(e.target.value)}
-                          className="w-full bg-white/70 backdrop-blur-md rounded-[16px] px-4 py-3 text-[#2E1065] font-bold focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#8B5CF6]/40 border border-amber-100/50 shadow-inner text-lg placeholder:text-[#2E1065]/30"
-                          placeholder="0.00 สำหรับโปรโมชั่นผ่อน 0%"
-                        />
-                      </div>
-                      {amount && installmentMonths && (
-                        <div className="mt-2 bg-amber-100/50 p-3 rounded-[12px] flex items-center justify-between">
-                          <span className="text-[11px] font-bold text-amber-800">ยอดผ่อนชำระต่อเดือนโดยประมาณ</span>
-                          <span className="font-extrabold text-amber-600">
-                            ฿{((parseFloat(amount) / parseInt(installmentMonths)) + (parseFloat(amount) * (parseFloat(installmentInterestRate || '0') / 100))).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
 
               <div>
                 <label className="text-sm font-bold text-[#2E1065] flex items-center gap-2.5 mb-2">
@@ -439,6 +382,64 @@ export default function AddPage() {
                   />
                 </div>
               </div>
+
+              {type === 'expense' && wallets.find(w => w.id === walletId)?.type === 'credit_card' && (
+                <div className="bg-amber-50/50 p-4 rounded-[20px] border border-amber-200/50 animate-fade-in relative z-10">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <h4 className="font-bold text-[#2E1065] text-sm">ทำรายการผ่อนชำระ</h4>
+                      <p className="text-[11px] text-[#2E1065]/50 mt-0.5">แบ่งจ่ายรายเดือน</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsInstallment(!isInstallment)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        isInstallment ? 'bg-amber-500' : 'bg-slate-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          isInstallment ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {isInstallment && (
+                    <div className="mt-4 animate-fade-in flex flex-col gap-3">
+                      <div>
+                        <label className="block text-sm font-bold text-[#2E1065] mb-2">จำนวนงวด</label>
+                        <input
+                          type="number"
+                          value={installmentMonths}
+                          onChange={(e) => setInstallmentMonths(e.target.value)}
+                          className="w-full bg-white/70 backdrop-blur-md rounded-[16px] px-4 py-3 text-[#2E1065] font-bold focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#8B5CF6]/40 border border-amber-100/50 shadow-inner text-lg placeholder:text-[#2E1065]/30"
+                          placeholder="เช่น 10"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-[#2E1065] mb-2">อัตราดอกเบี้ยต่อเดือน (%)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={installmentInterestRate}
+                          onChange={(e) => setInstallmentInterestRate(e.target.value)}
+                          className="w-full bg-white/70 backdrop-blur-md rounded-[16px] px-4 py-3 text-[#2E1065] font-bold focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#8B5CF6]/40 border border-amber-100/50 shadow-inner text-lg placeholder:text-[#2E1065]/30"
+                          placeholder="0.00 สำหรับโปรโมชั่นผ่อน 0%"
+                        />
+                      </div>
+                      {amount && installmentMonths && (
+                        <div className="mt-2 bg-amber-100/50 p-3 rounded-[12px] flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-amber-800">ยอดผ่อนชำระต่อเดือนโดยประมาณ</span>
+                          <span className="font-extrabold text-amber-600">
+                            ฿{((parseFloat(amount) / parseInt(installmentMonths)) + (parseFloat(amount) * (parseFloat(installmentInterestRate || '0') / 100))).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div>
                 <div className="flex justify-between items-end mb-2">

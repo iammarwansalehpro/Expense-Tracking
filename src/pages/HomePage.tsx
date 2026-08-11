@@ -292,23 +292,31 @@ export default function HomePage() {
                             {wallet.creditLimit ? (
                                 !wallet.installmentCreditLimit ? (
                                   <div className="flex flex-col gap-1.5 px-1">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex flex-col">
-                                        <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/70 mb-0.5">
-                                          <div className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6]" />
-                                          {t('home.remainingCredit')}
-                                        </span>
-                                        <span className="text-[#2E1065] font-extrabold text-[14px]">
-                                          ฿{(wallet.creditLimit - Math.abs(stats.balance < 0 ? stats.balance : 0)).toLocaleString('en-US', { minimumFractionDigits: 0 })}
-                                        </span>
+                                    <div className="flex items-center justify-between gap-2">
+                                      <div className="flex flex-col flex-1 min-w-0">
+                                        <AutoShrinkText className="mb-0.5 w-full">
+                                          <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/70">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6] shrink-0" />
+                                            <span>{t('home.remainingCredit')}</span>
+                                          </span>
+                                        </AutoShrinkText>
+                                        <AutoShrinkText className="w-full">
+                                          <span className="text-[#2E1065] font-extrabold text-[14px]">
+                                            ฿{(wallet.creditLimit - Math.abs(stats.balance < 0 ? stats.balance : 0)).toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                                          </span>
+                                        </AutoShrinkText>
                                       </div>
-                                      <div className="flex flex-col items-end">
-                                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/50 mb-0.5">
-                                          {t('home.totalCredit')}
-                                        </span>
-                                        <span className="text-[#2E1065]/60 font-bold text-[14px]">
-                                          ฿{wallet.creditLimit.toLocaleString('en-US', { minimumFractionDigits: 0 })}
-                                        </span>
+                                      <div className="flex flex-col flex-1 min-w-0 items-end text-right">
+                                        <AutoShrinkText className="mb-0.5 w-full" origin="right">
+                                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/50">
+                                            {t('home.totalCredit')}
+                                          </span>
+                                        </AutoShrinkText>
+                                        <AutoShrinkText className="w-full" origin="right">
+                                          <span className="text-[#2E1065]/60 font-bold text-[14px]">
+                                            ฿{wallet.creditLimit.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                                          </span>
+                                        </AutoShrinkText>
                                       </div>
                                     </div>
                                     <div className="w-full bg-[#2E1065]/5 h-2 rounded-full overflow-hidden shadow-inner mt-0.5">
@@ -318,23 +326,31 @@ export default function HomePage() {
                                 ) : (
                                   <div className="flex flex-col gap-1.5 px-1">
                                     <div className="flex flex-col gap-0.5">
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex flex-col">
-                                          <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/70">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6]" />
-                                            {t('home.remainingCredit')}
-                                          </span>
-                                          <span className="text-[#2E1065] font-extrabold text-[12px] leading-none">
-                                            ฿{(wallet.creditLimit - normalDebt).toLocaleString('en-US', { minimumFractionDigits: 0 })}
-                                          </span>
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex flex-col flex-1 min-w-0">
+                                          <AutoShrinkText className="w-full">
+                                            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/70">
+                                              <div className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6] shrink-0" />
+                                              <span>{t('home.remainingCredit')}</span>
+                                            </span>
+                                          </AutoShrinkText>
+                                          <AutoShrinkText className="w-full">
+                                            <span className="text-[#2E1065] font-extrabold text-[12px] leading-none">
+                                              ฿{(wallet.creditLimit - normalDebt).toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                                            </span>
+                                          </AutoShrinkText>
                                         </div>
-                                        <div className="flex flex-col items-end">
-                                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/50">
-                                            {t('home.totalCredit')}
-                                          </span>
-                                          <span className="text-[#2E1065]/60 font-bold text-[12px] leading-none">
-                                            ฿{wallet.creditLimit.toLocaleString('en-US', { minimumFractionDigits: 0 })}
-                                          </span>
+                                        <div className="flex flex-col flex-1 min-w-0 items-end text-right">
+                                          <AutoShrinkText className="w-full" origin="right">
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/50">
+                                              {t('home.totalCredit')}
+                                            </span>
+                                          </AutoShrinkText>
+                                          <AutoShrinkText className="w-full" origin="right">
+                                            <span className="text-[#2E1065]/60 font-bold text-[12px] leading-none">
+                                              ฿{wallet.creditLimit.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                                            </span>
+                                          </AutoShrinkText>
                                         </div>
                                       </div>
                                       <div className="w-full bg-[#2E1065]/5 h-1.5 rounded-full overflow-hidden shadow-inner mt-0.5">
@@ -342,23 +358,31 @@ export default function HomePage() {
                                       </div>
                                     </div>
                                     <div className="flex flex-col gap-0.5">
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex flex-col">
-                                          <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/70">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                                            {t('home.remainingInstallmentCredit')}
-                                          </span>
-                                          <span className="text-[#2E1065] font-extrabold text-[12px] leading-none">
-                                            ฿{(wallet.installmentCreditLimit - installmentDebt).toLocaleString('en-US', { minimumFractionDigits: 0 })}
-                                          </span>
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex flex-col flex-1 min-w-0">
+                                          <AutoShrinkText className="w-full">
+                                            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/70">
+                                              <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                                              <span>{t('home.remainingInstallmentCredit')}</span>
+                                            </span>
+                                          </AutoShrinkText>
+                                          <AutoShrinkText className="w-full">
+                                            <span className="text-[#2E1065] font-extrabold text-[12px] leading-none">
+                                              ฿{(wallet.installmentCreditLimit - installmentDebt).toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                                            </span>
+                                          </AutoShrinkText>
                                         </div>
-                                        <div className="flex flex-col items-end">
-                                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/50">
-                                            {t('home.totalInstallmentCredit')}
-                                          </span>
-                                          <span className="text-[#2E1065]/60 font-bold text-[12px] leading-none">
-                                            ฿{wallet.installmentCreditLimit.toLocaleString('en-US', { minimumFractionDigits: 0 })}
-                                          </span>
+                                        <div className="flex flex-col flex-1 min-w-0 items-end text-right">
+                                          <AutoShrinkText className="w-full" origin="right">
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/50">
+                                              {t('home.totalInstallmentCredit')}
+                                            </span>
+                                          </AutoShrinkText>
+                                          <AutoShrinkText className="w-full" origin="right">
+                                            <span className="text-[#2E1065]/60 font-bold text-[12px] leading-none">
+                                              ฿{wallet.installmentCreditLimit.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                                            </span>
+                                          </AutoShrinkText>
                                         </div>
                                       </div>
                                       <div className="w-full bg-[#2E1065]/5 h-1.5 rounded-full overflow-hidden shadow-inner mt-0.5">
@@ -376,19 +400,27 @@ export default function HomePage() {
                         </div>
                       ) : (
                         <div className="grid grid-cols-2 gap-3 h-[76px]">
-                          <div className="bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-md rounded-2xl px-3 py-2 border border-white/60 shadow-[0_4px_16px_rgba(31,38,135,0.04)] flex flex-col justify-center">
-                            <p className="flex items-center gap-1.5 text-[11px] font-bold text-[#2E1065]/60 tracking-wide mb-0.5">
-                              <span className="bg-emerald-500/20 p-0.5 rounded-full"><ArrowDown className="w-3 h-3 text-emerald-600" /></span>
-                              {t('home.income')} <span className="font-medium opacity-80">{t('home.thisMonth')}</span>
-                            </p>
-                            <p className="font-extrabold text-[#2E1065] text-sm tracking-tight">฿{stats.income.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                          <div className="bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-md rounded-2xl px-3 py-2 border border-white/60 shadow-[0_4px_16px_rgba(31,38,135,0.04)] flex flex-col justify-center min-w-0">
+                            <AutoShrinkText className="mb-0.5 w-full">
+                              <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#2E1065]/60 tracking-wide">
+                                <span className="bg-emerald-500/20 p-0.5 rounded-full shrink-0"><ArrowDown className="w-3 h-3 text-emerald-600" /></span>
+                                <span>{t('home.income')} <span className="font-medium opacity-80">{t('home.thisMonth')}</span></span>
+                              </span>
+                            </AutoShrinkText>
+                            <AutoShrinkText className="w-full">
+                              <span className="font-extrabold text-[#2E1065] text-sm tracking-tight">฿{stats.income.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                            </AutoShrinkText>
                           </div>
-                          <div className="bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-md rounded-2xl px-3 py-2 border border-white/60 shadow-[0_4px_16px_rgba(31,38,135,0.04)] flex flex-col justify-center">
-                            <p className="flex items-center gap-1.5 text-[11px] font-bold text-[#2E1065]/60 tracking-wide mb-0.5">
-                              <span className="bg-rose-500/20 p-0.5 rounded-full"><ArrowUp className="w-3 h-3 text-rose-600" /></span>
-                              {t('home.expense')} <span className="font-medium opacity-80">{t('home.thisMonth')}</span>
-                            </p>
-                            <p className="font-extrabold text-[#2E1065] text-sm tracking-tight">฿{stats.expense.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                          <div className="bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-md rounded-2xl px-3 py-2 border border-white/60 shadow-[0_4px_16px_rgba(31,38,135,0.04)] flex flex-col justify-center min-w-0">
+                            <AutoShrinkText className="mb-0.5 w-full">
+                              <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#2E1065]/60 tracking-wide">
+                                <span className="bg-rose-500/20 p-0.5 rounded-full shrink-0"><ArrowUp className="w-3 h-3 text-rose-600" /></span>
+                                <span>{t('home.expense')} <span className="font-medium opacity-80">{t('home.thisMonth')}</span></span>
+                              </span>
+                            </AutoShrinkText>
+                            <AutoShrinkText className="w-full">
+                              <span className="font-extrabold text-[#2E1065] text-sm tracking-tight">฿{stats.expense.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                            </AutoShrinkText>
                           </div>
                         </div>
                       )}
