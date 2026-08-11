@@ -377,11 +377,17 @@ export default function HomePage() {
                       ) : (
                         <div className="grid grid-cols-2 gap-3 h-[76px]">
                           <div className="bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-md rounded-2xl px-3 py-2 border border-white/60 shadow-[0_4px_16px_rgba(31,38,135,0.04)] flex flex-col justify-center">
-                            <p className="text-[11px] font-bold text-[#2E1065]/60 tracking-wide mb-0.5">{t('home.income')} <span className="font-medium opacity-80">{t('home.thisMonth')}</span></p>
+                            <p className="flex items-center gap-1.5 text-[11px] font-bold text-[#2E1065]/60 tracking-wide mb-0.5">
+                              <span className="bg-emerald-500/20 p-0.5 rounded-full"><ArrowDown className="w-3 h-3 text-emerald-600" /></span>
+                              {t('home.income')} <span className="font-medium opacity-80">{t('home.thisMonth')}</span>
+                            </p>
                             <p className="font-extrabold text-[#2E1065] text-sm tracking-tight">฿{stats.income.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
                           </div>
                           <div className="bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-md rounded-2xl px-3 py-2 border border-white/60 shadow-[0_4px_16px_rgba(31,38,135,0.04)] flex flex-col justify-center">
-                            <p className="text-[11px] font-bold text-[#2E1065]/60 tracking-wide mb-0.5">{t('home.expense')} <span className="font-medium opacity-80">{t('home.thisMonth')}</span></p>
+                            <p className="flex items-center gap-1.5 text-[11px] font-bold text-[#2E1065]/60 tracking-wide mb-0.5">
+                              <span className="bg-rose-500/20 p-0.5 rounded-full"><ArrowUp className="w-3 h-3 text-rose-600" /></span>
+                              {t('home.expense')} <span className="font-medium opacity-80">{t('home.thisMonth')}</span>
+                            </p>
                             <p className="font-extrabold text-[#2E1065] text-sm tracking-tight">฿{stats.expense.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
                           </div>
                         </div>
