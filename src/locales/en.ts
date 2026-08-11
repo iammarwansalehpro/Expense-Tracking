@@ -14,7 +14,19 @@ export const en: Translations = {
     expense: 'Expense',
     addWalletBtn: 'Add New Wallet',
     confirmDeleteWallet: 'Are you sure you want to delete this wallet?',
-    thisMonth: '(This month)'
+    thisMonth: '(This month)',
+    outstandingBalance: 'Outstanding Balance',
+    remainingCredit: 'Remaining Credit',
+    totalCredit: 'Total Limit',
+    remainingNormalCredit: 'Credit Remaining',
+    remainingInstallmentCredit: 'Installment Remaining',
+    totalInstallmentCredit: 'Installment Limit',
+    dueDate: 'Due Date',
+    pay: 'Pay Now',
+    installment: 'Installment',
+    day: 'Day',
+    showDetails: 'Show Limit Details',
+    hideDetails: 'Hide Details'
   },
   nav: {
     home: 'Home',
@@ -26,6 +38,8 @@ export const en: Translations = {
     addManualDesc: 'Enter details manually',
     scanSlipTitle: 'Scan e-Slip',
     scanSlipDesc: 'Auto-extract from image',
+    transferTitle: 'Transfer',
+    transferDesc: 'Cross-wallet',
   },
   add: {
     title: 'Add Transaction',
@@ -128,6 +142,7 @@ export const en: Translations = {
     type: 'Wallet Type',
     cash: 'Cash',
     bank: 'Bank Account',
+    credit_card: 'Credit Card',
     name: 'Wallet/Account Name',
     namePlaceholder: 'e.g. Credit Card, Savings...',
     setMain: 'Set as Main Wallet',
@@ -168,6 +183,19 @@ export const en: Translations = {
     noCategory: 'No category',
     requireCategory: 'Please select a category',
     defaultTitle: 'Scanned from slip'
+  },
+  transfer: {
+    title: 'Cross-Wallet Transfer',
+    desc: 'Record money transfers between your wallets',
+    from: 'From (Source)',
+    to: 'To (Destination)',
+    amount: 'Amount',
+    note: 'Memo (Optional)',
+    submit: 'Confirm Transfer',
+    sameWalletError: 'Cannot transfer to the same wallet',
+    amountError: 'Amount must be greater than 0',
+    success: 'Transfer successful',
+    error: 'An error occurred during the transfer',
   },
   transactions: {
     title: 'All Transactions',

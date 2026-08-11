@@ -11,6 +11,13 @@ const syncToFirebase = (wallets: Wallet[]) => {
   }
 };
 
+export interface CreditCardAlert {
+  wallet: Wallet;
+  daysUntilDue: number;
+  outstandingBalance: number;
+  urgency: 'warning' | 'urgent' | 'overdue';
+}
+
 interface WalletState {
   wallets: Wallet[];
   addWallet: (wallet: Omit<Wallet, 'id'>) => void;
@@ -19,6 +26,8 @@ interface WalletState {
   setMainWallet: (id: string) => void;
   getMainWallet: () => Wallet;
   setWallets: (wallets: Wallet[]) => void;
+  getCreditCardWallets: () => Wallet[];
+  getNonCreditCardWallets: () => Wallet[];
 }
 
 const defaultWallets: Wallet[] = [
@@ -28,6 +37,7 @@ const defaultWallets: Wallet[] = [
     balance: 0,
     color: 'bg-emerald-500',
     icon: 'Wallet',
+    type: 'cash',
     isMain: true
   },
   {
@@ -35,7 +45,8 @@ const defaultWallets: Wallet[] = [
     name: 'บัญชีธนาคาร',
     balance: 0,
     color: 'bg-blue-500',
-    icon: 'CreditCard',
+    icon: 'Landmark',
+    type: 'bank',
     isMain: false
   }
 ];
@@ -96,10 +107,17 @@ export const useWalletStore = create<WalletState>()(
         const state = get();
         return state.wallets.find(w => w.isMain) || state.wallets[0] || defaultWallets[0];
       },
-      setWallets: (wallets) => set({ wallets })
+      setWallets: (wallets) => set({ wallets }),
+      getCreditCardWallets: () => {
+        return get().wallets.filter(w => w.type === 'credit_card');
+      },
+      getNonCreditCardWallets: () => {
+        return get().wallets.filter(w => w.type !== 'credit_card');
+      },
     }),
     {
       name: 'paysave-wallet-storage',
     }
   )
 );
+

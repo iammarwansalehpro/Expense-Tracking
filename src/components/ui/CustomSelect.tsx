@@ -80,7 +80,7 @@ export default function CustomSelect({ label, options, value, onChange, placehol
       {/* Bottom Sheet Overlay */}
       {isOpen && createPortal(
         <div 
-          className="fixed inset-0 z-[200] flex flex-col justify-end"
+          className="fixed inset-0 z-[300] flex flex-col justify-end"
         >
           {/* Backdrop */}
           <div 

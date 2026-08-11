@@ -16,6 +16,7 @@ import { addTransaction, updateTransaction } from '@/services/transactionService
 import { useToastStore } from '@/store/useToastStore';
 import { useConfirmStore } from '@/store/useConfirmStore';
 import type { TransactionType, TransactionCategory, Wallet } from '@/types';
+import { useDragToClose } from '@/hooks/useDragToClose';
 
 export default function AddPage() {
   const { t } = useTranslation();
@@ -36,6 +37,10 @@ export default function AddPage() {
   const [title, setTitle] = useState(editingTransaction?.title || '');
   const [category, setCategory] = useState<TransactionCategory>(editingTransaction?.category || '');
   const [walletId, setWalletId] = useState<string>(editingTransaction?.walletId || mainWallet?.id || '');
+  const [isInstallment, setIsInstallment] = useState<boolean>(editingTransaction?.isInstallment || false);
+  const [installmentMonths, setInstallmentMonths] = useState<string>(editingTransaction?.installmentMonths?.toString() || '');
+  const [installmentInterestRate, setInstallmentInterestRate] = useState<string>(editingTransaction?.installmentInterestRate?.toString() || '0');
+  const [installmentPaidMonths, setInstallmentPaidMonths] = useState<number>(editingTransaction?.installmentPaidMonths || 0);
   
   // Format existing date properly, or use today
   const initDate = editingTransaction 
@@ -106,7 +111,11 @@ export default function AddPage() {
           category,
           date: dateStr,
           time: timeStr,
-          walletId
+          walletId,
+          isInstallment,
+          installmentMonths: isInstallment && installmentMonths ? parseInt(installmentMonths, 10) : undefined,
+          installmentInterestRate: isInstallment && installmentInterestRate ? parseFloat(installmentInterestRate) : undefined,
+          installmentPaidMonths: isInstallment ? installmentPaidMonths : undefined
         });
         useToastStore.getState().addToast('อัปเดตรายการสำเร็จ', 'success');
       } else {
@@ -119,7 +128,11 @@ export default function AddPage() {
           date: dateStr,
           time: timeStr,
           iconBgColor: randomColor,
-          walletId
+          walletId,
+          isInstallment,
+          installmentMonths: isInstallment && installmentMonths ? parseInt(installmentMonths, 10) : undefined,
+          installmentInterestRate: isInstallment && installmentInterestRate ? parseFloat(installmentInterestRate) : undefined,
+          installmentPaidMonths: isInstallment ? 0 : undefined
         });
         useToastStore.getState().addToast('บันทึกรายการสำเร็จ', 'success');
       }
@@ -166,6 +179,10 @@ export default function AddPage() {
     executeSave(parsedAmount, dateStr);
   };
 
+  const { handlers: dragHandlers, style: dragStyle } = useDragToClose({
+    onClose: handleClose,
+  });
+
   return createPortal(
     <div className="fixed inset-0 z-[100] flex flex-col justify-end">
       {/* Backdrop */}
@@ -175,7 +192,11 @@ export default function AddPage() {
       />
       
       {/* Main Bottom Sheet (Glassmorphism) */}
-      <div className="bg-white/80 backdrop-blur-[30px] rounded-t-[40px] border-t border-white/60 w-full max-w-md mx-auto shadow-[0_-10px_40px_rgba(31,38,135,0.15)] relative animate-slide-up flex flex-col h-[95vh]">
+      <div 
+        {...dragHandlers}
+        style={dragStyle}
+        className="bg-white/80 backdrop-blur-[30px] rounded-t-[40px] border-t border-white/60 w-full max-w-md mx-auto shadow-[0_-10px_40px_rgba(31,38,135,0.15)] relative animate-slide-up flex flex-col h-[95vh]"
+      >
         {/* Drag handle */}
         <div className="p-4 flex justify-center shrink-0">
           <div className="w-16 h-1.5 bg-slate-300/50 rounded-full" />
@@ -264,7 +285,9 @@ export default function AddPage() {
                 <CustomSelect 
                   value={walletId}
                   onChange={setWalletId}
-                  options={wallets.map(w => {
+                  options={wallets
+                    .filter(w => type !== 'income' || w.type !== 'credit_card')
+                    .map(w => {
                     const iconName = w.icon === 'CreditCard' ? 'Landmark' : w.icon;
                     const WIcon = (Icons as any)[iconName] || Icons.Wallet;
                     return {
@@ -276,6 +299,64 @@ export default function AddPage() {
                   placeholder="เลือกกระเป๋าเงิน"
                 />
               </div>
+
+              {type === 'expense' && wallets.find(w => w.id === walletId)?.type === 'credit_card' && (
+                <div className="bg-amber-50/50 p-4 rounded-[20px] border border-amber-200/50 animate-fade-in relative z-10">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <h4 className="font-bold text-[#2E1065] text-sm">ทำรายการผ่อนชำระ</h4>
+                      <p className="text-[11px] text-[#2E1065]/50 mt-0.5">แบ่งจ่ายรายเดือน</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsInstallment(!isInstallment)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        isInstallment ? 'bg-amber-500' : 'bg-slate-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          isInstallment ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {isInstallment && (
+                    <div className="mt-4 animate-fade-in flex flex-col gap-3">
+                      <div>
+                        <label className="block text-[12px] font-bold text-[#2E1065] mb-2">จำนวนงวด</label>
+                        <input
+                          type="number"
+                          value={installmentMonths}
+                          onChange={(e) => setInstallmentMonths(e.target.value)}
+                          className="w-full bg-white/70 backdrop-blur-md rounded-[16px] px-4 py-3 text-[#2E1065] font-bold focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#8B5CF6]/40 border border-amber-100/50 shadow-inner text-lg placeholder:text-[#2E1065]/30"
+                          placeholder="เช่น 10"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[12px] font-bold text-[#2E1065] mb-2">อัตราดอกเบี้ยต่อเดือน (%)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={installmentInterestRate}
+                          onChange={(e) => setInstallmentInterestRate(e.target.value)}
+                          className="w-full bg-white/70 backdrop-blur-md rounded-[16px] px-4 py-3 text-[#2E1065] font-bold focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#8B5CF6]/40 border border-amber-100/50 shadow-inner text-lg placeholder:text-[#2E1065]/30"
+                          placeholder="0.00 สำหรับโปรโมชั่นผ่อน 0%"
+                        />
+                      </div>
+                      {amount && installmentMonths && (
+                        <div className="mt-2 bg-amber-100/50 p-3 rounded-[12px] flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-amber-800">ยอดผ่อนชำระต่อเดือนโดยประมาณ</span>
+                          <span className="font-extrabold text-amber-600">
+                            ฿{((parseFloat(amount) / parseInt(installmentMonths)) + (parseFloat(amount) * (parseFloat(installmentInterestRate || '0') / 100))).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div>
                 <label className="text-sm font-bold text-[#2E1065] flex items-center gap-2.5 mb-2">

@@ -1,5 +1,6 @@
-export type TransactionType = 'income' | 'expense';
+export type TransactionType = 'income' | 'expense' | 'transfer';
 export type TransactionCategory = string;
+export type WalletType = 'cash' | 'bank' | 'credit_card';
 
 export interface Wallet {
   id: string;
@@ -7,7 +8,13 @@ export interface Wallet {
   balance: number;
   color: string;
   icon: string;
+  type: WalletType;
   isMain?: boolean;
+  // Credit card / Installment specific fields
+  creditLimit?: number;
+  installmentCreditLimit?: number; // วงเงินสินเชื่อ (สำหรับผ่อนชำระ)
+  dueDay?: number;       // 1-31
+  statementDay?: number;  // 1-31
 }
 
 export interface Category {
@@ -36,6 +43,16 @@ export interface Transaction {
   bank?: string;
   iconBgColor?: string; // e.g. 'bg-blue-100'
   walletId?: string; // Links transaction to a specific wallet
+  // Transfer specific fields
+  fromWalletId?: string;
+  toWalletId?: string;
+  linkedTransactionId?: string;
+
+  // Installment specific fields (for credit card expense transactions)
+  isInstallment?: boolean;
+  installmentMonths?: number;
+  installmentPaidMonths?: number;
+  installmentInterestRate?: number; // ดอกเบี้ย % ต่อเดือน (Flat Rate)
 }
 
 export type Theme = 'light' | 'dark' | 'system';

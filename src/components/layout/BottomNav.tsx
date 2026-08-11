@@ -6,7 +6,8 @@ import {
   Plus,
   PenLine,
   ScanLine,
-  Loader2
+  Loader2,
+  ArrowLeftRight
 } from 'lucide-react';
 import { useRef, useState, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
@@ -138,6 +139,28 @@ export default function BottomNav() {
             isAddMenuOpen ? 'bottom-[120px]' : 'bottom-[80px] pointer-events-none'
           }`}>
             
+            {/* Option 1: Scan Slip (Icon: ScanLine) */}
+            <div className={`relative flex items-center justify-center w-[52px] h-[52px] group transition-all duration-300 delay-[0ms] ${isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}>
+              <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 flex items-center">
+                <div
+                  className="px-4 py-2 bg-white/40 backdrop-blur-[40px] saturate-[200%] rounded-[20px] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15),inset_0_2px_3px_-1px_rgba(255,255,255,0.8),inset_0_0_0_1px_rgba(255,255,255,0.5)] cursor-pointer hover:bg-white/60 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] transition-all duration-300"
+                  onClick={handleScanClick}
+                >
+                  <div className="flex flex-col items-end text-right w-max max-w-[125px] whitespace-normal break-words">
+                    <span className="text-[13px] font-bold text-[#2E1065] drop-shadow-sm leading-tight">{t('nav.scanSlipTitle')}</span>
+                    <span className="text-[10px] font-medium text-[#2E1065]/70 leading-tight">{t('nav.scanSlipDesc')}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <button
+                onClick={handleScanClick}
+                className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_32px_rgba(16,185,129,0.3)] border bg-gradient-to-tr from-emerald-400 to-emerald-500 border-white/30 text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
+              >
+                <ScanLine className="w-[22px] h-[22px] relative z-10" />
+              </button>
+            </div>
+
             {/* Option 2: Add Manual (Icon: PenLine) */}
             <div className={`relative flex items-center justify-center w-[52px] h-[52px] group transition-all duration-300 delay-[50ms] ${isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}>
               <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 flex items-center">
@@ -160,31 +183,37 @@ export default function BottomNav() {
                   setCurrentPage('add');
                   setAddMenuOpen(false);
                 }}
-                className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] border bg-white/80 border-white/60 text-[#2E1065] transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
+                className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_32px_rgba(236,72,153,0.3)] border bg-gradient-to-tr from-pink-500 to-rose-500 border-white/30 text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
               >
                 <PenLine className="w-[22px] h-[22px] relative z-10" />
               </button>
             </div>
 
-            {/* Option 1: Scan Slip (Icon: ScanLine) */}
+            {/* Option 3: Transfer (Icon: ArrowLeftRight) */}
             <div className={`relative flex items-center justify-center w-[52px] h-[52px] group transition-all duration-300 delay-[100ms] ${isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}>
               <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 flex items-center">
                 <div
                   className="px-4 py-2 bg-white/40 backdrop-blur-[40px] saturate-[200%] rounded-[20px] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15),inset_0_2px_3px_-1px_rgba(255,255,255,0.8),inset_0_0_0_1px_rgba(255,255,255,0.5)] cursor-pointer hover:bg-white/60 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] transition-all duration-300"
-                  onClick={handleScanClick}
+                  onClick={() => {
+                    useAppStore.getState().setTransferModalOpen(true);
+                    setAddMenuOpen(false);
+                  }}
                 >
                   <div className="flex flex-col items-end text-right w-max max-w-[125px] whitespace-normal break-words">
-                    <span className="text-[13px] font-bold text-[#2E1065] drop-shadow-sm leading-tight">{t('nav.scanSlipTitle')}</span>
-                    <span className="text-[10px] font-medium text-[#2E1065]/70 leading-tight">{t('nav.scanSlipDesc')}</span>
+                    <span className="text-[13px] font-bold text-[#2E1065] drop-shadow-sm leading-tight">{t('nav.transferTitle', 'โอนเงิน')}</span>
+                    <span className="text-[10px] font-medium text-[#2E1065]/70 leading-tight">{t('nav.transferDesc', 'โอนข้ามกระเป๋า')}</span>
                   </div>
                 </div>
               </div>
               
               <button
-                onClick={handleScanClick}
-                className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_32px_rgba(139,92,246,0.3)] border bg-gradient-to-tr from-[#A855F7] to-[#8B5CF6] border-white/30 text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
+                onClick={() => {
+                  useAppStore.getState().setTransferModalOpen(true);
+                  setAddMenuOpen(false);
+                }}
+                className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_32px_rgba(249,115,22,0.3)] border bg-gradient-to-tr from-amber-400 to-orange-500 border-white/30 text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
               >
-                <ScanLine className="w-[22px] h-[22px] relative z-10" />
+                <ArrowLeftRight className="w-[22px] h-[22px] relative z-10" />
               </button>
             </div>
 

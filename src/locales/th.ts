@@ -12,7 +12,19 @@ export const th = {
     expense: 'รายจ่าย',
     addWalletBtn: 'เพิ่มกระเป๋าเงินใหม่',
     confirmDeleteWallet: 'คุณแน่ใจหรือไม่ที่จะลบกระเป๋าเงินนี้?',
-    thisMonth: '(เดือนนี้)'
+    thisMonth: '(เดือนนี้)',
+    outstandingBalance: 'ยอดค้างชำระ',
+    remainingCredit: 'วงเงินคงเหลือ',
+    totalCredit: 'วงเงินทั้งหมด',
+    remainingNormalCredit: 'วงเงินปกติคงเหลือ',
+    remainingInstallmentCredit: 'วงเงินสินเชื่อคงเหลือ',
+    totalInstallmentCredit: 'วงเงินสินเชื่อทั้งหมด',
+    dueDate: 'ครบกำหนดชำระ',
+    pay: 'ชำระเงิน',
+    installment: 'ผ่อนชำระ',
+    day: 'วันที่',
+    showDetails: 'ดูรายละเอียดวงเงิน',
+    hideDetails: 'ซ่อนรายละเอียด'
   },
   nav: {
     home: 'หน้าหลัก',
@@ -24,6 +36,8 @@ export const th = {
     addManualDesc: 'กรอกข้อมูลด้วยตัวเอง',
     scanSlipTitle: 'สแกนสลิป',
     scanSlipDesc: 'อ่านข้อมูลจาก e-Slip',
+    transferTitle: 'โอนเงิน',
+    transferDesc: 'โอนข้ามกระเป๋า',
   },
   add: {
     title: 'เพิ่มรายการ',
@@ -126,6 +140,7 @@ export const th = {
     type: 'ประเภทกระเป๋าเงิน',
     cash: 'เงินสด',
     bank: 'บัญชีธนาคาร',
+    credit_card: 'บัตรเครดิต',
     name: 'ชื่อกระเป๋า/บัญชี',
     namePlaceholder: 'เช่น บัตรเครดิต, เงินออม...',
     setMain: 'ตั้งเป็นกระเป๋าหลัก',
@@ -166,6 +181,19 @@ export const th = {
     noCategory: 'ยังไม่มีบันทึก',
     requireCategory: 'กรุณาเลือกหมวดหมู่',
     defaultTitle: 'รายการสแกนจากสลิป'
+  },
+  transfer: {
+    title: 'โอนเงินข้ามกระเป๋า',
+    desc: 'บันทึกการย้ายเงินระหว่างกระเป๋าของคุณ',
+    from: 'จาก (ต้นทาง)',
+    to: 'ไป (ปลายทาง)',
+    amount: 'จำนวนเงิน',
+    note: 'บันทึกช่วยจำ (ไม่บังคับ)',
+    submit: 'ยืนยันการโอนเงิน',
+    sameWalletError: 'ไม่สามารถโอนไปกระเป๋าเดียวกันได้',
+    amountError: 'จำนวนเงินต้องมากกว่า 0',
+    success: 'โอนเงินสำเร็จ',
+    error: 'เกิดข้อผิดพลาดในการโอนเงิน',
   },
   transactions: {
     title: 'รายการทั้งหมด',

@@ -36,6 +36,66 @@ export const addTransaction = async (
   }
 };
 
+// Add a transfer between wallets (creates paired transactions)
+export const addTransferTransaction = async (
+  userId: string,
+  fromWalletId: string,
+  toWalletId: string,
+  amount: number,
+  note?: string
+) => {
+  try {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+    // Create expense from source wallet
+    const fromTxRef = push(ref(db, TRANSACTIONS_PATH));
+    const fromTxId = fromTxRef.key!;
+
+    // Create income to destination wallet
+    const toTxRef = push(ref(db, TRANSACTIONS_PATH));
+    const toTxId = toTxRef.key!;
+
+    await set(fromTxRef, {
+      type: 'transfer',
+      amount,
+      category: 'โอนเงิน',
+      title: note || 'โอนเงินข้ามกระเป๋า',
+      date: dateStr,
+      time: timeStr,
+      walletId: fromWalletId,
+      fromWalletId,
+      toWalletId,
+      linkedTransactionId: toTxId,
+      iconBgColor: 'bg-[#6366F1]/20 text-[#4F46E5]',
+      userId,
+      createdAt: serverTimestamp()
+    });
+
+    await set(toTxRef, {
+      type: 'transfer',
+      amount,
+      category: 'โอนเงิน',
+      title: note || 'โอนเงินข้ามกระเป๋า',
+      date: dateStr,
+      time: timeStr,
+      walletId: toWalletId,
+      fromWalletId,
+      toWalletId,
+      linkedTransactionId: fromTxId,
+      iconBgColor: 'bg-[#6366F1]/20 text-[#4F46E5]',
+      userId,
+      createdAt: serverTimestamp()
+    });
+
+    return { fromTxId, toTxId };
+  } catch (error) {
+    console.error("Error adding transfer transaction: ", error);
+    throw error;
+  }
+};
+
 // Delete a transaction
 export const deleteTransaction = async (id: string) => {
   try {

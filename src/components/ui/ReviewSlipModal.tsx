@@ -16,6 +16,7 @@ import CustomTimePicker from '@/components/ui/CustomTimePicker';
 import AutoShrinkText from '@/components/ui/AutoShrinkText';
 import { useRef, useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useDragToClose } from '@/hooks/useDragToClose';
 
 export default function ReviewSlipModal() {
   const { t } = useTranslation();
@@ -42,6 +43,15 @@ export default function ReviewSlipModal() {
   
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  const handleClose = () => {
+    setReviewModalOpen(false);
+    setIsEditing(false);
+  };
+
+  const { handlers: dragHandlers, style: dragStyle } = useDragToClose({
+    onClose: handleClose,
+  });
+
   // Sync scroll position when index changes externally
   useEffect(() => {
     if (scrollContainerRef.current) {
@@ -55,48 +65,39 @@ export default function ReviewSlipModal() {
 
   if (!isReviewModalOpen || scannedSlips.length === 0) return null;
 
-  const currentSlip = scannedSlips[currentScanIndex] || {};
-
-  const handleClose = () => {
-    setReviewModalOpen(false);
-    useAppStore.getState().setScannedSlips([]);
-    setIsEditing(false);
-  };
+  const currentSlip = scannedSlips[currentScanIndex];
+  if (!currentSlip) return null;
 
   const handleSaveCurrent = async () => {
-    if (!user) {
-      alert('Please log in to save transactions');
-      return;
-    }
-    if (!currentSlip.category) {
-      alert(t('review.requireCategory'));
-      return;
-    }
-    let finalDate = new Date().toISOString().split('T')[0];
-    let finalTime = new Date().toTimeString().split(' ')[0];
+    if (!user || !currentSlip.amount || !currentSlip.category) return;
+    
+    setLoading(true);
+    const parsedAmount = Number(currentSlip.amount);
+    
+    let finalDate = '';
+    let finalTime = '';
     
     if (currentSlip.date) {
       const d = new Date(currentSlip.date);
       if (!isNaN(d.getTime())) {
-        finalDate = currentSlip.date.split('T')[0] || finalDate;
-        finalTime = currentSlip.date.split('T')[1]?.slice(0,5) || finalTime;
+        finalDate = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        finalTime = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+      } else {
+        const now = new Date();
+        finalDate = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        finalTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
       }
+    } else {
+      const now = new Date();
+      finalDate = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      finalTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     }
 
-    const title = currentSlip.title || t('review.defaultTitle');
-    const parsedAmount = Number(currentSlip.amount) || 0;
+    const title = currentSlip.title || 'Slip Expense';
 
     const executeSave = async () => {
-      setLoading(true);
       try {
-        addFavoriteCategory(currentSlip.category!);
-        if (user) {
-          setTimeout(() => {
-            setUserFavorites(user.uid, useAppStore.getState().favoriteCategories);
-          }, 0);
-        }
-
-        await addTransaction(user!.uid, {
+        await addTransaction(user.uid, {
           type: 'expense',
           amount: parsedAmount,
           title: title,
@@ -188,7 +189,11 @@ export default function ReviewSlipModal() {
       />
       
       {/* Main Bottom Sheet (Glassmorphism) */}
-      <div className="bg-white/80 backdrop-blur-[30px] rounded-t-[40px] border-t border-white/60 w-full max-w-md mx-auto shadow-[0_-10px_40px_rgba(31,38,135,0.15)] relative animate-slide-up flex flex-col max-h-[95vh]">
+      <div 
+        {...dragHandlers}
+        style={dragStyle}
+        className="bg-white/80 backdrop-blur-[30px] rounded-t-[40px] border-t border-white/60 w-full max-w-md mx-auto shadow-[0_-10px_40px_rgba(31,38,135,0.15)] relative animate-slide-up flex flex-col max-h-[95vh]"
+      >
         {/* Drag handle */}
         <div className="p-4 flex justify-center shrink-0">
           <div className="w-16 h-1.5 bg-slate-300/50 rounded-full" />
@@ -312,9 +317,15 @@ export default function ReviewSlipModal() {
               </div>
               
               {/* Quick Select Favorites */}
-              {favoriteCategories.length > 0 && (
+              {favoriteCategories.filter(cat => {
+                const tab = appCategories?.[cat]?.tab;
+                return tab === 'fixed' || tab === 'lifestyle' || tab === 'savings' || tab === 'all';
+              }).length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-4 animate-fade-in">
-                  {favoriteCategories.map((cat) => {
+                  {favoriteCategories.filter(cat => {
+                    const tab = appCategories?.[cat]?.tab;
+                    return tab === 'fixed' || tab === 'lifestyle' || tab === 'savings' || tab === 'all';
+                  }).map((cat) => {
                     const isSelected = currentSlip.category === cat;
                     const { color, textColor } = getCategoryStyle(cat, useAppStore.getState().appCategories || undefined);
                     return (

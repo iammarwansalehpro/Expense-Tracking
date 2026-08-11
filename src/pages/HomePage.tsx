@@ -1,4 +1,4 @@
-import { Grid, Bell, ChevronDown, ArrowDown, ArrowUp, Eye, Landmark, Wallet as WalletIcon, ChevronRight, Edit2, Trash2, Plus } from 'lucide-react';
+import { Grid, Bell, ChevronDown, ChevronUp, ArrowDown, ArrowUp, Eye, Landmark, Wallet as WalletIcon, ChevronRight, Edit2, Trash2, Plus, ArrowLeftRight, CreditCard as CreditCardIcon, ArrowRight } from 'lucide-react';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useWalletStore } from '@/store/useWalletStore';
@@ -11,6 +11,8 @@ import { useConfirmStore } from '@/store/useConfirmStore';
 import { useToastStore } from '@/store/useToastStore';
 import AutoShrinkText from '@/components/ui/AutoShrinkText';
 import { useRef, useState, useEffect } from 'react';
+import CreditCardDueAlert from '@/components/home/CreditCardDueAlert';
+import CreditCardPaymentModal from '@/components/ui/CreditCardPaymentModal';
 
 export default function HomePage() {
   const transactions = useTransactionStore((s) => s.transactions);
@@ -31,6 +33,19 @@ export default function HomePage() {
   // Wallet Form Modal State
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingWallet, setEditingWallet] = useState<any>(null);
+  
+  const [paymentCreditCardId, setPaymentCreditCardId] = useState<string | null>(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [expandedWalletId, setExpandedWalletId] = useState<string | null>(null);
+
+  const toggleExpand = (walletId: string) => {
+    setExpandedWalletId(prev => prev === walletId ? null : walletId);
+  };
+
+  const handlePayClick = (walletId: string) => {
+    setPaymentCreditCardId(walletId);
+    setIsPaymentModalOpen(true);
+  };
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const deleteWallet = useWalletStore(s => s.deleteWallet);
@@ -125,29 +140,63 @@ export default function HomePage() {
       {/* Main Scrollable Area */}
       <div className="flex-1 flex flex-col pt-2 pb-32 overflow-y-auto no-scrollbar">
         
+        <CreditCardDueAlert onPayClick={handlePayClick} />
+
         {/* Wallet Carousel */}
         <div className="w-full mb-8 relative">
           <div 
             ref={scrollContainerRef}
             onScroll={handleScroll}
-            className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth pb-8 pt-4 -mt-4"
+            className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth pb-8 pt-4 -mt-4 items-stretch"
           >
             {wallets.map(wallet => {
               const stats = getWalletStats(wallet.id);
-              const WIcon = wallet.icon === 'CreditCard' ? Landmark : WalletIcon;
+              const WIcon = wallet.icon === 'CreditCard' ? Landmark : (wallet.icon === 'CreditCardIcon' ? CreditCardIcon : WalletIcon);
+              
+              const isCreditCard = wallet.type === 'credit_card';
+              
+              let installmentDebt = 0;
+              let normalDebt = 0;
+              
+              if (isCreditCard) {
+                const txs = transactions.filter(t => t.walletId === wallet.id || t.toWalletId === wallet.id);
+                const instTxs = txs.filter(t => t.isInstallment && t.type === 'expense');
+                
+                installmentDebt = instTxs.reduce((sum, t) => {
+                  const months = t.installmentMonths || 1;
+                  const paid = t.installmentPaidMonths || 0;
+                  const remaining = Math.max(0, months - paid);
+                  return sum + (t.amount * (remaining / months));
+                }, 0);
+                
+                const totalDebt = Math.abs(stats.balance < 0 ? stats.balance : 0);
+                normalDebt = Math.max(0, totalDebt - installmentDebt);
+              }
+              
+              const hasInstallment = installmentDebt > 0;
 
               return (
-                <div key={wallet.id} className="w-full shrink-0 snap-center px-6">
-                  <div className={`w-full bg-white/40 backdrop-blur-xl rounded-[32px] p-6 text-[#2E1065] shadow-[0_8px_32px_rgba(31,38,135,0.1)] border border-white/50 relative overflow-hidden transition-colors ${wallet.color}`}>
+                <div key={wallet.id} className="w-full shrink-0 snap-center px-6 h-full">
+                  <div className={`w-full h-full flex flex-col bg-white/40 backdrop-blur-xl rounded-[32px] p-6 text-[#2E1065] shadow-[0_8px_32px_rgba(31,38,135,0.1)] border border-white/50 relative transition-colors ${wallet.color}`}>
                     
                     {/* Inline Actions (Edit/Delete) */}
                     <div className="absolute top-4 right-4 z-20 flex flex-col gap-2">
+                      {!isCreditCard && (
+                        <button 
+                          onClick={() => {
+                            useAppStore.getState().setTransferModalOpen(true);
+                          }}
+                          className="w-8 h-8 rounded-full bg-white/60 backdrop-blur-md flex items-center justify-center shadow-sm border border-white/50 transition-all text-[#2E1065]/70 hover:text-[#8B5CF6] hover:bg-white"
+                        >
+                          <ArrowLeftRight className="w-4 h-4" />
+                        </button>
+                      )}
                       <button 
                         onClick={() => {
                           setEditingWallet(wallet);
                           setIsFormOpen(true);
                         }}
-                        className="w-8 h-8 rounded-full bg-white/60 backdrop-blur-md flex items-center justify-center text-[#2E1065]/70 hover:text-[#8B5CF6] hover:bg-white shadow-sm border border-white/50 transition-all"
+                        className="w-8 h-8 rounded-full bg-white/60 backdrop-blur-md flex items-center justify-center shadow-sm border border-white/50 transition-all text-[#2E1065]/70 hover:text-[#8B5CF6] hover:bg-white"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
@@ -174,7 +223,7 @@ export default function HomePage() {
                               }
                             });
                           }}
-                          className="w-8 h-8 rounded-full bg-white/60 backdrop-blur-md flex items-center justify-center text-[#2E1065]/70 hover:text-red-500 hover:bg-white shadow-sm border border-white/50 transition-all"
+                          className="w-8 h-8 rounded-full bg-white/60 backdrop-blur-md flex items-center justify-center shadow-sm border border-white/50 transition-all text-[#2E1065]/70 hover:text-red-500 hover:bg-white"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -184,8 +233,8 @@ export default function HomePage() {
                     {/* Top Row */}
                     <div className="flex items-center justify-between mb-2 relative z-10 pr-10">
                       <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/50 backdrop-blur-sm rounded-full border border-white/40 shadow-sm max-w-[150px]">
-                          <AutoShrinkText className="text-sm font-bold text-[#2E1065] w-full" text={wallet.name} />
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/50 backdrop-blur-sm rounded-full shadow-sm max-w-[150px] border-white/40">
+                          <AutoShrinkText className="text-sm font-bold w-full text-[#2E1065]" text={wallet.name} />
                         </div>
                         
                         {wallet.isMain && (
@@ -193,66 +242,162 @@ export default function HomePage() {
                             {t('home.mainWallet')}
                           </span>
                         )}
+                        {hasInstallment && (
+                          <span className="text-[10px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 shadow-sm px-2.5 py-1 rounded-full tracking-wider flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                            {t('home.installment')}
+                          </span>
+                        )}
                       </div>
                     </div>
 
                     {/* Balance */}
-                    <div className="mb-6 relative z-10">
-                      <span className="text-[13px] font-semibold text-[#2E1065]/70 mb-1 block">
-                        {t('home.balance')}
-                      </span>
-                      <AutoShrinkText className="text-[44px] font-bold tracking-tight leading-none drop-shadow-sm w-full">
-                        <span className="text-[24px] font-bold opacity-80 mr-1">฿</span>
-                        {stats.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                      </AutoShrinkText>
+                    <div className="mb-6 relative z-10 flex-1 flex flex-col justify-center">
+                      <div className="flex items-center justify-start gap-2 mb-1">
+                        <span className="text-[13px] font-semibold block text-[#2E1065]/70">
+                          {isCreditCard ? t('home.outstandingBalance') : t('home.balance')}
+                        </span>
+                        {isCreditCard && (
+                          <span className="text-[9px] font-bold text-[#2E1065]/60 uppercase tracking-wider bg-white/40 px-2.5 py-0.5 rounded-full border border-white/50 shadow-sm whitespace-nowrap">
+                            {t('home.dueDate')} {t('home.day')} {wallet.dueDay || 25}
+                          </span>
+                        )}
+                      </div>
+                      {isCreditCard ? (
+                        <div className="flex flex-row items-center justify-between w-full gap-4">
+                          <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+                            <AutoShrinkText className="text-[44px] font-bold tracking-tight leading-none drop-shadow-sm w-full">
+                              <span className="text-[24px] font-bold opacity-80 mr-1">฿</span>
+                              {Math.abs(stats.balance < 0 ? stats.balance : 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            </AutoShrinkText>
+                          </div>
+                          <button onClick={() => handlePayClick(wallet.id)} className="px-3.5 h-[36px] bg-gradient-to-br from-[#2E1065] to-[#4c1d95] text-white flex flex-row items-center justify-center gap-1.5 shadow-md rounded-[18px] hover:scale-[0.96] active:scale-95 transition-transform group shrink-0">
+                            <span className="text-[11px] font-bold tracking-wide whitespace-nowrap">{t('home.pay')}</span>
+                            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 text-white/90" />
+                          </button>
+                        </div>
+                      ) : (
+                        <AutoShrinkText className="text-[44px] font-bold tracking-tight leading-none drop-shadow-sm w-full">
+                          <span className="text-[24px] font-bold opacity-80 mr-1">฿</span>
+                          {stats.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </AutoShrinkText>
+                      )}
                     </div>
 
-                    {/* Income & Expense */}
-                    <div className="grid grid-cols-2 gap-3 relative z-10">
-                      {/* Income Badge */}
-                      <div className="bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-md rounded-2xl p-3 border border-white/60 shadow-[0_4px_16px_rgba(31,38,135,0.04)] flex flex-col gap-1.5">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 shadow-sm border border-emerald-50">
-                            <ArrowDown className="w-3.5 h-3.5 text-emerald-600" />
+                    {/* Actions / Stats */}
+                    <div className="relative z-10">
+                      {isCreditCard ? (
+                        <div className="flex flex-col w-full h-[76px]">
+                          <div className="flex flex-col justify-center h-full gap-2">
+                            {wallet.creditLimit ? (
+                                !wallet.installmentCreditLimit ? (
+                                  <div className="flex flex-col gap-1.5 px-1">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex flex-col">
+                                        <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/70 mb-0.5">
+                                          <div className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6]" />
+                                          {t('home.remainingCredit')}
+                                        </span>
+                                        <span className="text-[#2E1065] font-extrabold text-[14px]">
+                                          ฿{(wallet.creditLimit - Math.abs(stats.balance < 0 ? stats.balance : 0)).toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                                        </span>
+                                      </div>
+                                      <div className="flex flex-col items-end">
+                                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/50 mb-0.5">
+                                          {t('home.totalCredit')}
+                                        </span>
+                                        <span className="text-[#2E1065]/60 font-bold text-[14px]">
+                                          ฿{wallet.creditLimit.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <div className="w-full bg-[#2E1065]/5 h-2 rounded-full overflow-hidden shadow-inner mt-0.5">
+                                      <div className="bg-gradient-to-r from-[#8B5CF6] to-[#A855F7] h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (Math.abs(stats.balance < 0 ? stats.balance : 0) / wallet.creditLimit) * 100)}%`}} />
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-col gap-1.5 px-1">
+                                    <div className="flex flex-col gap-0.5">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex flex-col">
+                                          <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/70">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6]" />
+                                            {t('home.remainingCredit')}
+                                          </span>
+                                          <span className="text-[#2E1065] font-extrabold text-[12px] leading-none">
+                                            ฿{(wallet.creditLimit - normalDebt).toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                                          </span>
+                                        </div>
+                                        <div className="flex flex-col items-end">
+                                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/50">
+                                            {t('home.totalCredit')}
+                                          </span>
+                                          <span className="text-[#2E1065]/60 font-bold text-[12px] leading-none">
+                                            ฿{wallet.creditLimit.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                                          </span>
+                                        </div>
+                                      </div>
+                                      <div className="w-full bg-[#2E1065]/5 h-1.5 rounded-full overflow-hidden shadow-inner mt-0.5">
+                                        <div className="bg-gradient-to-r from-[#8B5CF6] to-[#A855F7] h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (normalDebt / wallet.creditLimit) * 100)}%`}} />
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-col gap-0.5">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex flex-col">
+                                          <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/70">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                            {t('home.remainingInstallmentCredit')}
+                                          </span>
+                                          <span className="text-[#2E1065] font-extrabold text-[12px] leading-none">
+                                            ฿{(wallet.installmentCreditLimit - installmentDebt).toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                                          </span>
+                                        </div>
+                                        <div className="flex flex-col items-end">
+                                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/50">
+                                            {t('home.totalInstallmentCredit')}
+                                          </span>
+                                          <span className="text-[#2E1065]/60 font-bold text-[12px] leading-none">
+                                            ฿{wallet.installmentCreditLimit.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                                          </span>
+                                        </div>
+                                      </div>
+                                      <div className="w-full bg-[#2E1065]/5 h-1.5 rounded-full overflow-hidden shadow-inner mt-0.5">
+                                        <div className="bg-gradient-to-r from-amber-400 to-orange-500 h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (installmentDebt / wallet.installmentCreditLimit) * 100)}%`}} />
+                                      </div>
+                                    </div>
+                                  </div>
+                                )
+                            ) : (
+                              <div className="flex items-center justify-center h-full text-[12px] font-medium text-[#2E1065]/60 italic">
+                                - {t('home.noCreditLimitSet') || 'ไม่ระบุวงเงิน'} -
+                              </div>
+                            )}
                           </div>
-                          <p className="text-[11px] font-bold text-[#2E1065]/60 tracking-wide">
-                            {t('home.income')} <span className="text-[9px] font-medium opacity-80">{t('home.thisMonth')}</span>
-                          </p>
                         </div>
-                        <div className="w-full pl-1">
-                          <AutoShrinkText className="font-extrabold text-[17px] text-[#2E1065] tracking-tight w-full">
-                            <span className="text-emerald-500 mr-1">+</span>
-                            {stats.income.toLocaleString('en-US', { minimumFractionDigits: 0 })}
-                          </AutoShrinkText>
-                        </div>
-                      </div>
-                      
-                      {/* Expense Badge */}
-                      <div className="bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-md rounded-2xl p-3 border border-white/60 shadow-[0_4px_16px_rgba(31,38,135,0.04)] flex flex-col gap-1.5">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-rose-100 flex items-center justify-center shrink-0 shadow-sm border border-rose-50">
-                            <ArrowUp className="w-3.5 h-3.5 text-rose-600" />
+                      ) : (
+                        <div className="grid grid-cols-2 gap-3 h-[76px]">
+                          <div className="bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-md rounded-2xl px-3 py-2 border border-white/60 shadow-[0_4px_16px_rgba(31,38,135,0.04)] flex flex-col justify-center">
+                            <p className="text-[11px] font-bold text-[#2E1065]/60 tracking-wide mb-0.5">{t('home.income')} <span className="font-medium opacity-80">{t('home.thisMonth')}</span></p>
+                            <p className="font-extrabold text-[#2E1065] text-sm tracking-tight">฿{stats.income.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
                           </div>
-                          <p className="text-[11px] font-bold text-[#2E1065]/60 tracking-wide">
-                            {t('home.expense')} <span className="text-[9px] font-medium opacity-80">{t('home.thisMonth')}</span>
-                          </p>
+                          <div className="bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-md rounded-2xl px-3 py-2 border border-white/60 shadow-[0_4px_16px_rgba(31,38,135,0.04)] flex flex-col justify-center">
+                            <p className="text-[11px] font-bold text-[#2E1065]/60 tracking-wide mb-0.5">{t('home.expense')} <span className="font-medium opacity-80">{t('home.thisMonth')}</span></p>
+                            <p className="font-extrabold text-[#2E1065] text-sm tracking-tight">฿{stats.expense.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                          </div>
                         </div>
-                        <div className="w-full pl-1">
-                          <AutoShrinkText className="font-extrabold text-[17px] text-[#2E1065] tracking-tight w-full">
-                            <span className="text-rose-500 mr-1">-</span>
-                            {stats.expense.toLocaleString('en-US', { minimumFractionDigits: 0 })}
-                          </AutoShrinkText>
-                        </div>
-                      </div>
+                      )}
                     </div>
 
                     {/* Decorative background elements */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/40 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
-                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#8B5CF6]/10 rounded-full blur-xl translate-y-1/2 -translate-x-1/4" />
-                    
-                    <div className="absolute -top-6 -right-6 opacity-[0.07] rotate-[-15deg] pointer-events-none">
-                      <WIcon className="w-40 h-40 text-[#2E1065]" strokeWidth={1.5} />
+                    <div className="absolute inset-0 overflow-hidden rounded-[32px] pointer-events-none">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-white/40 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+                      <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#8B5CF6]/10 rounded-full blur-xl translate-y-1/2 -translate-x-1/4" />
+                      
+                      <div className="absolute -top-6 -right-6 opacity-[0.07] rotate-[-15deg] pointer-events-none">
+                        {isCreditCard ? <CreditCardIcon className="w-40 h-40 text-[#2E1065]" strokeWidth={1.5} /> : <WIcon className="w-40 h-40 text-[#2E1065]" strokeWidth={1.5} />}
+                      </div>
                     </div>
+
                   </div>
                 </div>
               );
@@ -346,6 +491,12 @@ export default function HomePage() {
           isOpen={isFormOpen} 
           onClose={() => setIsFormOpen(false)} 
           editWallet={editingWallet}
+        />
+
+        <CreditCardPaymentModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          creditCardId={paymentCreditCardId}
         />
       </div>
     </div>

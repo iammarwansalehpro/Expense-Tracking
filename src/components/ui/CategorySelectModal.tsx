@@ -7,12 +7,13 @@ import { useAppStore } from '@/store/useAppStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { setUserFavorites } from '@/services/transactionService';
+import { useDragToClose } from '@/hooks/useDragToClose';
 
 interface CategorySelectModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (cat: TransactionCategory) => void;
-  type: 'expense' | 'income' | 'savings';
+  type: import('@/types').TransactionType | 'savings';
   selectedCategory?: string;
 }
 
@@ -26,6 +27,10 @@ export default function CategorySelectModal({ isOpen, onClose, onSelect, type, s
   const user = useAuthStore(s => s.user);
 
   const appCategories = useAppStore(s => s.appCategories);
+
+  const { handlers: dragHandlers, style: dragStyle } = useDragToClose({
+    onClose,
+  });
 
   const availableCategories = useMemo(() => {
     if (appCategories && Object.keys(appCategories).length > 0) {
@@ -86,7 +91,11 @@ export default function CategorySelectModal({ isOpen, onClose, onSelect, type, s
       />
 
       {/* Main Content (Glassmorphism) */}
-      <div className="relative bg-white/80 backdrop-blur-[30px] border-t border-white/60 rounded-t-[40px] shadow-[0_-10px_40px_rgba(31,38,135,0.15)] flex flex-col h-[90vh] animate-slide-up">
+      <div 
+        {...dragHandlers}
+        style={dragStyle}
+        className="relative bg-white/80 backdrop-blur-[30px] border-t border-white/60 rounded-t-[40px] shadow-[0_-10px_40px_rgba(31,38,135,0.15)] flex flex-col h-[90vh] animate-slide-up"
+      >
         {/* Drag handle */}
         <div className="p-4 flex justify-center shrink-0">
           <div className="w-16 h-1.5 bg-slate-300/50 rounded-full" />

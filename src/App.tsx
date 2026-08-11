@@ -19,6 +19,7 @@ import BottomNav from '@/components/layout/BottomNav';
 import ReviewSlipModal from '@/components/ui/ReviewSlipModal';
 import ToastProvider from '@/components/ui/ToastProvider';
 import GlobalConfirmModal from '@/components/ui/GlobalConfirmModal';
+import TransferModal from '@/components/ui/TransferModal';
 import { Loader2 } from 'lucide-react';
 import SplashScreen from '@/components/ui/SplashScreen';
 
@@ -134,6 +135,7 @@ function App() {
           {/* Fixed Bottom Navigation */}
           <BottomNav />
           <ReviewSlipModal />
+          <TransferModal />
           <ToastProvider />
           <GlobalConfirmModal />
         </>
