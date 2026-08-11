@@ -311,12 +311,12 @@ export default function HomePage() {
                                         </span>
                                       </div>
                                     </div>
-                                    <div className="w-full bg-[#2E1065]/5 h-2 rounded-full overflow-hidden shadow-inner mt-0.5">
+                                    <div className="w-full bg-[#2E1065]/5 h-2 rounded-full overflow-hidden shadow-inner mt-2">
                                       <div className="bg-gradient-to-r from-[#8B5CF6] to-[#A855F7] h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (Math.abs(stats.balance < 0 ? stats.balance : 0) / wallet.creditLimit) * 100)}%`}} />
                                     </div>
                                   </div>
                                 ) : (
-                                  <div className="flex flex-col gap-1.5 px-1">
+                                  <div className="flex flex-col gap-1 px-1">
                                     <div className="flex flex-col gap-0.5">
                                       <div className="flex items-center justify-between">
                                         <div className="flex flex-col">
@@ -324,7 +324,7 @@ export default function HomePage() {
                                             <div className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6]" />
                                             {t('home.remainingCredit')}
                                           </span>
-                                          <span className="text-[#2E1065] font-extrabold text-[12px] leading-none">
+                                          <span className="text-[#2E1065] font-extrabold text-[12px] leading-none mt-0.5">
                                             ฿{(wallet.creditLimit - normalDebt).toLocaleString('en-US', { minimumFractionDigits: 0 })}
                                           </span>
                                         </div>
@@ -332,12 +332,12 @@ export default function HomePage() {
                                           <span className="text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/50">
                                             {t('home.totalCredit')}
                                           </span>
-                                          <span className="text-[#2E1065]/60 font-bold text-[12px] leading-none">
+                                          <span className="text-[#2E1065]/60 font-bold text-[12px] leading-none mt-0.5">
                                             ฿{wallet.creditLimit.toLocaleString('en-US', { minimumFractionDigits: 0 })}
                                           </span>
                                         </div>
                                       </div>
-                                      <div className="w-full bg-[#2E1065]/5 h-1.5 rounded-full overflow-hidden shadow-inner mt-0.5">
+                                      <div className="w-full bg-[#2E1065]/5 h-1.5 rounded-full overflow-hidden shadow-inner mt-1">
                                         <div className="bg-gradient-to-r from-[#8B5CF6] to-[#A855F7] h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (normalDebt / wallet.creditLimit) * 100)}%`}} />
                                       </div>
                                     </div>
@@ -348,7 +348,7 @@ export default function HomePage() {
                                             <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                                             {t('home.remainingInstallmentCredit')}
                                           </span>
-                                          <span className="text-[#2E1065] font-extrabold text-[12px] leading-none">
+                                          <span className="text-[#2E1065] font-extrabold text-[12px] leading-none mt-0.5">
                                             ฿{(wallet.installmentCreditLimit - installmentDebt).toLocaleString('en-US', { minimumFractionDigits: 0 })}
                                           </span>
                                         </div>
@@ -356,12 +356,12 @@ export default function HomePage() {
                                           <span className="text-[10px] font-bold uppercase tracking-wider text-[#2E1065]/50">
                                             {t('home.totalInstallmentCredit')}
                                           </span>
-                                          <span className="text-[#2E1065]/60 font-bold text-[12px] leading-none">
+                                          <span className="text-[#2E1065]/60 font-bold text-[12px] leading-none mt-0.5">
                                             ฿{wallet.installmentCreditLimit.toLocaleString('en-US', { minimumFractionDigits: 0 })}
                                           </span>
                                         </div>
                                       </div>
-                                      <div className="w-full bg-[#2E1065]/5 h-1.5 rounded-full overflow-hidden shadow-inner mt-0.5">
+                                      <div className="w-full bg-[#2E1065]/5 h-1.5 rounded-full overflow-hidden shadow-inner mt-1">
                                         <div className="bg-gradient-to-r from-amber-400 to-orange-500 h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (installmentDebt / wallet.installmentCreditLimit) * 100)}%`}} />
                                       </div>
                                     </div>
