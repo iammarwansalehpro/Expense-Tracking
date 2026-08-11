@@ -1,4 +1,4 @@
-import { Activity, ChevronDown, ArrowDownWideNarrow, ArrowUpNarrowWide, Sparkles, PlusCircle, ScanLine, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Search, XCircle } from 'lucide-react';
+import { Activity, ChevronDown, ArrowDown, ArrowUp, ArrowDownWideNarrow, ArrowUpNarrowWide, Sparkles, PlusCircle, ScanLine, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Search, XCircle } from 'lucide-react';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
