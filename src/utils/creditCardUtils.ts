@@ -1,4 +1,4 @@
-import { Transaction, Wallet } from '@/types';
+import type { Transaction, Wallet } from '@/types';
 
 export interface CreditCardStats {
   outstandingBalance: number;    // Total debt (normal + installments principal left)

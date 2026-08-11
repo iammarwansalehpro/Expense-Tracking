@@ -40,7 +40,6 @@ export default function AddPage() {
   const [isInstallment, setIsInstallment] = useState<boolean>(editingTransaction?.isInstallment || false);
   const [installmentMonths, setInstallmentMonths] = useState<string>(editingTransaction?.installmentMonths?.toString() || '');
   const [installmentInterestRate, setInstallmentInterestRate] = useState<string>(editingTransaction?.installmentInterestRate?.toString() || '0');
-  const [installmentPaidMonths, setInstallmentPaidMonths] = useState<number>(editingTransaction?.installmentPaidMonths || 0);
   
   // Format existing date properly, or use today
   const initDate = editingTransaction 
@@ -117,12 +116,10 @@ export default function AddPage() {
         
         if (isInstallment) {
           updatePayload.installmentMonths = installmentMonths ? parseInt(installmentMonths, 10) : 0;
-          updatePayload.installmentInterestRate = installmentInterestRate ? parseFloat(installmentInterestRate) : 0;
-          updatePayload.installmentPaidMonths = installmentPaidMonths || 0;
+          updatePayload.installmentInterestRate = parseFloat(installmentInterestRate) || 0;
         } else {
           updatePayload.installmentMonths = null;
           updatePayload.installmentInterestRate = null;
-          updatePayload.installmentPaidMonths = null;
         }
         
         await updateTransaction(editingTransactionId, updatePayload);
@@ -143,8 +140,7 @@ export default function AddPage() {
         
         if (isInstallment) {
           addPayload.installmentMonths = installmentMonths ? parseInt(installmentMonths, 10) : 0;
-          addPayload.installmentInterestRate = installmentInterestRate ? parseFloat(installmentInterestRate) : 0;
-          addPayload.installmentPaidMonths = installmentPaidMonths || 0;
+          addPayload.installmentInterestRate = parseFloat(installmentInterestRate) || 0;
         }
         
         await addTransaction(user.uid, addPayload);
@@ -441,7 +437,7 @@ export default function AddPage() {
                           value={installmentMonths}
                           onChange={(e) => setInstallmentMonths(e.target.value)}
                           className="w-full bg-white/70 backdrop-blur-md rounded-[16px] px-4 py-3 text-[#2E1065] font-bold focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#8B5CF6]/40 border border-amber-100/50 shadow-inner text-lg placeholder:text-[#2E1065]/30"
-                          placeholder="เช่น 10"
+                          placeholder="0"
                         />
                       </div>
                       <div>
@@ -452,19 +448,10 @@ export default function AddPage() {
                           value={installmentInterestRate}
                           onChange={(e) => setInstallmentInterestRate(e.target.value)}
                           className="w-full bg-white/70 backdrop-blur-md rounded-[16px] px-4 py-3 text-[#2E1065] font-bold focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#8B5CF6]/40 border border-amber-100/50 shadow-inner text-lg placeholder:text-[#2E1065]/30"
-                          placeholder="0.00 สำหรับโปรโมชั่นผ่อน 0%"
+                          placeholder="0.00"
                         />
                       </div>
-                      <div>
-                        <label className="block text-sm font-bold text-[#2E1065] mb-2">จำนวนงวดที่จ่ายไปแล้ว (ถ้ามี)</label>
-                        <input
-                          type="number"
-                          value={installmentPaidMonths || ''}
-                          onChange={(e) => setInstallmentPaidMonths(e.target.value ? parseInt(e.target.value, 10) : 0)}
-                          className="w-full bg-white/70 backdrop-blur-md rounded-[16px] px-4 py-3 text-[#2E1065] font-bold focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#8B5CF6]/40 border border-amber-100/50 shadow-inner text-lg placeholder:text-[#2E1065]/30"
-                          placeholder="เช่น 3 (หากเริ่มผ่อนมาแล้ว)"
-                        />
-                      </div>
+
                       {amount && installmentMonths && (
                         <div className="mt-2 bg-amber-100/50 p-3 rounded-[12px] flex items-center justify-between">
                           <span className="text-[11px] font-bold text-amber-800">ยอดผ่อนชำระต่อเดือนโดยประมาณ</span>
@@ -496,7 +483,7 @@ export default function AddPage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="w-full bg-white/60 backdrop-blur-sm rounded-[16px] px-4 py-3.5 text-[#2E1065] font-bold focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-white/50 shadow-inner resize-none min-h-[100px]"
-                  placeholder="เช่น เงินเดือน, ค่ากาแฟ, ซื้อของเข้าบ้าน (ไม่บังคับ)"
+                  placeholder="บันทึกรายละเอียดเพิ่มเติม (ถ้ามี)..."
                 />
               </div>
             </div>

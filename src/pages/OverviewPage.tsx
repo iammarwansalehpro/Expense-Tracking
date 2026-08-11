@@ -87,7 +87,13 @@ export default function OverviewPage() {
   }, [transactions, viewDate, t]);
 
   const filteredTransactions = transactions.filter(t => {
-    if (t.type !== activeTab) return false;
+    let effectiveType = t.type;
+    if (t.type === 'transfer') {
+      if (t.linkedTransactionId && t.walletId === t.toWalletId) return false;
+      effectiveType = 'expense';
+    }
+    
+    if (effectiveType !== activeTab) return false;
     
     // If in calendar mode, filter by selected date
     if (viewMode === 'calendar') {
