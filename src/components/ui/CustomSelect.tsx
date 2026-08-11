@@ -12,9 +12,10 @@ interface CustomSelectProps {
   onChange: (val: string) => void;
   placeholder?: string;
   isCategory?: boolean;
+  disabled?: boolean;
 }
 
-export default function CustomSelect({ label, options, value, onChange, placeholder = "Select option", isCategory = false }: CustomSelectProps) {
+export default function CustomSelect({ label, options, value, onChange, placeholder = "Select option", isCategory = false, disabled = false }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   // Helper to render selected value with icon
@@ -68,8 +69,8 @@ export default function CustomSelect({ label, options, value, onChange, placehol
       {/* Trigger Button */}
       <button 
         type="button"
-        onClick={() => setIsOpen(true)}
-        className="w-full bg-white/60 backdrop-blur-sm border border-white/50 rounded-[16px] px-4 py-3.5 text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 transition-all shadow-inner h-14"
+        onClick={() => !disabled && setIsOpen(true)}
+        className={`w-full bg-white/60 backdrop-blur-sm border border-white/50 rounded-[16px] px-4 py-3.5 text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 transition-all shadow-inner h-14 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <span className="font-bold text-[#2E1065] flex items-center h-full">
           {renderValue()}

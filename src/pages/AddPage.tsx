@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import * as Icons from 'lucide-react';
-import { X, CreditCard, Loader2, Sparkles, PlusCircle, MinusCircle, Calendar, AlignLeft, Pencil, FileText, Wallet as WalletIcon, Clock } from 'lucide-react';
+import { X, CreditCard, Loader2, Sparkles, PlusCircle, MinusCircle, Calendar, AlignLeft, Pencil, FileText, Wallet as WalletIcon, Clock, ArrowLeftRight } from 'lucide-react';
 import CustomSelect from '@/components/ui/CustomSelect';
 import CustomDatePicker from '@/components/ui/CustomDatePicker';
 import CustomTimePicker from '@/components/ui/CustomTimePicker';
@@ -104,7 +104,7 @@ export default function AddPage() {
 
       if (editingTransactionId) {
         // Edit existing transaction
-        await updateTransaction(editingTransactionId, {
+        const updatePayload: any = {
           type,
           amount: parsedAmount,
           title,
@@ -113,14 +113,23 @@ export default function AddPage() {
           time: timeStr,
           walletId,
           isInstallment,
-          installmentMonths: isInstallment && installmentMonths ? parseInt(installmentMonths, 10) : undefined,
-          installmentInterestRate: isInstallment && installmentInterestRate ? parseFloat(installmentInterestRate) : undefined,
-          installmentPaidMonths: isInstallment ? installmentPaidMonths : undefined
-        });
+        };
+        
+        if (isInstallment) {
+          updatePayload.installmentMonths = installmentMonths ? parseInt(installmentMonths, 10) : 0;
+          updatePayload.installmentInterestRate = installmentInterestRate ? parseFloat(installmentInterestRate) : 0;
+          updatePayload.installmentPaidMonths = installmentPaidMonths || 0;
+        } else {
+          updatePayload.installmentMonths = null;
+          updatePayload.installmentInterestRate = null;
+          updatePayload.installmentPaidMonths = null;
+        }
+        
+        await updateTransaction(editingTransactionId, updatePayload);
         useToastStore.getState().addToast('อัปเดตรายการสำเร็จ', 'success');
       } else {
         // Add new transaction
-        await addTransaction(user.uid, {
+        const addPayload: any = {
           type,
           amount: parsedAmount,
           title,
@@ -130,10 +139,15 @@ export default function AddPage() {
           iconBgColor: randomColor,
           walletId,
           isInstallment,
-          installmentMonths: isInstallment && installmentMonths ? parseInt(installmentMonths, 10) : undefined,
-          installmentInterestRate: isInstallment && installmentInterestRate ? parseFloat(installmentInterestRate) : undefined,
-          installmentPaidMonths: isInstallment ? 0 : undefined
-        });
+        };
+        
+        if (isInstallment) {
+          addPayload.installmentMonths = installmentMonths ? parseInt(installmentMonths, 10) : 0;
+          addPayload.installmentInterestRate = installmentInterestRate ? parseFloat(installmentInterestRate) : 0;
+          addPayload.installmentPaidMonths = installmentPaidMonths || 0;
+        }
+        
+        await addTransaction(user.uid, addPayload);
         useToastStore.getState().addToast('บันทึกรายการสำเร็จ', 'success');
       }
 
@@ -221,6 +235,17 @@ export default function AddPage() {
           <div className="overflow-y-auto px-6 pb-32 no-scrollbar flex-1 flex flex-col">
             {/* Top Toggles (Glassmorphism) */}
             <div className="flex justify-between items-end mb-8 relative">
+            {type === 'transfer' ? (
+              <div className="bg-white/40 backdrop-blur-xl p-6 rounded-[32px] border border-white/50 shadow-[0_8px_32px_rgba(31,38,135,0.05)] w-full flex flex-col items-center justify-center gap-2">
+                 <div className="w-12 h-12 rounded-[16px] shadow-sm flex items-center justify-center border border-white/50 bg-[#3B82F6]/10">
+                   <ArrowLeftRight className="w-6 h-6 text-[#3B82F6]" />
+                 </div>
+                 <span className="font-bold text-sm text-[#3B82F6]">ชำระบัตรเครดิต / โอนเงิน</span>
+                 <span className="text-[11px] text-[#2E1065]/50 text-center px-4 mt-1">
+                   แก้ไขได้เฉพาะจำนวนเงิน วันที่เวลา และบันทึกช่วยจำ
+                 </span>
+              </div>
+            ) : (
               <div className="flex gap-4 w-full">
               <button 
                 type="button"
@@ -248,6 +273,7 @@ export default function AddPage() {
                 <span className={`font-bold text-sm ${type === 'expense' ? 'text-[#F43F5E]' : 'text-[#2E1065]/60'}`}>{t('add.expense')}</span>
               </button>
               </div>
+            )}
             </div>
 
             <div className="bg-white/40 backdrop-blur-xl p-6 rounded-[32px] border border-white/50 shadow-[0_8px_32px_rgba(31,38,135,0.05)] flex flex-col gap-5">
@@ -284,6 +310,7 @@ export default function AddPage() {
                 </label>
                 <CustomSelect 
                   value={walletId}
+                  disabled={type === 'transfer'}
                   onChange={setWalletId}
                   options={wallets
                     .filter(w => type !== 'income' || w.type !== 'credit_card')
@@ -310,8 +337,8 @@ export default function AddPage() {
                 </label>
                 <button 
                   type="button"
-                  onClick={() => setIsCategoryModalOpen(true)}
-                  className="w-full bg-white/60 backdrop-blur-sm border border-white/50 rounded-[16px] px-4 py-3.5 text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 transition-all shadow-inner h-14"
+                  onClick={() => type !== 'transfer' && setIsCategoryModalOpen(true)}
+                  className={`w-full bg-white/60 backdrop-blur-sm border border-white/50 rounded-[16px] px-4 py-3.5 text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 transition-all shadow-inner h-14 ${type === 'transfer' ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {category ? (
                     <span className="flex items-center gap-3 font-bold text-[#2E1065]">
@@ -334,7 +361,7 @@ export default function AddPage() {
                   </button>
                   
                   {/* Quick Select Favorites */}
-                  {favoriteCategories.length > 0 && (
+                  {favoriteCategories.length > 0 && type !== 'transfer' && (
                     <div className="flex flex-wrap gap-2 mt-4 animate-fade-in">
                       {favoriteCategories.filter(cat => {
                         if (type === 'expense') return expenseCats.includes(cat);
@@ -426,6 +453,16 @@ export default function AddPage() {
                           onChange={(e) => setInstallmentInterestRate(e.target.value)}
                           className="w-full bg-white/70 backdrop-blur-md rounded-[16px] px-4 py-3 text-[#2E1065] font-bold focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#8B5CF6]/40 border border-amber-100/50 shadow-inner text-lg placeholder:text-[#2E1065]/30"
                           placeholder="0.00 สำหรับโปรโมชั่นผ่อน 0%"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-[#2E1065] mb-2">จำนวนงวดที่จ่ายไปแล้ว (ถ้ามี)</label>
+                        <input
+                          type="number"
+                          value={installmentPaidMonths || ''}
+                          onChange={(e) => setInstallmentPaidMonths(e.target.value ? parseInt(e.target.value, 10) : 0)}
+                          className="w-full bg-white/70 backdrop-blur-md rounded-[16px] px-4 py-3 text-[#2E1065] font-bold focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#8B5CF6]/40 border border-amber-100/50 shadow-inner text-lg placeholder:text-[#2E1065]/30"
+                          placeholder="เช่น 3 (หากเริ่มผ่อนมาแล้ว)"
                         />
                       </div>
                       {amount && installmentMonths && (

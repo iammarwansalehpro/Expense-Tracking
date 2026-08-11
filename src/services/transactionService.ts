@@ -99,7 +99,15 @@ export const addTransferTransaction = async (
 // Delete a transaction
 export const deleteTransaction = async (id: string) => {
   try {
-    await remove(ref(db, `${TRANSACTIONS_PATH}/${id}`));
+    const txRef = ref(db, `${TRANSACTIONS_PATH}/${id}`);
+    const snapshot = await get(txRef);
+    if (snapshot.exists()) {
+      const tx = snapshot.val();
+      await remove(txRef);
+      if (tx.linkedTransactionId) {
+        await remove(ref(db, `${TRANSACTIONS_PATH}/${tx.linkedTransactionId}`));
+      }
+    }
   } catch (error) {
     console.error("Error deleting transaction: ", error);
     throw error;
@@ -116,11 +124,35 @@ export const updateTransaction = async (
     const txRef = ref(db, `${TRANSACTIONS_PATH}/${id}`);
     const snapshot = await get(txRef);
     if (snapshot.exists()) {
+      const tx = snapshot.val();
       await set(txRef, {
-        ...snapshot.val(),
+        ...tx,
         ...transactionUpdates,
         updatedAt: serverTimestamp() // Add an updatedAt timestamp if desired
       });
+
+      // If it's a transfer and has a linked transaction, update it too
+      if (tx.linkedTransactionId && tx.type === 'transfer') {
+        const linkedRef = ref(db, `${TRANSACTIONS_PATH}/${tx.linkedTransactionId}`);
+        const linkedSnap = await get(linkedRef);
+        if (linkedSnap.exists()) {
+          const linkedTx = linkedSnap.val();
+          
+          // Only sync fields that should be identical
+          const syncedUpdates: any = {};
+          if (transactionUpdates.amount !== undefined) syncedUpdates.amount = transactionUpdates.amount;
+          if (transactionUpdates.date !== undefined) syncedUpdates.date = transactionUpdates.date;
+          if (transactionUpdates.time !== undefined) syncedUpdates.time = transactionUpdates.time;
+          if (transactionUpdates.title !== undefined) syncedUpdates.title = transactionUpdates.title;
+          if (transactionUpdates.note !== undefined) syncedUpdates.note = transactionUpdates.note;
+          
+          await set(linkedRef, {
+            ...linkedTx,
+            ...syncedUpdates,
+            updatedAt: serverTimestamp()
+          });
+        }
+      }
     }
   } catch (error) {
     console.error("Error updating transaction: ", error);
