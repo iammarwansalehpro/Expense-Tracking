@@ -12,6 +12,9 @@ import { getCategoryStyle } from '@/utils/categoryStyles';
 import { useDragToClose } from '@/hooks/useDragToClose';
 import { useTranslation } from '@/hooks/useTranslation';
 import CategorySelectModal from '@/components/ui/CategorySelectModal';
+import CustomDatePicker from '@/components/ui/CustomDatePicker';
+import CustomTimePicker from '@/components/ui/CustomTimePicker';
+import CustomSelect from '@/components/ui/CustomSelect';
 import * as Icons from 'lucide-react';
 
 export default function VoiceCommandModal() {
@@ -30,6 +33,17 @@ export default function VoiceCommandModal() {
   const [parsedData, setParsedData] = useState<VoiceExtractResult | null>(null);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const timeoutRef = useRef<any>(null);
+
+  const mainWallet = wallets.find(w => w.isMain) || wallets[0];
+  const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [time, setTime] = useState<string>(new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }));
+  const [walletId, setWalletId] = useState<string>('');
+
+  useEffect(() => {
+    if (wallets && wallets.length > 0 && !walletId && mainWallet) {
+      setWalletId(mainWallet.id);
+    }
+  }, [wallets, walletId, mainWallet]);
 
   const { handlers: dragHandlers, style: dragStyle } = useDragToClose({
     onClose: () => {
@@ -124,22 +138,18 @@ export default function VoiceCommandModal() {
 
     setIsProcessing(true);
     try {
-      const now = new Date();
-      const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-      
-      const categoryToUse = parsedData.category || 'อื่นๆ';
-
-      await addTransaction(user.uid, {
-        type: parsedData.type || 'expense',
+      const newTransaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'> = {
         amount: parsedData.amount,
-        title: parsedData.title || 'รายการด้วยเสียง',
-        category: categoryToUse as any,
-        date: dateStr,
-        time: timeStr,
+        title: parsedData.title || 'Voice Transaction',
+        type: parsedData.type as any || 'expense',
+        category: parsedData.category || 'อื่นๆ',
+        date: date,
+        time: time,
+        walletId: walletId || mainWallet?.id || '',
         note: `บันทึกด้วยเสียง: "${transcript}"`,
-        walletId: mainWallet?.id,
-      });
+      };
+
+      await addTransaction(user.uid, newTransaction);
 
       showToast('บันทึกรายการด้วยเสียงสำเร็จ', 'success');
       setVoiceModalOpen(false);
@@ -290,6 +300,40 @@ export default function VoiceCommandModal() {
                     })()}
                     <ChevronDown className="w-3.5 h-3.5 text-slate-300 ml-1 shrink-0" />
                   </div>
+                </div>
+
+                <div className="h-[1px] w-full bg-slate-100/80 my-2" />
+
+                <div className="flex gap-3 w-full">
+                  <div className="flex-1">
+                    <label className="text-xs font-bold text-slate-500 mb-1.5 block ml-1">{t('add.date')}</label>
+                    <CustomDatePicker value={date} onChange={setDate} />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-xs font-bold text-slate-500 mb-1.5 block ml-1">{t('add.time')}</label>
+                    <CustomTimePicker value={time} onChange={setTime} />
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <label className="text-xs font-bold text-slate-500 mb-1.5 block ml-1">{t('add.wallet')}</label>
+                  <CustomSelect 
+                    value={walletId}
+                    disabled={parsedData.type === 'transfer'}
+                    onChange={setWalletId}
+                    options={wallets
+                      .filter(w => parsedData.type !== 'income' || w.type !== 'credit_card')
+                      .map(w => {
+                      const iconName = w.icon === 'CreditCard' ? 'Landmark' : w.icon;
+                      const WIcon = (Icons as any)[iconName] || Icons.Wallet;
+                      return {
+                        label: w.name,
+                        value: w.id,
+                        iconNode: <WIcon className={`w-4 h-4 ${w.color.replace('bg-', 'text-')}`} />
+                      };
+                    })}
+                    placeholder="เลือกกระเป๋าเงิน"
+                  />
                 </div>
               </div>
 
