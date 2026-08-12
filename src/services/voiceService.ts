@@ -17,13 +17,13 @@ class VoiceService {
     this.init();
   }
 
-  private init() {
+  private init(lang: string = 'th-TH') {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
       this.recognition = new SpeechRecognition();
       this.recognition.continuous = true;
       this.recognition.interimResults = true;
-      this.recognition.lang = 'th-TH'; // Default to Thai
+      this.recognition.lang = lang;
 
       this.recognition.onresult = (event: any) => {
         let interimTranscript = '';
@@ -69,6 +69,7 @@ class VoiceService {
   }
 
   public start(
+    lang: string,
     onResult: VoiceRecognitionCallback, 
     onError?: VoiceRecognitionErrorCallback,
     onEnd?: () => void
@@ -77,6 +78,8 @@ class VoiceService {
       if (onError) onError('Speech recognition not supported in this browser.');
       return;
     }
+
+    this.recognition.lang = lang;
 
     if (this.isListening) {
       this.stop();

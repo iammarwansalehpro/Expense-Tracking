@@ -11,7 +11,7 @@ export interface VoiceExtractResult {
 }
 
 const VOICE_PROMPT_TEMPLATE = (categoriesList: string) => `
-You are a highly intelligent financial data extractor that parses Thai spoken sentences into structured transaction data.
+You are a highly intelligent financial data extractor that parses spoken sentences (in Thai or English) into structured transaction data.
 I will provide you with a text transcribed from a user's voice command.
 Extract the transaction details and provide the output STRICTLY as a JSON object with no additional text or formatting.
 

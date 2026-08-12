@@ -135,7 +135,11 @@ export const th = {
     chart: 'กราฟสรุป',
     calendar: 'ปฏิทิน',
     dateItems: 'รายการของวันที่ ',
-    weeklyStats: 'สถิติรายสัปดาห์'
+    weeklyStats: 'สถิติรายสัปดาห์',
+    statsTitle: 'สถิติ',
+    weekly: 'รายสัปดาห์',
+    daily: 'รายวัน',
+    day: 'วัน',
   },
   wallet: {
     addTitle: 'เพิ่มกระเป๋าเงิน',

@@ -6,7 +6,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import AutoShrinkText from '@/components/ui/AutoShrinkText';
 import AppHeader from '@/components/layout/AppHeader';
 import { useState, useMemo } from 'react';
-import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip, Legend, LineChart, Line } from 'recharts';
 import TransactionDetailsModal from '@/components/ui/TransactionDetailsModal';
 import { getCategoryStyle } from '@/utils/categoryStyles';
 
@@ -26,7 +26,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white/90 backdrop-blur-xl p-3 rounded-2xl border border-white/60 shadow-[0_8px_32px_rgba(31,38,135,0.1)]">
-        <p className="text-[#2E1065] font-bold mb-2 text-sm text-center border-b border-purple-100 pb-1">{`${t('overview.week')} ${label.replace('W', '')}`}</p>
+        <p className="text-[#2E1065] font-bold mb-2 text-sm text-center border-b border-purple-100 pb-1">
+          {label?.toString().includes(t('overview.week')) || label?.toString().includes('W') 
+            ? `${t('overview.week')} ${label.replace('W', '').replace(t('overview.week'), '').trim()}`
+            : `${label} ${t('overview.day', 'วัน')}`}
+        </p>
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-3 text-sm font-semibold mb-1 last:mb-0">
             <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
@@ -57,9 +61,10 @@ export default function OverviewPage() {
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
+  const [statsTimeframe, setStatsTimeframe] = useState<'weekly' | 'daily'>('weekly');
 
   // Compute dynamic chart data and totals
-  const { chartData, totalIncome, totalExpense, dailyTotals } = useMemo(() => {
+  const { chartData, dailyChartData, totalIncome, totalExpense, dailyTotals } = useMemo(() => {
     const currentMonth = viewDate.getMonth();
     const currentYear = viewDate.getFullYear();
 
@@ -74,6 +79,14 @@ export default function OverviewPage() {
     let tIncome = 0;
     let tExpense = 0;
     const totalsByDay: Record<number, number> = {};
+    
+    // Initialize daily chart data
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const dailyData = Array.from({ length: daysInMonth }, (_, i) => ({
+      name: (i + 1).toString(),
+      income: 0,
+      expense: 0
+    }));
 
     transactions.forEach(t => {
       // Aggregate Totals
@@ -92,10 +105,14 @@ export default function OverviewPage() {
 
         if (t.type === 'income') data[weekIdx].income += t.amount;
         else data[weekIdx].expense += t.amount;
+
+        // Daily chart data aggregation
+        if (t.type === 'income') dailyData[day - 1].income += t.amount;
+        else dailyData[day - 1].expense += t.amount;
       }
     });
 
-    return { chartData: data, totalIncome: tIncome, totalExpense: tExpense, dailyTotals: totalsByDay };
+    return { chartData: data, dailyChartData: dailyData, totalIncome: tIncome, totalExpense: tExpense, dailyTotals: totalsByDay };
   }, [transactions, viewDate, t]);
 
   const filteredTransactions = transactions.filter(t => {
@@ -320,38 +337,90 @@ export default function OverviewPage() {
         {viewMode === 'chart' ? (
           <>
             <div className="flex items-center justify-between mb-4 px-1 shrink-0">
-              <h3 className="font-bold text-[#2E1065] text-lg">{t('overview.weeklyStats')}</h3>
+              <h3 className="font-bold text-[#2E1065] text-lg">{t('overview.statsTitle', 'สถิติ')}</h3>
+              
+              <div className="flex bg-white/40 backdrop-blur-md p-1 rounded-xl border border-white/50 shadow-inner">
+                <button
+                  className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${statsTimeframe === 'weekly' ? 'bg-white shadow-sm text-purple-600' : 'text-[#2E1065]/60 hover:text-[#2E1065]'}`}
+                  onClick={() => setStatsTimeframe('weekly')}
+                >
+                  {t('overview.weekly', 'รายสัปดาห์')}
+                </button>
+                <button
+                  className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${statsTimeframe === 'daily' ? 'bg-white shadow-sm text-purple-600' : 'text-[#2E1065]/60 hover:text-[#2E1065]'}`}
+                  onClick={() => setStatsTimeframe('daily')}
+                >
+                  {t('overview.daily', 'รายวัน')}
+                </button>
+              </div>
             </div>
 
             <div className="h-48 w-full shrink-0 mb-8 bg-white/20 backdrop-blur-md rounded-[32px] p-4 border border-white/30 shadow-inner">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} barSize={12} barGap={4}>
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#4C1D95', fontSize: 11, fontWeight: 600, opacity: 0.6 }}
-                    dy={10}
-                  />
-                  <Tooltip
-                    cursor={{ fill: 'rgba(46, 16, 101, 0.05)', radius: 8 }}
-                    content={<CustomTooltip />}
-                  />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 600, paddingTop: '10px' }} />
-                  <Bar dataKey="income" name={t('overview.income')} fill="url(#incomeGradient)" radius={[6, 6, 6, 6]} />
-                  <Bar dataKey="expense" name={t('overview.expense')} fill="url(#expenseGradient)" radius={[6, 6, 6, 6]} />
-
-                  <defs>
-                    <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#34D399" />
-                      <stop offset="100%" stopColor="#10B981" />
-                    </linearGradient>
-                    <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#F43F5E" />
-                      <stop offset="100%" stopColor="#E11D48" />
-                    </linearGradient>
-                  </defs>
-                </BarChart>
+                {statsTimeframe === 'weekly' ? (
+                  <BarChart data={chartData} barSize={12} barGap={4}>
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#4C1D95', fontSize: 11, fontWeight: 600, opacity: 0.6 }}
+                      dy={10}
+                    />
+                    <Tooltip
+                      cursor={{ fill: 'rgba(46, 16, 101, 0.05)', radius: 8 }}
+                      content={<CustomTooltip />}
+                    />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 600, paddingTop: '10px' }} />
+                    <Bar dataKey="income" name={t('overview.income')} fill="url(#incomeGradient)" radius={[6, 6, 6, 6]} />
+                    <Bar dataKey="expense" name={t('overview.expense')} fill="url(#expenseGradient)" radius={[6, 6, 6, 6]} />
+  
+                    <defs>
+                      <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#34D399" />
+                        <stop offset="100%" stopColor="#10B981" />
+                      </linearGradient>
+                      <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#F43F5E" />
+                        <stop offset="100%" stopColor="#E11D48" />
+                      </linearGradient>
+                    </defs>
+                  </BarChart>
+                ) : (
+                  <LineChart data={dailyChartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#4C1D95', fontSize: 10, fontWeight: 600, opacity: 0.5 }}
+                      dy={10}
+                      interval="preserveStartEnd"
+                      minTickGap={20}
+                    />
+                    <Tooltip
+                      cursor={{ stroke: 'rgba(46, 16, 101, 0.1)', strokeWidth: 2, strokeDasharray: '4 4' }}
+                      content={<CustomTooltip />}
+                    />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 600, paddingTop: '10px' }} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="income" 
+                      name={t('overview.income')} 
+                      stroke="#10B981" 
+                      strokeWidth={3}
+                      dot={false}
+                      activeDot={{ r: 5, fill: '#10B981', stroke: '#fff', strokeWidth: 2 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="expense" 
+                      name={t('overview.expense')} 
+                      stroke="#E11D48" 
+                      strokeWidth={3}
+                      dot={false}
+                      activeDot={{ r: 5, fill: '#E11D48', stroke: '#fff', strokeWidth: 2 }}
+                    />
+                  </LineChart>
+                )}
               </ResponsiveContainer>
             </div>
           </>

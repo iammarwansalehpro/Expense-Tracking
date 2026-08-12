@@ -137,7 +137,11 @@ export const en: Translations = {
     chart: 'Chart',
     calendar: 'Calendar',
     dateItems: 'Transactions for ',
-    weeklyStats: 'Weekly Stats'
+    weeklyStats: 'Weekly Stats',
+    statsTitle: 'Stats',
+    weekly: 'Weekly',
+    daily: 'Daily',
+    day: 'Day',
   },
   wallet: {
     addTitle: 'Add Wallet',

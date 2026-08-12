@@ -10,9 +10,11 @@ import { extractDataFromVoice, type VoiceExtractResult } from '@/services/aiServ
 import { addTransaction } from '@/services/transactionService';
 import { getCategoryStyle } from '@/utils/categoryStyles';
 import { useDragToClose } from '@/hooks/useDragToClose';
+import { useTranslation } from '@/hooks/useTranslation';
 import * as Icons from 'lucide-react';
 
 export default function VoiceCommandModal() {
+  const { t, language } = useTranslation();
   const isVoiceModalOpen = useAppStore(s => s.isVoiceModalOpen);
   const setVoiceModalOpen = useAppStore(s => s.setVoiceModalOpen);
   const user = useAuthStore(s => s.user);
@@ -66,6 +68,7 @@ export default function VoiceCommandModal() {
     resetState();
     
     voiceService.start(
+      language === 'en' ? 'en-US' : 'th-TH',
       (result) => {
         setTranscript(result.transcript);
         if (result.isFinal) {
@@ -141,13 +144,13 @@ export default function VoiceCommandModal() {
   if (!isVoiceModalOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
       <div 
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300"
         onClick={handleClose}
       />
       <div 
-        className="relative w-full max-w-sm bg-white/90 backdrop-blur-2xl rounded-t-[40px] md:rounded-[40px] p-8 shadow-[0_-8px_40px_rgba(46,16,101,0.1)] border border-white/60 animate-in slide-in-from-bottom-10 md:zoom-in-95 duration-300 overflow-hidden flex flex-col items-center min-h-[400px] justify-between mt-auto md:mt-0"
+        className="relative w-full max-w-sm bg-white/90 backdrop-blur-2xl rounded-t-[40px] sm:rounded-[40px] p-8 pb-10 sm:pb-8 shadow-[0_-8px_40px_rgba(46,16,101,0.1)] border border-white/60 animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300 overflow-hidden flex flex-col items-center min-h-[400px] justify-between"
         {...dragHandlers}
         style={{ ...dragStyle, touchAction: 'none' }}
       >
