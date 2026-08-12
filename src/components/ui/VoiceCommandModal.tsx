@@ -85,7 +85,8 @@ export default function VoiceCommandModal() {
         }
       },
       (err) => {
-        setError(err);
+        console.error('Speech API Error:', err);
+        setError('ไม่สามารถรับเสียงได้ กรุณาตรวจสอบไมโครโฟนของคุณ');
         setIsListening(false);
       },
       () => {
@@ -108,8 +109,8 @@ export default function VoiceCommandModal() {
       const result = await extractDataFromVoice(text);
       setParsedData(result);
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'เกิดข้อผิดพลาดในการวิเคราะห์ข้อความ');
+      console.error('Voice Processing Error:', err);
+      setError('ระบบไม่สามารถประมวลผลคำสั่งเสียงของคุณได้ในขณะนี้ กรุณาลองพูดใหม่อีกครั้ง');
     } finally {
       setIsProcessing(false);
     }
