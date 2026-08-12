@@ -380,30 +380,30 @@ export default function VoiceCommandModal() {
             </div>
           )}
 
-          {/* Sticky Footer Buttons */}
-          {parsedData && (
-            <div className="absolute bottom-0 left-0 right-0 p-5 flex z-10 pointer-events-none">
-              <div className="w-full flex gap-3 pointer-events-auto">
-                <button 
-                  onClick={startListening}
-                  className="flex-1 py-4 rounded-[24px] font-bold text-lg text-[#2E1065]/70 bg-white shadow-[0_8px_20px_rgba(31,38,135,0.05)] border border-white/50 hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center gap-2"
-                >
-                  <Mic className="w-5 h-5" /> พูดใหม่
-                </button>
-                <button 
-                  onClick={handleSave}
-                  disabled={isProcessing}
-                  className="flex-[2] py-4 rounded-[24px] font-bold text-lg text-white shadow-[0_8px_20px_rgba(31,38,135,0.15)] border border-white/30 bg-gradient-to-r from-[#A855F7] to-[#6D28D9] hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                  {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
-                  {isProcessing ? 'กำลังบันทึก...' : 'บันทึกรายการ'}
-                </button>
-              </div>
-            </div>
-          )}
-
           </div>
         </div>
+
+        {/* Sticky Footer Buttons */}
+        {parsedData && (
+          <div className="absolute bottom-0 left-0 right-0 p-5 flex z-10 pointer-events-none">
+            <div className="w-full flex gap-3 pointer-events-auto">
+              <button 
+                onClick={startListening}
+                className="flex-1 py-4 rounded-[24px] font-bold text-lg text-[#2E1065]/70 bg-white shadow-[0_8px_20px_rgba(31,38,135,0.05)] border border-white/50 hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                <Mic className="w-5 h-5" /> พูดใหม่
+              </button>
+              <button 
+                onClick={handleSave}
+                disabled={isProcessing}
+                className="flex-[2] py-4 rounded-[24px] font-bold text-lg text-white shadow-[0_8px_20px_rgba(31,38,135,0.15)] border border-white/30 bg-gradient-to-r from-[#A855F7] to-[#6D28D9] hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
+                {isProcessing ? 'กำลังบันทึก...' : 'บันทึกรายการ'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
 
