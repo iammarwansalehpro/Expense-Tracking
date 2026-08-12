@@ -8,6 +8,7 @@ interface ConfirmState {
   cancelText: string;
   isDestructive: boolean;
   onConfirm: () => void;
+  onCancel?: () => void;
   showConfirm: (options: {
     title: string;
     message: string;
@@ -15,6 +16,7 @@ interface ConfirmState {
     cancelText?: string;
     isDestructive?: boolean;
     onConfirm: () => void;
+    onCancel?: () => void;
   }) => void;
   hideConfirm: () => void;
 }
@@ -27,6 +29,7 @@ export const useConfirmStore = create<ConfirmState>((set) => ({
   cancelText: 'Cancel',
   isDestructive: false,
   onConfirm: () => {},
+  onCancel: undefined,
   
   showConfirm: (options) => set({
     isOpen: true,
@@ -35,7 +38,8 @@ export const useConfirmStore = create<ConfirmState>((set) => ({
     confirmText: options.confirmText || 'Confirm',
     cancelText: options.cancelText || 'Cancel',
     isDestructive: options.isDestructive || false,
-    onConfirm: options.onConfirm
+    onConfirm: options.onConfirm,
+    onCancel: options.onCancel,
   }),
   
   hideConfirm: () => set({ isOpen: false })

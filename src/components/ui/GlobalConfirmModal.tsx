@@ -3,22 +3,27 @@ import { useConfirmStore } from '@/store/useConfirmStore';
 import { AlertTriangle, X } from 'lucide-react';
 
 export default function GlobalConfirmModal() {
-  const { isOpen, title, message, confirmText, cancelText, isDestructive, onConfirm, hideConfirm } = useConfirmStore();
+  const { isOpen, title, message, confirmText, cancelText, isDestructive, onConfirm, onCancel, hideConfirm } = useConfirmStore();
 
   if (!isOpen) return null;
+
+  const handleCancel = () => {
+    onCancel?.();
+    hideConfirm();
+  };
 
   return createPortal(
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-[#2E1065]/20 backdrop-blur-sm animate-in fade-in duration-200"
-        onClick={hideConfirm}
+        onClick={handleCancel}
       />
       
       {/* Modal Content */}
       <div className="relative w-full max-w-sm bg-white/90 backdrop-blur-xl rounded-[28px] p-6 shadow-[0_24px_48px_rgba(46,16,101,0.15)] border border-white/60 animate-in zoom-in-95 fade-in duration-200">
         <button 
-          onClick={hideConfirm}
+          onClick={handleCancel}
           className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors"
         >
           <X className="w-4 h-4" />
@@ -52,7 +57,7 @@ export default function GlobalConfirmModal() {
               {confirmText}
             </button>
             <button
-              onClick={hideConfirm}
+              onClick={handleCancel}
               className="w-full py-3.5 rounded-[18px] font-bold text-[15px] text-[#2E1065]/70 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95"
             >
               {cancelText}

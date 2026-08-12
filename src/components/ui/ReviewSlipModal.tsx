@@ -5,6 +5,7 @@ import { getCategoryStyle } from '@/utils/categoryStyles';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { addTransaction, setUserFavorites } from '@/services/transactionService';
+import { useToastStore } from '@/store/useToastStore';
 import { useWalletStore } from '@/store/useWalletStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useConfirmStore } from '@/store/useConfirmStore';
@@ -108,10 +109,11 @@ export default function ReviewSlipModal() {
           walletId: currentSlip.walletId || mainWallet.id,
         });
         
+        useToastStore.getState().showToast('บันทึกรายการสำเร็จ', 'success');
         setIsEditing(false);
         removeScannedSlip(currentScanIndex);
       } catch (error) {
-        alert('Failed to save transaction');
+        useToastStore.getState().showToast('เกิดข้อผิดพลาดในการบันทึก', 'error');
       } finally {
         setLoading(false);
       }
@@ -131,6 +133,9 @@ export default function ReviewSlipModal() {
         cancelText: 'ยกเลิก',
         onConfirm: () => {
           executeSave();
+        },
+        onCancel: () => {
+          setLoading(false);
         }
       });
       return;
