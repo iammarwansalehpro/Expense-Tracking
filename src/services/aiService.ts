@@ -56,8 +56,8 @@ export const extractDataFromVoice = async (transcript: string): Promise<VoiceExt
   const maxRetriesPerModel = 2; 
 
   const modelConfigs = [
-    { model: 'gemini-2.5-flash', apiVersion: 'v1beta' },
-    { model: 'gemini-1.5-flash', apiVersion: 'v1beta' }
+    { model: 'gemini-1.5-flash' },
+    { model: 'gemini-1.5-pro' }
   ];
 
   while (attempt < geminiKeys.length) {
@@ -71,8 +71,7 @@ export const extractDataFromVoice = async (transcript: string): Promise<VoiceExt
       while (modelAttempt < maxRetriesPerModel) {
         try {
           const model = genAI.getGenerativeModel(
-            { model: config.model },
-            { apiVersion: config.apiVersion }
+            { model: config.model }
           );
 
           const result = await model.generateContent([finalPrompt]);

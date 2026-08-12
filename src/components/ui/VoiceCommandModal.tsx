@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Mic, X, Check, Loader2, Sparkles, AlertCircle, Edit2, ChevronDown } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
@@ -11,6 +11,7 @@ import { addTransaction } from '@/services/transactionService';
 import { getCategoryStyle } from '@/utils/categoryStyles';
 import { useDragToClose } from '@/hooks/useDragToClose';
 import { useTranslation } from '@/hooks/useTranslation';
+import CategorySelectModal from '@/components/ui/CategorySelectModal';
 import * as Icons from 'lucide-react';
 
 export default function VoiceCommandModal() {
@@ -27,6 +28,8 @@ export default function VoiceCommandModal() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
   const [parsedData, setParsedData] = useState<VoiceExtractResult | null>(null);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { handlers: dragHandlers, style: dragStyle } = useDragToClose({
     onClose: () => {
@@ -55,6 +58,7 @@ export default function VoiceCommandModal() {
   };
 
   const handleClose = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     voiceService.stop();
     setVoiceModalOpen(false);
   };
@@ -72,7 +76,12 @@ export default function VoiceCommandModal() {
       (result) => {
         setTranscript(result.transcript);
         if (result.isFinal) {
-          handleProcessVoice(result.transcript);
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          timeoutRef.current = setTimeout(() => {
+            handleProcessVoice(result.transcript);
+          }, 1500);
+        } else {
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
         }
       },
       (err) => {
@@ -252,19 +261,12 @@ export default function VoiceCommandModal() {
                 
                 <div className="h-[1px] w-full bg-slate-100/80 my-0.5" />
                 
-                <div className="flex justify-between items-center bg-slate-50/50 p-2.5 rounded-2xl border border-transparent focus-within:border-purple-200 focus-within:bg-white transition-all relative">
+                <div 
+                  className="flex justify-between items-center bg-slate-50/50 p-2.5 rounded-2xl border border-transparent hover:bg-slate-100 transition-all cursor-pointer"
+                  onClick={() => setIsCategoryModalOpen(true)}
+                >
                   <span className="text-sm font-medium text-slate-500 w-16 shrink-0">หมวดหมู่</span>
-                  <div className="flex items-center gap-2 flex-1 justify-end relative">
-                    <select
-                      value={parsedData.category || ''}
-                      onChange={e => setParsedData({...parsedData, category: e.target.value})}
-                      className="text-sm font-bold text-[#2E1065] bg-transparent outline-none text-right appearance-none absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    >
-                      <option value="">เลือกหมวดหมู่...</option>
-                      {Object.keys(appCategories || {}).map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
+                  <div className="flex items-center gap-2 flex-1 justify-end">
                     <span className="text-sm font-bold text-[#2E1065] truncate max-w-[120px]">{parsedData.category || 'อื่นๆ'}</span>
                     {(() => {
                       const catName = parsedData.category || 'อื่นๆ';
@@ -302,6 +304,16 @@ export default function VoiceCommandModal() {
 
         </div>
       </div>
+
+      <CategorySelectModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        onSelect={(catName, type) => {
+          setParsedData(prev => prev ? { ...prev, category: catName, type } : null);
+          setIsCategoryModalOpen(false);
+        }}
+        selectedCategory={parsedData?.category || ''}
+      />
     </div>,
     document.body
   );
