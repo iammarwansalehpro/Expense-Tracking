@@ -6,7 +6,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useWalletStore } from '@/store/useWalletStore';
 import { useToastStore } from '@/store/useToastStore';
 import { voiceService } from '@/services/voiceService';
-import { extractDataFromVoice, VoiceExtractResult } from '@/services/aiService';
+import { extractDataFromVoice, type VoiceExtractResult } from '@/services/aiService';
 import { addTransaction } from '@/services/transactionService';
 import { getCategoryStyle } from '@/utils/categoryStyles';
 import * as Icons from 'lucide-react';
