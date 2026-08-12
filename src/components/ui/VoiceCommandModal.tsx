@@ -156,7 +156,7 @@ export default function VoiceCommandModal() {
       >
         
         {/* Drag Handle */}
-        <div className="w-12 h-1.5 bg-slate-200/60 rounded-full mx-auto mb-6 shrink-0" />
+        <div className="w-16 h-1.5 bg-slate-300/80 rounded-full mx-auto mb-6 shrink-0 shadow-sm" />
         
         {/* Glow Background Effect */}
         <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-[60px] opacity-20 pointer-events-none transition-all duration-700 ${isListening ? 'bg-indigo-500 scale-150 animate-pulse' : 'bg-[#A855F7] scale-100'}`} />
