@@ -362,17 +362,23 @@ export default function VoiceCommandModal() {
 
                 {/* 5. Title/Memo */}
                 <div>
-                  <label className="text-sm font-bold text-[#2E1065] flex items-center gap-2.5 mb-2">
-                    <div className="w-8 h-8 bg-white/60 rounded-xl flex items-center justify-center border border-white/50 shadow-sm">
-                      <Pencil className="w-4 h-4 text-[#8B5CF6]" />
-                    </div>
-                    {t('add.memo', 'บันทึกช่วยจำ')}
-                  </label>
-                  <input 
-                    type="text"
+                  <div className="flex justify-between items-end mb-2">
+                    <label className="text-sm font-bold text-[#2E1065] flex items-center gap-2.5">
+                      <div className="w-8 h-8 bg-white/60 rounded-xl flex items-center justify-center border border-white/50 shadow-sm">
+                        <Pencil className="w-4 h-4 text-[#8B5CF6]" />
+                      </div>
+                      {t('add.memo', 'บันทึกช่วยจำ')}
+                    </label>
+                    <span className={`text-xs font-semibold ${(parsedData.title || '').length >= 50 ? 'text-red-500' : 'text-[#2E1065]/40'}`}>
+                      {(parsedData.title || '').length}/50
+                    </span>
+                  </div>
+                  <textarea 
+                    maxLength={50}
+                    rows={3}
                     value={parsedData.title || ''}
                     onChange={e => setParsedData({...parsedData, title: e.target.value})}
-                    className="w-full bg-white/60 backdrop-blur-sm rounded-[16px] px-4 py-3.5 text-[#2E1065] font-bold focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-white/50 shadow-inner placeholder:text-[#2E1065]/30"
+                    className="w-full bg-white/60 backdrop-blur-sm rounded-[16px] px-4 py-3.5 text-[#2E1065] font-bold focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-white/50 shadow-inner resize-none min-h-[100px] placeholder:text-[#2E1065]/30"
                     placeholder="เพิ่มบันทึกช่วยจำ..."
                   />
                 </div>
