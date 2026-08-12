@@ -164,19 +164,38 @@ export default function VoiceCommandModal() {
   if (!isVoiceModalOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
+    <div className="fixed inset-0 z-[100] flex flex-col justify-end">
       <div 
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300"
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm animate-fade-in"
         onClick={handleClose}
       />
       <div 
-        className="relative w-full max-w-full sm:max-w-md bg-white/90 backdrop-blur-2xl rounded-t-[40px] sm:rounded-[40px] p-8 pb-10 sm:pb-8 shadow-[0_-8px_40px_rgba(46,16,101,0.1)] border border-white/60 animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300 overflow-hidden flex flex-col items-center min-h-[400px] justify-between"
         {...dragHandlers}
         style={{ ...dragStyle, touchAction: 'none' }}
+        className="bg-white/80 backdrop-blur-[30px] rounded-t-[40px] border-t border-white/60 w-full max-w-md mx-auto shadow-[0_-10px_40px_rgba(31,38,135,0.15)] relative animate-slide-up flex flex-col h-[95vh]"
       >
         
         {/* Drag Handle */}
-        <div className="w-16 h-1.5 bg-slate-300/80 rounded-full mx-auto mb-6 shrink-0 shadow-sm" />
+        <div className="p-4 flex justify-center shrink-0">
+          <div className="w-16 h-1.5 bg-slate-300/50 rounded-full" />
+        </div>
+
+        {/* Header */}
+        <div className="px-6 pb-4 flex justify-between items-center shrink-0 z-20">
+          <h2 className="text-[26px] font-bold text-[#2E1065] flex items-center gap-2 tracking-tight">
+            <Mic className="w-6 h-6 text-[#8B5CF6]" />
+            สั่งงานด้วยเสียง
+          </h2>
+          <button 
+            onClick={handleClose}
+            className="w-10 h-10 rounded-full bg-white/60 shadow-sm border border-white/50 flex items-center justify-center text-[#2E1065]/60 hover:bg-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div className="flex-1 flex flex-col overflow-hidden relative">
+          <div className="overflow-y-auto px-6 pb-32 no-scrollbar flex-1 flex flex-col items-center justify-center">
         
         {/* Glow Background Effect */}
         <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-[60px] opacity-20 pointer-events-none transition-all duration-700 ${isListening ? 'bg-indigo-500 scale-150 animate-pulse' : 'bg-[#A855F7] scale-100'}`} />
@@ -184,7 +203,7 @@ export default function VoiceCommandModal() {
         <div className="flex-1 w-full flex flex-col items-center justify-center z-10 relative">
           
           {/* Main Visual Indicator */}
-          {!parsedData && !error ? (
+          {!parsedData && !error && (
             <div className="flex flex-col items-center w-full">
               <div 
                 className={`relative w-28 h-28 flex items-center justify-center rounded-full shadow-lg transition-all duration-300 ${isListening ? 'bg-indigo-600 scale-110 shadow-indigo-500/50' : 'bg-slate-800'}`}
@@ -215,7 +234,9 @@ export default function VoiceCommandModal() {
                 )}
               </div>
             </div>
-          ) : error ? (
+          )}
+          
+          {error && (
             <div className="flex flex-col items-center w-full">
               <div className="w-24 h-24 bg-red-100 text-red-500 rounded-full flex items-center justify-center mb-6 shadow-inner">
                 <AlertCircle className="w-12 h-12" />
@@ -229,8 +250,10 @@ export default function VoiceCommandModal() {
                 ลองอีกครั้ง
               </button>
             </div>
-          ) : parsedData ? (
-            <div className="flex flex-col items-center w-full animate-in slide-in-from-bottom-4 duration-500">
+          )}
+          
+          {parsedData && (
+            <div className="flex flex-col items-center w-full animate-in slide-in-from-bottom-4 duration-500 mt-4">
               <div className="w-16 h-16 bg-gradient-to-tr from-emerald-400 to-emerald-500 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/30 text-white">
                 <Check className="w-8 h-8" />
               </div>
@@ -292,7 +315,7 @@ export default function VoiceCommandModal() {
                   <button 
                     type="button"
                     onClick={() => setIsCategoryModalOpen(true)}
-                    className="w-full bg-white/60 backdrop-blur-sm border border-white/50 rounded-[16px] px-4 py-3.5 text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 transition-all shadow-inner h-14"
+                    className="w-full bg-white/60 backdrop-blur-sm border border-white/50 rounded-[16px] px-4 py-3.5 text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 transition-all shadow-inner min-h-[60px]"
                   >
                     <span className="flex items-center gap-3 font-bold text-[#2E1065] overflow-hidden">
                       {(() => {
@@ -354,7 +377,12 @@ export default function VoiceCommandModal() {
                   />
                 </div>
               </div>
+            </div>
+          )}
 
+          {/* Sticky Footer Buttons */}
+          {parsedData && (
+            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white/95 via-white/80 to-transparent pb-10">
               <div className="w-full flex gap-3">
                 <button 
                   onClick={startListening}
@@ -372,8 +400,9 @@ export default function VoiceCommandModal() {
                 </button>
               </div>
             </div>
-          ) : null}
+          )}
 
+          </div>
         </div>
       </div>
 

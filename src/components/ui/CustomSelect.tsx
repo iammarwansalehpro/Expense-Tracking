@@ -71,7 +71,7 @@ export default function CustomSelect({ label, options, value, onChange, placehol
       <button 
         type="button"
         onClick={() => !disabled && setIsOpen(true)}
-        className={`w-full bg-white/60 backdrop-blur-sm border border-white/50 rounded-[16px] px-4 py-3.5 text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 transition-all shadow-inner h-14 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`w-full bg-white/60 backdrop-blur-sm border border-white/50 rounded-[16px] px-4 py-3.5 text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 transition-all shadow-inner min-h-[60px] ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <span className="font-bold text-[#2E1065] flex items-center h-full overflow-hidden flex-1">
           {renderValue()}

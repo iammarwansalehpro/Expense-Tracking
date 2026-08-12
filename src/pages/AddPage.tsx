@@ -339,7 +339,7 @@ export default function AddPage() {
                 <button 
                   type="button"
                   onClick={() => type !== 'transfer' && setIsCategoryModalOpen(true)}
-                  className={`w-full bg-white/60 backdrop-blur-sm border border-white/50 rounded-[16px] px-4 py-3.5 text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 transition-all shadow-inner h-14 ${type === 'transfer' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`w-full bg-white/60 backdrop-blur-sm border border-white/50 rounded-[16px] px-4 py-3.5 text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 transition-all shadow-inner min-h-[60px] ${type === 'transfer' ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {category ? (
                     <span className="flex items-center gap-3 font-bold text-[#2E1065]">
