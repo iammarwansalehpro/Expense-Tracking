@@ -405,6 +405,7 @@ export default function VoiceCommandModal() {
           </div>
         </div>
       </div>
+    </div>
 
       <CategorySelectModal
         isOpen={isCategoryModalOpen}
