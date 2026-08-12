@@ -236,68 +236,54 @@ export default function VoiceCommandModal() {
               
               <div className="w-full bg-white/80 backdrop-blur p-4 rounded-3xl shadow-sm border border-slate-100 mb-6 flex flex-col gap-2">
                 
-                <div className="flex justify-between items-center bg-slate-50/50 p-2.5 rounded-2xl border border-transparent focus-within:border-purple-200 focus-within:bg-white transition-all">
-                  <span className="text-sm font-medium text-slate-500 w-16">ยอดเงิน</span>
-                  <div className="flex items-center flex-1 justify-end">
-                    <span className={`text-2xl font-black mr-0.5 ${parsedData.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]'}`}>
+                <div className="mb-3">
+                  <label className="text-xs font-bold text-slate-500 mb-1.5 block ml-1">ยอดเงิน</label>
+                  <div className="relative">
+                    <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold ${parsedData.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]/50'}`}>
                       {parsedData.type === 'income' ? '+' : '-'}฿
                     </span>
-                    <div className="inline-grid items-center justify-items-end">
-                      <span className="invisible col-start-1 row-start-1 text-2xl font-black min-w-[1ch] whitespace-pre">
-                        {parsedData.amount ? parsedData.amount.toString() : ''}
-                      </span>
-                      <input 
-                        type="text"
-                        inputMode="numeric"
-                        value={parsedData.amount || ''}
-                        onChange={e => {
-                          const val = e.target.value.replace(/[^0-9]/g, '');
-                          setParsedData({...parsedData, amount: val ? Number(val) : undefined});
-                        }}
-                        className={`col-start-1 row-start-1 text-2xl font-black bg-transparent outline-none text-right w-full p-0 m-0 ${parsedData.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]'}`}
-                        placeholder="0"
-                      />
-                    </div>
-                    <Edit2 className="w-3.5 h-3.5 text-slate-300 ml-2 shrink-0" />
-                  </div>
-                </div>
-                
-                <div className="h-[1px] w-full bg-slate-100/80 my-0.5" />
-                
-                <div className="flex justify-between items-center bg-slate-50/50 p-2.5 rounded-2xl border border-transparent focus-within:border-purple-200 focus-within:bg-white transition-all">
-                  <span className="text-sm font-medium text-slate-500 w-16">รายการ</span>
-                  <div className="flex items-center flex-1 justify-end">
                     <input 
-                      type="text"
-                      value={parsedData.title || ''}
-                      onChange={e => setParsedData({...parsedData, title: e.target.value})}
-                      className="text-base font-bold text-[#2E1065] bg-transparent outline-none text-right w-full"
-                      placeholder="ชื่อรายการ"
+                      type="number"
+                      step="0.01"
+                      value={parsedData.amount || ''}
+                      onChange={e => setParsedData({...parsedData, amount: Number(e.target.value)})}
+                      className={`w-full bg-slate-50/50 rounded-[16px] px-10 py-3.5 text-lg font-bold focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-transparent focus:bg-white transition-all shadow-inner ${parsedData.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]'}`}
+                      placeholder="0.00"
                     />
-                    <Edit2 className="w-3.5 h-3.5 text-slate-300 ml-2 shrink-0" />
                   </div>
                 </div>
                 
-                <div className="h-[1px] w-full bg-slate-100/80 my-0.5" />
+                <div className="mb-3">
+                  <label className="text-xs font-bold text-slate-500 mb-1.5 block ml-1">รายการ</label>
+                  <input 
+                    type="text"
+                    value={parsedData.title || ''}
+                    onChange={e => setParsedData({...parsedData, title: e.target.value})}
+                    className="w-full bg-slate-50/50 rounded-[16px] px-4 py-3.5 text-base font-bold text-[#2E1065] focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-transparent focus:bg-white transition-all shadow-inner"
+                    placeholder="ชื่อรายการ"
+                  />
+                </div>
                 
-                <div 
-                  className="flex justify-between items-center bg-slate-50/50 p-2.5 rounded-2xl border border-transparent hover:bg-slate-100 transition-all cursor-pointer"
-                  onClick={() => setIsCategoryModalOpen(true)}
-                >
-                  <span className="text-sm font-medium text-slate-500 w-16 shrink-0">หมวดหมู่</span>
-                  <div className="flex items-center gap-2 flex-1 justify-end">
-                    <span className="text-sm font-bold text-[#2E1065] truncate max-w-[120px]">{parsedData.category || 'อื่นๆ'}</span>
-                    {(() => {
-                      const catName = parsedData.category || 'อื่นๆ';
-                      const style = getCategoryStyle(catName, appCategories || undefined);
-                      const IconComponent = style.icon;
-                      return (
-                        <div className="flex items-center justify-center w-6 h-6 rounded-full shrink-0 bg-slate-100">
-                           <IconComponent className={`w-3.5 h-3.5 ${style.textColor}`} />
-                        </div>
-                      );
-                    })()}
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-300 ml-1 shrink-0" />
+                <div className="mb-3">
+                  <label className="text-xs font-bold text-slate-500 mb-1.5 block ml-1">หมวดหมู่</label>
+                  <div 
+                    className="flex justify-between items-center bg-slate-50/50 p-3.5 rounded-[16px] border border-transparent hover:bg-slate-100 transition-all cursor-pointer shadow-inner"
+                    onClick={() => setIsCategoryModalOpen(true)}
+                  >
+                    <div className="flex items-center gap-3">
+                      {(() => {
+                        const catName = parsedData.category || 'อื่นๆ';
+                        const style = getCategoryStyle(catName, appCategories || undefined);
+                        const IconComponent = style.icon;
+                        return (
+                          <div className={`flex items-center justify-center w-8 h-8 rounded-xl shrink-0 ${style.color}`}>
+                             <IconComponent className={`w-4 h-4 ${style.textColor}`} />
+                          </div>
+                        );
+                      })()}
+                      <span className="text-base font-bold text-[#2E1065]">{parsedData.category || 'อื่นๆ'}</span>
+                    </div>
+                    <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
                   </div>
                 </div>
 
