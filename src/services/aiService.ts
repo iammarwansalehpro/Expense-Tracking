@@ -85,7 +85,7 @@ export const extractDataFromVoice = async (transcript: string): Promise<VoiceExt
           try {
             const parsed = JSON.parse(cleanJsonStr);
             return {
-              amount: typeof parsed.amount === 'number' ? parsed.amount : undefined,
+              amount: parsed.amount != null && !isNaN(Number(parsed.amount)) ? Number(parsed.amount) : undefined,
               title: typeof parsed.title === 'string' ? parsed.title : 'Voice Transaction',
               category: typeof parsed.category === 'string' ? parsed.category : undefined,
               type: ['expense', 'income', 'transfer'].includes(parsed.type) ? parsed.type : 'expense',

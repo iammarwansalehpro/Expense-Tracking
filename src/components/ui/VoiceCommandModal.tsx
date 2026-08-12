@@ -181,7 +181,7 @@ export default function VoiceCommandModal() {
               </div>
               
               <h3 className="mt-8 text-[22px] font-bold text-[#2E1065] text-center">
-                {isProcessing ? 'กำลังวิเคราะห์ด้วย AI...' : isListening ? 'กำลังฟัง...' : 'แตะเพื่อพูด'}
+                {isProcessing ? 'กำลังประมวลผล...' : isListening ? 'กำลังฟัง...' : 'แตะเพื่อพูด'}
               </h3>
               
               <div className="mt-4 min-h-[60px] w-full flex flex-col items-center justify-center px-4">
@@ -261,7 +261,7 @@ export default function VoiceCommandModal() {
                   disabled={isProcessing}
                   className="flex-[2] py-3.5 rounded-[18px] font-bold text-[15px] bg-gradient-to-r from-[#A855F7] to-[#6D28D9] hover:opacity-90 text-white transition-all active:scale-95 shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+                  {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
                   {isProcessing ? 'กำลังบันทึก...' : 'บันทึกรายการ'}
                 </button>
               </div>
