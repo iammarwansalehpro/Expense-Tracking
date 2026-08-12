@@ -87,7 +87,7 @@ const fileToGenerativePart = async (file: File) => {
 
 export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> => {
   const categories = await fetchCategories();
-  console.log("[OCR] Requesting AI Vision Extraction (Gemini 100%)...");
+
 
   const keys = await getApiKeys();
   const geminiKeys = keys.filter(k => !k.startsWith('gsk_')); // Filter out Groq keys
@@ -99,10 +99,7 @@ export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> =
   const categoryListStr = Object.keys(categories).filter(k => categories[k].tab !== 'income').join(', ');
   const finalPrompt = PROMPT_TEMPLATE(categoryListStr);
 
-  // Compress image to save massive bandwidth and TPM quota
-  console.log(`[OCR] Original file size: ${(imageFile.size / 1024).toFixed(1)} KB`);
   const compressedFile = await compressImage(imageFile);
-  console.log(`[OCR] Compressed file size: ${(compressedFile.size / 1024).toFixed(1)} KB`);
   
   const imagePart = await fileToGenerativePart(compressedFile);
 
@@ -123,7 +120,7 @@ export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> =
     let lastError = null;
     let hasQuotaError = false;
 
-    console.log(`[OCR] Using Gemini API Key index ${activeKeyIndex}...`);
+
     const genAI = new GoogleGenerativeAI(currentKey);
 
     for (const config of modelConfigs) {
@@ -132,7 +129,7 @@ export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> =
       let modelAttempt = 0;
       while (modelAttempt < maxRetriesPerModel) {
         try {
-          console.log(`[OCR] Trying model: ${config.model} (API: ${config.apiVersion}), attempt ${modelAttempt + 1}`);
+
           const model = genAI.getGenerativeModel(
             { model: config.model },
             { apiVersion: config.apiVersion }
