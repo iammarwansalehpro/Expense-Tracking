@@ -174,10 +174,15 @@ export default function VoiceCommandModal() {
                 {isProcessing ? 'กำลังวิเคราะห์ด้วย AI...' : isListening ? 'กำลังฟัง...' : 'แตะเพื่อพูด'}
               </h3>
               
-              <div className="mt-4 min-h-[60px] w-full flex items-center justify-center px-4">
-                <p className={`text-center text-lg font-medium ${transcript ? 'text-[#2E1065]' : 'text-slate-400'}`}>
-                  {transcript || '"จ่ายค่าเน็ตบ้าน 500 บาท"'}
-                </p>
+              <div className="mt-4 min-h-[60px] w-full flex flex-col items-center justify-center px-4">
+                {transcript ? (
+                  <p className="text-center text-lg font-medium text-[#2E1065]">{transcript}</p>
+                ) : (
+                  <div className="flex flex-col items-center text-slate-400 gap-1 text-center">
+                    <span className="font-medium">พูดชื่อรายการ และ ยอดเงิน</span>
+                    <span className="text-sm opacity-80">เช่น "ซื้อของที่ 7-11 50 บาท"</span>
+                  </div>
+                )}
               </div>
             </div>
           ) : error ? (
