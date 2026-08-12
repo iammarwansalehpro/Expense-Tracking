@@ -195,12 +195,12 @@ export default function VoiceCommandModal() {
         </div>
         
         <div className="flex-1 flex flex-col overflow-hidden relative">
-          <div className="overflow-y-auto px-6 pb-32 no-scrollbar flex-1 flex flex-col items-center justify-center">
+          <div className={`overflow-y-auto px-6 pb-40 no-scrollbar flex-1 flex flex-col ${!parsedData ? 'items-center justify-center' : ''}`}>
         
         {/* Glow Background Effect */}
         <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-[60px] opacity-20 pointer-events-none transition-all duration-700 ${isListening ? 'bg-indigo-500 scale-150 animate-pulse' : 'bg-[#A855F7] scale-100'}`} />
 
-        <div className="flex-1 w-full flex flex-col items-center justify-center z-10 relative">
+        <div className={`flex-1 w-full flex flex-col z-10 relative ${!parsedData ? 'items-center justify-center' : 'pt-4'}`}>
           
           {/* Main Visual Indicator */}
           {!parsedData && !error && (
@@ -382,18 +382,18 @@ export default function VoiceCommandModal() {
 
           {/* Sticky Footer Buttons */}
           {parsedData && (
-            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white/95 via-white/80 to-transparent pb-10">
-              <div className="w-full flex gap-3">
+            <div className="absolute bottom-0 left-0 right-0 p-5 flex z-10 pointer-events-none">
+              <div className="w-full flex gap-3 pointer-events-auto">
                 <button 
                   onClick={startListening}
-                  className="flex-1 py-3.5 rounded-[18px] font-bold text-[15px] text-[#2E1065]/70 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95 flex items-center justify-center gap-2"
+                  className="flex-1 py-4 rounded-[24px] font-bold text-lg text-[#2E1065]/70 bg-white shadow-[0_8px_20px_rgba(31,38,135,0.05)] border border-white/50 hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center gap-2"
                 >
-                  <Mic className="w-4 h-4" /> พูดใหม่
+                  <Mic className="w-5 h-5" /> พูดใหม่
                 </button>
                 <button 
                   onClick={handleSave}
                   disabled={isProcessing}
-                  className="flex-[2] py-3.5 rounded-[18px] font-bold text-[15px] bg-gradient-to-r from-[#A855F7] to-[#6D28D9] hover:opacity-90 text-white transition-all active:scale-95 shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="flex-[2] py-4 rounded-[24px] font-bold text-lg text-white shadow-[0_8px_20px_rgba(31,38,135,0.15)] border border-white/30 bg-gradient-to-r from-[#A855F7] to-[#6D28D9] hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
                   {isProcessing ? 'กำลังบันทึก...' : 'บันทึกรายการ'}
