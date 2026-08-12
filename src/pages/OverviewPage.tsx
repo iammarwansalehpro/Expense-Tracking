@@ -1,4 +1,4 @@
-import { Activity, ChevronDown, ArrowDown, ArrowUp, ArrowDownWideNarrow, ArrowUpNarrowWide, Sparkles, PlusCircle, ScanLine, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Search, XCircle } from 'lucide-react';
+import { Activity, ChevronDown, ArrowDown, ArrowUp, Sparkles, PlusCircle, ScanLine, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Search, XCircle } from 'lucide-react';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -10,6 +10,16 @@ import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip, Legend } from 'rech
 import TransactionDetailsModal from '@/components/ui/TransactionDetailsModal';
 import { getCategoryStyle } from '@/utils/categoryStyles';
 
+const SortAltIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className={className}
+  >
+    <path d="M5.47719 7.96225C5.1802 8.25099 5.17351 8.72582 5.46225 9.02281C5.75099 9.3198 6.22582 9.32649 6.52281 9.03775L5.47719 7.96225ZM9.6 5H10.35C10.35 4.69857 10.1695 4.42644 9.89188 4.30913C9.61422 4.19182 9.29331 4.25214 9.07719 4.46225L9.6 5ZM8.85 19C8.85 19.4142 9.18579 19.75 9.6 19.75C10.0142 19.75 10.35 19.4142 10.35 19H8.85ZM18.5228 16.0377C18.8198 15.749 18.8265 15.2742 18.5377 14.9772C18.249 14.6802 17.7742 14.6735 17.4772 14.9623L18.5228 16.0377ZM14.4 19H13.65C13.65 19.3014 13.8305 19.5736 14.1081 19.6909C14.3858 19.8082 14.7067 19.7479 14.9228 19.5377L14.4 19ZM15.15 5C15.15 4.58579 14.8142 4.25 14.4 4.25C13.9858 4.25 13.65 4.58579 13.65 5H15.15ZM6.52281 9.03775L10.1228 5.53775L9.07719 4.46225L5.47719 7.96225L6.52281 9.03775ZM8.85 5V19H10.35V5H8.85ZM17.4772 14.9623L13.8772 18.4623L14.9228 19.5377L18.5228 16.0377L17.4772 14.9623ZM15.15 19V5H13.65V19H15.15Z" />
+  </svg>
+);
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   const { t } = useTranslation();
@@ -40,7 +50,7 @@ export default function OverviewPage() {
   const appCategories = useAppStore(s => s.appCategories);
   const [activeTab, setActiveTab] = useState<'income' | 'expense'>('expense');
   const [viewMode, setViewMode] = useState<'chart' | 'calendar'>('chart');
-  
+
   const now = useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = useState<Date>(now);
   const [viewDate, setViewDate] = useState<Date>(now);
@@ -94,9 +104,9 @@ export default function OverviewPage() {
       if (t.linkedTransactionId && t.walletId === t.toWalletId) return false;
       effectiveType = 'expense';
     }
-    
+
     if (effectiveType !== activeTab) return false;
-    
+
     const tDate = new Date(t.date);
 
     // Search query filter
@@ -110,14 +120,14 @@ export default function OverviewPage() {
 
     // Date filtering
     if (viewMode === 'calendar') {
-      return tDate.getDate() === selectedDate.getDate() && 
-             tDate.getMonth() === selectedDate.getMonth() && 
-             tDate.getFullYear() === selectedDate.getFullYear();
+      return tDate.getDate() === selectedDate.getDate() &&
+        tDate.getMonth() === selectedDate.getMonth() &&
+        tDate.getFullYear() === selectedDate.getFullYear();
     }
-    
+
     // In chart mode, filter by viewDate (month)
-    return tDate.getMonth() === viewDate.getMonth() && 
-           tDate.getFullYear() === viewDate.getFullYear();
+    return tDate.getMonth() === viewDate.getMonth() &&
+      tDate.getFullYear() === viewDate.getFullYear();
   }).sort((a, b) => {
     const timeA = new Date(a.date).getTime();
     const timeB = new Date(b.date).getTime();
@@ -131,30 +141,30 @@ export default function OverviewPage() {
           <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/20 to-pink-500/20" />
           <Sparkles className="w-12 h-12 text-purple-600 drop-shadow-sm" />
         </div>
-        
+
         <h2 className="text-[26px] font-bold text-[#2E1065] text-center mb-3 tracking-tight drop-shadow-sm">
           {t('overview.gettingStarted')}
         </h2>
-        
+
         <p className="text-[15px] font-medium text-[#2E1065]/70 text-center mb-12 max-w-[280px] leading-relaxed">
-          {t('overview.welcome')}<span className="font-bold text-purple-600">{useAppStore.getState().appName}</span><br/>{t('overview.welcomeDesc')}
+          {t('overview.welcome')}<span className="font-bold text-purple-600">{useAppStore.getState().appName}</span><br />{t('overview.welcomeDesc')}
         </p>
-        
+
         <div className="w-full flex flex-col gap-3 px-2">
-           <button 
-             onClick={() => document.getElementById('slip-upload')?.click()} 
-             className="w-full py-4 rounded-[24px] bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold text-[16px] shadow-[0_8px_24px_rgba(139,92,246,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5"
-           >
-             <ScanLine className="w-5 h-5" />
-             {t('stats.scanSlip')}
-           </button>
-           <button 
-             onClick={() => setCurrentPage('add')} 
-             className="w-full py-4 rounded-[24px] bg-white/50 backdrop-blur-xl border border-white/60 text-[#2E1065] font-bold text-[16px] shadow-sm hover:bg-white/70 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5"
-           >
-             <PlusCircle className="w-5 h-5 text-purple-600" />
-             {t('stats.addManual')}
-           </button>
+          <button
+            onClick={() => document.getElementById('slip-upload')?.click()}
+            className="w-full py-4 rounded-[24px] bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold text-[16px] shadow-[0_8px_24px_rgba(139,92,246,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5"
+          >
+            <ScanLine className="w-5 h-5" />
+            {t('stats.scanSlip')}
+          </button>
+          <button
+            onClick={() => setCurrentPage('add')}
+            className="w-full py-4 rounded-[24px] bg-white/50 backdrop-blur-xl border border-white/60 text-[#2E1065] font-bold text-[16px] shadow-sm hover:bg-white/70 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5"
+          >
+            <PlusCircle className="w-5 h-5 text-purple-600" />
+            {t('stats.addManual')}
+          </button>
         </div>
       </div>
     );
@@ -166,7 +176,7 @@ export default function OverviewPage() {
     const currentMonth = viewDate.getMonth();
     const daysCount = new Date(currentYear, currentMonth + 1, 0).getDate();
     const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-    
+
     const days = [];
     const dateFormatter = new Intl.DateTimeFormat(language === 'en' ? 'en-US' : 'th-TH', { weekday: 'short' });
     const weekDays = [];
@@ -189,27 +199,26 @@ export default function OverviewPage() {
       const isSelected = selectedDate.getDate() === i && selectedDate.getMonth() === currentMonth;
       const isToday = now.getDate() === i;
       const net = dailyTotals[i] || 0;
-      
+
       let textColor = 'text-[#2E1065]/40';
       if (net > 0) textColor = 'text-emerald-600';
       else if (net < 0) textColor = 'text-rose-500';
 
       days.push(
-        <button 
+        <button
           key={`day-${i}`}
           onClick={() => setSelectedDate(new Date(currentYear, currentMonth, i))}
-          className={`h-14 flex flex-col items-center justify-start pt-1.5 pb-1 rounded-[16px] transition-all relative ${
-            isSelected 
-              ? 'bg-white/80 shadow-sm border border-white/80' 
+          className={`h-14 flex flex-col items-center justify-start pt-1.5 pb-1 rounded-[16px] transition-all relative ${isSelected
+              ? 'bg-white/80 shadow-sm border border-white/80'
               : 'hover:bg-white/30 border border-transparent'
-          }`}
+            }`}
         >
           <span className={`text-[13px] font-bold ${isToday && !isSelected ? 'text-purple-600' : 'text-[#2E1065]'}`}>
             {i}
           </span>
           {net !== 0 && (
             <span className={`text-[9px] font-bold mt-1 ${textColor}`}>
-              {net > 0 ? '+' : ''}{Math.abs(net) >= 1000 ? (net/1000).toFixed(1)+'k' : net}
+              {net > 0 ? '+' : ''}{Math.abs(net) >= 1000 ? (net / 1000).toFixed(1) + 'k' : net}
             </span>
           )}
         </button>
@@ -234,7 +243,7 @@ export default function OverviewPage() {
         {/* Global Month Selector */}
         <div className="flex justify-center mb-6 shrink-0">
           <div className="bg-white/30 backdrop-blur-xl px-5 py-2.5 rounded-full flex items-center gap-5 shadow-[0_4px_20px_rgba(31,38,135,0.05)] border border-white/50">
-            <button 
+            <button
               onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1))}
               className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/50 active:scale-95 transition-all bg-white/40 text-[#2E1065] shadow-sm"
             >
@@ -243,7 +252,7 @@ export default function OverviewPage() {
             <span className="font-bold text-[#2E1065] text-base min-w-[100px] text-center">
               {new Intl.DateTimeFormat(language === 'en' ? 'en-US' : 'th-TH', { month: 'long', year: 'numeric' }).format(viewDate)}
             </span>
-            <button 
+            <button
               onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))}
               className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/50 active:scale-95 transition-all bg-white/40 text-[#2E1065] shadow-sm"
             >
@@ -271,7 +280,7 @@ export default function OverviewPage() {
               </AutoShrinkText>
             </div>
           </div>
-          
+
           {/* Expense Card */}
           <div className="flex-1 bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-xl rounded-[24px] p-4 border border-white/60 shadow-[0_8px_32px_rgba(31,38,135,0.05)] relative overflow-hidden flex flex-col gap-2 min-w-0">
             <div className="flex items-center gap-2">
@@ -293,13 +302,13 @@ export default function OverviewPage() {
 
         {/* View Toggle */}
         <div className="flex bg-white/20 backdrop-blur-xl border border-white/30 p-1.5 rounded-[20px] mb-6 shadow-inner shrink-0">
-          <button 
+          <button
             className={`flex-1 py-2.5 rounded-[16px] text-sm font-bold transition-all duration-300 ${viewMode === 'chart' ? 'bg-white/60 text-[#2E1065] shadow-sm border border-white/50' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80'}`}
             onClick={() => setViewMode('chart')}
           >
             {t('overview.chart')}
           </button>
-          <button 
+          <button
             className={`flex-1 py-2.5 rounded-[16px] text-sm font-bold transition-all duration-300 ${viewMode === 'calendar' ? 'bg-white/60 text-[#2E1065] shadow-sm border border-white/50' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80'}`}
             onClick={() => setViewMode('calendar')}
           >
@@ -317,21 +326,21 @@ export default function OverviewPage() {
             <div className="h-48 w-full shrink-0 mb-8 bg-white/20 backdrop-blur-md rounded-[32px] p-4 border border-white/30 shadow-inner">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} barSize={12} barGap={4}>
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
                     tick={{ fill: '#4C1D95', fontSize: 11, fontWeight: 600, opacity: 0.6 }}
                     dy={10}
                   />
-                  <Tooltip 
+                  <Tooltip
                     cursor={{ fill: 'rgba(46, 16, 101, 0.05)', radius: 8 }}
                     content={<CustomTooltip />}
                   />
                   <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 600, paddingTop: '10px' }} />
                   <Bar dataKey="income" name={t('overview.income')} fill="url(#incomeGradient)" radius={[6, 6, 6, 6]} />
                   <Bar dataKey="expense" name={t('overview.expense')} fill="url(#expenseGradient)" radius={[6, 6, 6, 6]} />
-                  
+
                   <defs>
                     <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#34D399" />
@@ -352,13 +361,13 @@ export default function OverviewPage() {
 
         {/* Transaction Type Toggle */}
         <div className="flex bg-white/20 backdrop-blur-xl border border-white/30 p-1.5 rounded-[20px] mb-6 shadow-inner">
-          <button 
+          <button
             className={`flex-1 py-3 rounded-[16px] text-sm font-bold transition-all duration-300 ${activeTab === 'income' ? 'bg-white/60 text-[#2E1065] shadow-sm border border-white/50' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80'}`}
             onClick={() => setActiveTab('income')}
           >
             {t('overview.income')}
           </button>
-          <button 
+          <button
             className={`flex-1 py-3 rounded-[16px] text-sm font-bold transition-all duration-300 ${activeTab === 'expense' ? 'bg-white/60 text-[#2E1065] shadow-sm border border-white/50' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80'}`}
             onClick={() => setActiveTab('expense')}
           >
@@ -368,12 +377,12 @@ export default function OverviewPage() {
 
         {/* List Below */}
         <div className="flex flex-col gap-3">
-          
+
           {/* Smart Search & Sort Row */}
           <div className="flex items-center gap-3 mb-2 shrink-0">
             <div className="flex-1 bg-white/40 backdrop-blur-xl border border-white/50 rounded-2xl px-4 py-3 flex items-center gap-3 shadow-inner relative transition-all focus-within:bg-white/60 focus-within:border-purple-300">
               <Search className="w-5 h-5 text-[#2E1065]/50 shrink-0" />
-              <input 
+              <input
                 type="text"
                 placeholder={language === 'en' ? "Search transactions..." : "ค้นหารายการ..."}
                 value={searchQuery}
@@ -381,7 +390,7 @@ export default function OverviewPage() {
                 className="bg-transparent border-none outline-none text-[15px] font-medium text-[#2E1065] placeholder-[#2E1065]/40 w-full"
               />
               {searchQuery && (
-                <button 
+                <button
                   onClick={() => setSearchQuery('')}
                   className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-black/5 active:scale-95 transition-all text-[#2E1065]/40 hover:text-[#2E1065]/70 absolute right-3"
                 >
@@ -389,12 +398,12 @@ export default function OverviewPage() {
                 </button>
               )}
             </div>
-            <button 
+            <button
               onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
               className="w-12 h-[48px] shrink-0 bg-white/40 backdrop-blur-xl border border-white/50 rounded-2xl flex items-center justify-center shadow-sm hover:bg-white/60 active:scale-95 transition-all text-[#2E1065]"
               title={language === 'en' ? "Toggle Sort Order" : "สลับการเรียงลำดับ"}
             >
-              {sortOrder === 'desc' ? <ArrowDownWideNarrow className="w-5 h-5" /> : <ArrowUpNarrowWide className="w-5 h-5" />}
+              <SortAltIcon className={`w-6 h-6 transition-transform duration-300 ${sortOrder === 'asc' ? 'scale-y-[-1]' : ''}`} />
             </button>
           </div>
           {viewMode === 'calendar' && (
@@ -403,14 +412,14 @@ export default function OverviewPage() {
               {t('overview.dateItems')}{selectedDate.toLocaleDateString(language === 'en' ? 'en-US' : 'th-TH', { day: 'numeric', month: 'short' })}
             </div>
           )}
-          
+
           {filteredTransactions.map((tx) => {
             const catStyle = getCategoryStyle(tx.category || '', appCategories || undefined);
             const IconComponent = catStyle.icon;
-            
+
             return (
-              <div 
-                key={tx.id} 
+              <div
+                key={tx.id}
                 onClick={() => setSelectedTransactionId(tx.id)}
                 className="cursor-pointer flex items-center justify-between bg-white/40 backdrop-blur-md p-4 rounded-3xl shadow-[0_4px_20px_rgba(31,38,135,0.05)] border border-white/50 hover:bg-white/60 active:scale-[0.98] transition-all"
               >
@@ -438,8 +447,8 @@ export default function OverviewPage() {
           )}
         </div>
       </div>
-      
-      <TransactionDetailsModal 
+
+      <TransactionDetailsModal
         transactionId={selectedTransactionId}
         onClose={() => setSelectedTransactionId(null)}
       />
