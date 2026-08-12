@@ -1,4 +1,4 @@
-import { Grid, Bell, ChevronDown, ChevronUp, ArrowDown, ArrowUp, Eye, Landmark, Wallet as WalletIcon, ChevronRight, Edit2, Trash2, Plus, ArrowLeftRight, CreditCard as CreditCardIcon, ArrowRight } from 'lucide-react';
+import { Grid, Bell, ChevronDown, ChevronUp, ArrowDown, ArrowUp, Eye, Landmark, Wallet as WalletIcon, ChevronRight, Edit2, Trash2, Plus, ArrowLeftRight, CreditCard as CreditCardIcon, ArrowRight, Activity } from 'lucide-react';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useWalletStore } from '@/store/useWalletStore';
@@ -129,6 +129,11 @@ export default function HomePage() {
       expense: acc.expense + stats.expense
     };
   }, { balance: 0, income: 0, expense: 0 });
+
+  const now = new Date();
+  const todayExpense = transactions
+    .filter(t => t.type === 'expense' && new Date(t.date).getDate() === now.getDate() && new Date(t.date).getMonth() === now.getMonth() && new Date(t.date).getFullYear() === now.getFullYear())
+    .reduce((sum, t) => sum + t.amount, 0);
 
   const activeWalletStats = getWalletStats(activeWallet?.id || '');
 
@@ -450,6 +455,29 @@ export default function HomePage() {
             />
           </div>
         </div>
+
+        {/* Today's Expense Card */}
+        {todayExpense > 0 && (
+          <div className="px-6 mb-2 shrink-0">
+            <div className="bg-gradient-to-br from-rose-500/10 to-rose-500/5 backdrop-blur-md rounded-[24px] p-4 border border-rose-500/20 shadow-[0_4px_20px_rgba(244,63,94,0.05)] flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/60 flex items-center justify-center shrink-0 shadow-sm border border-rose-100">
+                  <Activity className="w-5 h-5 text-rose-500" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[#2E1065] font-extrabold text-[15px]">ยอดใช้จ่ายวันนี้</span>
+                  <span className="text-[11px] font-medium text-[#2E1065]/60 flex items-center gap-1.5 mt-0.5 tracking-wide">
+                    <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                    รวมทุกรายการแล้ว
+                  </span>
+                </div>
+              </div>
+              <span className="text-[22px] font-black text-rose-600 tracking-tight">
+                -฿{todayExpense.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Transactions List */}
         <div className="px-6 flex-1 flex flex-col">
