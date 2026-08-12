@@ -230,16 +230,25 @@ export default function VoiceCommandModal() {
                 <div className="flex justify-between items-center bg-slate-50/50 p-2.5 rounded-2xl border border-transparent focus-within:border-purple-200 focus-within:bg-white transition-all">
                   <span className="text-sm font-medium text-slate-500 w-16">ยอดเงิน</span>
                   <div className="flex items-center flex-1 justify-end">
-                    <span className={`text-2xl font-black mr-1 ${parsedData.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]'}`}>
+                    <span className={`text-2xl font-black mr-0.5 ${parsedData.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]'}`}>
                       {parsedData.type === 'income' ? '+' : '-'}฿
                     </span>
-                    <input 
-                      type="number"
-                      value={parsedData.amount || ''}
-                      onChange={e => setParsedData({...parsedData, amount: Number(e.target.value)})}
-                      className={`text-2xl font-black bg-transparent outline-none w-28 text-right p-0 m-0 ${parsedData.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]'}`}
-                      placeholder="0"
-                    />
+                    <div className="inline-grid items-center justify-items-end">
+                      <span className="invisible col-start-1 row-start-1 text-2xl font-black min-w-[1ch] whitespace-pre">
+                        {parsedData.amount ? parsedData.amount.toString() : ''}
+                      </span>
+                      <input 
+                        type="text"
+                        inputMode="numeric"
+                        value={parsedData.amount || ''}
+                        onChange={e => {
+                          const val = e.target.value.replace(/[^0-9]/g, '');
+                          setParsedData({...parsedData, amount: val ? Number(val) : undefined});
+                        }}
+                        className={`col-start-1 row-start-1 text-2xl font-black bg-transparent outline-none text-right w-full p-0 m-0 ${parsedData.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]'}`}
+                        placeholder="0"
+                      />
+                    </div>
                     <Edit2 className="w-3.5 h-3.5 text-slate-300 ml-2 shrink-0" />
                   </div>
                 </div>
