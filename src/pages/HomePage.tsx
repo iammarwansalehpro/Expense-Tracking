@@ -461,13 +461,17 @@ export default function HomePage() {
           <div className="px-6 mb-6 shrink-0">
             <div className="bg-gradient-to-br from-rose-500/10 to-rose-500/5 backdrop-blur-md rounded-[24px] p-4 border border-rose-500/20 shadow-[0_4px_20px_rgba(244,63,94,0.05)] flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-[42px] h-[42px] rounded-xl bg-white/60 flex flex-col items-center justify-center shrink-0 shadow-[0_2px_8px_rgba(244,63,94,0.15)] border border-rose-100">
-                  <span className="text-[10px] font-bold text-rose-500/80 uppercase leading-none mt-0.5">
-                    {new Intl.DateTimeFormat(language === 'en' ? 'en-US' : 'th-TH', { month: 'short' }).format(now)}
-                  </span>
-                  <span className="text-[16px] font-black text-rose-600 leading-none mt-0.5">
-                    {now.getDate()}
-                  </span>
+                <div className="w-12 h-12 rounded-[14px] bg-white flex flex-col items-center shrink-0 shadow-[0_8px_16px_rgba(225,29,72,0.12)] border border-rose-100/50 overflow-hidden">
+                  <div className="w-full h-4 bg-gradient-to-r from-rose-500 to-pink-500 flex items-center justify-center">
+                    <span className="text-[9px] font-bold text-white uppercase tracking-wider shadow-sm">
+                      {new Intl.DateTimeFormat(language === 'en' ? 'en-US' : 'th-TH', { month: 'short' }).format(now)}
+                    </span>
+                  </div>
+                  <div className="flex-1 flex items-center justify-center bg-gradient-to-b from-white to-rose-50/50 w-full relative">
+                    <span className="text-[20px] font-black text-rose-600 tracking-tight leading-none">
+                      {now.getDate()}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[#2E1065] font-extrabold text-[15px]">ยอดใช้จ่ายวันนี้</span>
