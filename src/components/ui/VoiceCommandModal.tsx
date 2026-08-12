@@ -52,7 +52,6 @@ export default function VoiceCommandModal() {
     },
   });
 
-  const mainWallet = wallets.find(w => w.isMain) || wallets[0];
 
   useEffect(() => {
     if (isVoiceModalOpen) {
