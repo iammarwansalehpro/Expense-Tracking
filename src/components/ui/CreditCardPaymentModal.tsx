@@ -115,20 +115,17 @@ export default function CreditCardPaymentModal({ isOpen, onClose, creditCardId }
         </div>
 
         <div className="px-6 pb-4 flex justify-between items-start shrink-0">
-          <div>
+          <div className="w-full flex flex-col items-center justify-center">
             <h2 className="text-[26px] font-bold text-[#2E1065] tracking-tight flex items-center gap-2">
               <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
                 <CreditCardIcon className="w-5 h-5" />
               </div>
               ชำระค่าบัตรเครดิต
             </h2>
-            <p className="text-sm font-medium text-[#2E1065]/60 mt-1 pl-12">
+            <p className="text-sm font-medium text-[#2E1065]/60 mt-1 text-center">
               {creditCard.name}
             </p>
           </div>
-          <button onClick={handleClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-red-200/50 text-red-500 bg-red-50/50 hover:bg-red-100/50 backdrop-blur-md transition-colors shadow-sm">
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden relative">

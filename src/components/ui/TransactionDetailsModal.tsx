@@ -98,13 +98,6 @@ export default function TransactionDetailsModal({ transactionId, onClose }: Prop
         }`}
       >
         <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 shrink-0" />
-        
-        <button 
-          onClick={onClose}
-          className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 transition-colors"
-        >
-          <Icons.X className="w-5 h-5" />
-        </button>
 
         <div className="flex flex-col items-center mb-8">
           <div className={`w-16 h-16 rounded-3xl flex items-center justify-center mb-4 shadow-sm border border-white/50 ${catStyle.color} ${catStyle.textColor}`}>

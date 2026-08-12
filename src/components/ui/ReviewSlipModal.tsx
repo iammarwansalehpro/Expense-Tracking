@@ -200,15 +200,12 @@ export default function ReviewSlipModal() {
         </div>
 
         <div className="px-6 pb-4 flex justify-between items-start shrink-0">
-          <div>
-            <h2 className="text-[26px] font-bold text-[#2E1065] tracking-tight">
-              {t('review.title')} {scannedSlips.length > 1 && <span className="text-sm ml-2 px-2 py-0.5 bg-white/20 rounded-full">{currentScanIndex + 1}/{scannedSlips.length}</span>}
+          <div className="w-full flex flex-col items-center justify-center">
+            <h2 className="text-[26px] font-bold text-[#2E1065] tracking-tight text-center flex items-center justify-center">
+              {t('review.title')} {scannedSlips.length > 1 && <span className="text-sm ml-2 px-2 py-0.5 bg-black/5 rounded-full">{currentScanIndex + 1}/{scannedSlips.length}</span>}
             </h2>
-            <p className="text-sm font-medium text-[#2E1065]/60 mt-1">{t('review.subtitle')}</p>
+            <p className="text-sm font-medium text-[#2E1065]/60 mt-1 text-center">{t('review.subtitle')}</p>
           </div>
-          <button onClick={handleClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-red-200/50 text-red-500 bg-red-50/50 hover:bg-red-100/50 backdrop-blur-md transition-colors shadow-sm">
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
         <div className="overflow-y-auto pb-32 no-scrollbar">

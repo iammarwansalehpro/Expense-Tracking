@@ -102,11 +102,8 @@ export default function CategorySelectModal({ isOpen, onClose, onSelect, type, s
         </div>
 
         {/* Header */}
-        <div className="px-6 pb-4 flex items-center justify-between shrink-0">
-          <h2 className="text-[26px] font-bold text-[#2E1065] tracking-tight">{t('add.selectCategory')}</h2>
-          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-white/50 bg-white/40 hover:bg-white/60 text-[#2E1065]/70 shadow-sm transition-colors">
-            <X className="w-5 h-5" />
-          </button>
+        <div className="px-6 pb-4 flex items-center justify-center shrink-0 relative">
+          <h2 className="text-[26px] font-bold text-[#2E1065] tracking-tight text-center">{t('add.selectCategory')}</h2>
         </div>
 
         {/* Search Bar */}
