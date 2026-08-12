@@ -7,7 +7,8 @@ import {
   PenLine,
   ScanLine,
   Loader2,
-  ArrowLeftRight
+  ArrowLeftRight,
+  Mic
 } from 'lucide-react';
 import { useRef, useState, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
@@ -214,6 +215,34 @@ export default function BottomNav() {
                 className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_32px_rgba(249,115,22,0.3)] border bg-gradient-to-tr from-amber-400 to-orange-500 border-white/30 text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
               >
                 <ArrowLeftRight className="w-[22px] h-[22px] relative z-10" />
+              </button>
+            </div>
+
+            {/* Option 4: Voice Command (Icon: Mic) */}
+            <div className={`relative flex items-center justify-center w-[52px] h-[52px] group transition-all duration-300 delay-[150ms] ${isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}>
+              <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 flex items-center">
+                <div
+                  className="px-4 py-2 bg-white/40 backdrop-blur-[40px] saturate-[200%] rounded-[20px] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15),inset_0_2px_3px_-1px_rgba(255,255,255,0.8),inset_0_0_0_1px_rgba(255,255,255,0.5)] cursor-pointer hover:bg-white/60 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] transition-all duration-300"
+                  onClick={() => {
+                    useAppStore.getState().setVoiceModalOpen(true);
+                    setAddMenuOpen(false);
+                  }}
+                >
+                  <div className="flex flex-col items-end text-right w-max max-w-[125px] whitespace-normal break-words">
+                    <span className="text-[13px] font-bold text-[#2E1065] drop-shadow-sm leading-tight">สั่งงานด้วยเสียง</span>
+                    <span className="text-[10px] font-medium text-[#2E1065]/70 leading-tight">พูดเพื่อบันทึกรายการ</span>
+                  </div>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => {
+                  useAppStore.getState().setVoiceModalOpen(true);
+                  setAddMenuOpen(false);
+                }}
+                className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_32px_rgba(168,85,247,0.3)] border bg-gradient-to-tr from-[#A855F7] to-[#6D28D9] border-white/30 text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
+              >
+                <Mic className="w-[22px] h-[22px] relative z-10" />
               </button>
             </div>
 

@@ -20,6 +20,7 @@ interface AppState {
   isAddMenuOpen: boolean;
   isReviewModalOpen: boolean;
   isTransferModalOpen: boolean;
+  isVoiceModalOpen: boolean;
   scannedSlips: ScanResult[];
   currentScanIndex: number;
   favoriteCategories: string[];
@@ -32,6 +33,7 @@ interface AppState {
   setAddMenuOpen: (isOpen: boolean) => void;
   setReviewModalOpen: (isOpen: boolean) => void;
   setTransferModalOpen: (isOpen: boolean) => void;
+  setVoiceModalOpen: (isOpen: boolean) => void;
   setScannedSlips: (slips: ScanResult[]) => void;
   setCurrentScanIndex: (index: number) => void;
   updateScannedSlip: (index: number, data: Partial<ScanResult>) => void;
@@ -53,6 +55,7 @@ export const useAppStore = create<AppState>()(
       isAddMenuOpen: false,
       isReviewModalOpen: false,
       isTransferModalOpen: false,
+      isVoiceModalOpen: false,
       editingTransactionId: null,
       setEditingTransactionId: (id) => set({ editingTransactionId: id }),
   scannedSlips: [],
@@ -67,6 +70,7 @@ export const useAppStore = create<AppState>()(
   setAddMenuOpen: (isOpen) => set({ isAddMenuOpen: isOpen }),
   setReviewModalOpen: (isOpen) => set({ isReviewModalOpen: isOpen }),
   setTransferModalOpen: (isOpen) => set({ isTransferModalOpen: isOpen }),
+  setVoiceModalOpen: (isOpen) => set({ isVoiceModalOpen: isOpen }),
   setScannedSlips: (slips) => set({ scannedSlips: slips, currentScanIndex: 0 }),
   setCurrentScanIndex: (index) => set({ currentScanIndex: index }),
   updateScannedSlip: (index, data) => set((state) => {

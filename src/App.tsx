@@ -20,6 +20,7 @@ import ReviewSlipModal from '@/components/ui/ReviewSlipModal';
 import ToastProvider from '@/components/ui/ToastProvider';
 import GlobalConfirmModal from '@/components/ui/GlobalConfirmModal';
 import TransferModal from '@/components/ui/TransferModal';
+import VoiceCommandModal from '@/components/ui/VoiceCommandModal';
 import { Loader2 } from 'lucide-react';
 import SplashScreen from '@/components/ui/SplashScreen';
 
@@ -136,6 +137,7 @@ function App() {
           <BottomNav />
           <ReviewSlipModal />
           <TransferModal />
+          <VoiceCommandModal />
           <ToastProvider />
           <GlobalConfirmModal />
         </>
