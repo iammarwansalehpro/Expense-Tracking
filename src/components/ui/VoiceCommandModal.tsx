@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Mic, X, Check, Loader2, Sparkles, AlertCircle } from 'lucide-react';
+import { Mic, X, Check, Loader2, Sparkles, AlertCircle, Edit2, ChevronDown } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useWalletStore } from '@/store/useWalletStore';
@@ -215,36 +215,68 @@ export default function VoiceCommandModal() {
                 <Check className="w-8 h-8" />
               </div>
               
-              <div className="w-full bg-white/80 backdrop-blur p-5 rounded-3xl shadow-sm border border-slate-100 mb-6 flex flex-col gap-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-slate-500">ยอดเงิน</span>
-                  <span className={`text-2xl font-black ${parsedData.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]'}`}>
-                    {parsedData.type === 'income' ? '+' : '-'}฿{parsedData.amount?.toLocaleString() || '0'}
-                  </span>
+              <div className="w-full bg-white/80 backdrop-blur p-4 rounded-3xl shadow-sm border border-slate-100 mb-6 flex flex-col gap-2">
+                
+                <div className="flex justify-between items-center bg-slate-50/50 p-2.5 rounded-2xl border border-transparent focus-within:border-purple-200 focus-within:bg-white transition-all">
+                  <span className="text-sm font-medium text-slate-500 w-16">ยอดเงิน</span>
+                  <div className="flex items-center flex-1 justify-end">
+                    <span className={`text-2xl font-black mr-1 ${parsedData.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]'}`}>
+                      {parsedData.type === 'income' ? '+' : '-'}฿
+                    </span>
+                    <input 
+                      type="number"
+                      value={parsedData.amount || ''}
+                      onChange={e => setParsedData({...parsedData, amount: Number(e.target.value)})}
+                      className={`text-2xl font-black bg-transparent outline-none w-28 text-right p-0 m-0 ${parsedData.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]'}`}
+                      placeholder="0"
+                    />
+                    <Edit2 className="w-3.5 h-3.5 text-slate-300 ml-2 shrink-0" />
+                  </div>
                 </div>
                 
-                <div className="h-[1px] w-full bg-slate-100" />
+                <div className="h-[1px] w-full bg-slate-100/80 my-0.5" />
                 
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-slate-500">รายการ</span>
-                  <span className="text-base font-bold text-[#2E1065]">{parsedData.title}</span>
+                <div className="flex justify-between items-center bg-slate-50/50 p-2.5 rounded-2xl border border-transparent focus-within:border-purple-200 focus-within:bg-white transition-all">
+                  <span className="text-sm font-medium text-slate-500 w-16">รายการ</span>
+                  <div className="flex items-center flex-1 justify-end">
+                    <input 
+                      type="text"
+                      value={parsedData.title || ''}
+                      onChange={e => setParsedData({...parsedData, title: e.target.value})}
+                      className="text-base font-bold text-[#2E1065] bg-transparent outline-none text-right w-full"
+                      placeholder="ชื่อรายการ"
+                    />
+                    <Edit2 className="w-3.5 h-3.5 text-slate-300 ml-2 shrink-0" />
+                  </div>
                 </div>
                 
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-slate-500">หมวดหมู่</span>
-                  <div className="flex items-center gap-2">
+                <div className="h-[1px] w-full bg-slate-100/80 my-0.5" />
+                
+                <div className="flex justify-between items-center bg-slate-50/50 p-2.5 rounded-2xl border border-transparent focus-within:border-purple-200 focus-within:bg-white transition-all relative">
+                  <span className="text-sm font-medium text-slate-500 w-16 shrink-0">หมวดหมู่</span>
+                  <div className="flex items-center gap-2 flex-1 justify-end relative">
+                    <select
+                      value={parsedData.category || ''}
+                      onChange={e => setParsedData({...parsedData, category: e.target.value})}
+                      className="text-sm font-bold text-[#2E1065] bg-transparent outline-none text-right appearance-none absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    >
+                      <option value="">เลือกหมวดหมู่...</option>
+                      {Object.keys(appCategories || {}).map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                    <span className="text-sm font-bold text-[#2E1065] truncate max-w-[120px]">{parsedData.category || 'อื่นๆ'}</span>
                     {(() => {
                       const catName = parsedData.category || 'อื่นๆ';
-                      const dbCat = appCategories?.[catName];
                       const style = getCategoryStyle(catName, appCategories || undefined);
                       const IconComponent = style.icon;
                       return (
-                        <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-50 rounded-full border border-slate-100">
-                          <IconComponent className={`w-4 h-4 ${style.textColor}`} />
-                          <span className="text-sm font-bold text-[#2E1065]">{catName}</span>
+                        <div className="flex items-center justify-center w-6 h-6 rounded-full shrink-0 bg-slate-100">
+                           <IconComponent className={`w-3.5 h-3.5 ${style.textColor}`} />
                         </div>
                       );
                     })()}
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-300 ml-1 shrink-0" />
                   </div>
                 </div>
               </div>

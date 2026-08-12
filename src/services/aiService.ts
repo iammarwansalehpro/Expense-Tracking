@@ -43,7 +43,7 @@ export const extractDataFromVoice = async (transcript: string): Promise<VoiceExt
   const geminiKeys = keys.filter(k => !k.startsWith('gsk_')); // Filter out Groq keys
   
   if (!geminiKeys || geminiKeys.length === 0) {
-    throw new Error("ไม่มี API Key ของ Gemini (Google) กรุณาตั้งค่าในหน้า Settings ก่อนใช้งาน");
+    throw new Error("ไม่สามารถประมวลผลคำสั่งได้ในขณะนี้ กรุณาตรวจสอบการตั้งค่าระบบ");
   }
 
   const categoryListStr = Object.keys(categories).join(', ');
@@ -57,8 +57,7 @@ export const extractDataFromVoice = async (transcript: string): Promise<VoiceExt
 
   const modelConfigs = [
     { model: 'gemini-2.5-flash', apiVersion: 'v1beta' },
-    { model: 'gemini-1.5-flash', apiVersion: 'v1beta' },
-    { model: 'gemini-1.5-pro', apiVersion: 'v1beta' }
+    { model: 'gemini-1.5-flash', apiVersion: 'v1beta' }
   ];
 
   while (attempt < geminiKeys.length) {
@@ -91,7 +90,7 @@ export const extractDataFromVoice = async (transcript: string): Promise<VoiceExt
               type: ['expense', 'income', 'transfer'].includes(parsed.type) ? parsed.type : 'expense',
             };
           } catch (e) {
-            throw new Error('Failed to parse AI response as JSON');
+            throw new Error('ไม่สามารถอ่านข้อมูลได้ กรุณาลองใหม่อีกครั้ง');
           }
 
         } catch (error: any) {
@@ -120,5 +119,5 @@ export const extractDataFromVoice = async (transcript: string): Promise<VoiceExt
     }
   }
 
-  throw new Error("API keys quota exceeded or failed. Please try again later.");
+  throw new Error("ระบบไม่สามารถประมวลผลคำสั่งเสียงของคุณได้ในขณะนี้ กรุณาลองพูดใหม่อีกครั้ง");
 };
