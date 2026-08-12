@@ -407,7 +407,7 @@ export default function AddPage() {
                     required
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className={`w-full bg-white/60 backdrop-blur-sm rounded-[16px] px-10 py-3.5 font-bold focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-white/50 shadow-inner ${type === 'income' ? 'text-emerald-600' : type === 'expense' ? 'text-rose-500' : 'text-[#2E1065]'}`}
+                    className={`w-full bg-white/60 backdrop-blur-sm rounded-[16px] px-10 py-3.5 font-bold focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-white/50 shadow-inner ${type === 'income' ? 'text-emerald-600 placeholder:text-emerald-600/50' : type === 'expense' ? 'text-rose-500 placeholder:text-rose-500/50' : 'text-[#2E1065] placeholder:text-[#2E1065]/40'}`}
                     placeholder="0.00"
                   />
                 </div>
