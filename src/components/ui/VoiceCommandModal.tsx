@@ -138,7 +138,7 @@ export default function VoiceCommandModal() {
 
     setIsProcessing(true);
     try {
-      const newTransaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'> = {
+      const newTransaction = {
         amount: parsedData.amount,
         title: parsedData.title || 'Voice Transaction',
         type: parsedData.type as any || 'expense',
