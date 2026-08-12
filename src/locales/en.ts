@@ -41,6 +41,8 @@ export const en: Translations = {
     scanSlipDesc: 'Auto-extract from image',
     transferTitle: 'Transfer',
     transferDesc: 'Cross-wallet',
+    voiceCommandTitle: 'Voice Command',
+    voiceCommandDesc: 'Speak to record',
   },
   add: {
     title: 'Add Transaction',

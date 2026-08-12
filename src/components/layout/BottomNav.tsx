@@ -229,8 +229,8 @@ export default function BottomNav() {
                   }}
                 >
                   <div className="flex flex-col items-end text-right w-max max-w-[125px] whitespace-normal break-words">
-                    <span className="text-[13px] font-bold text-[#2E1065] drop-shadow-sm leading-tight">สั่งงานด้วยเสียง</span>
-                    <span className="text-[10px] font-medium text-[#2E1065]/70 leading-tight">พูดเพื่อบันทึกรายการ</span>
+                    <span className="text-[13px] font-bold text-[#2E1065] drop-shadow-sm leading-tight">{t('nav.voiceCommandTitle', 'สั่งงานด้วยเสียง')}</span>
+                    <span className="text-[10px] font-medium text-[#2E1065]/70 leading-tight">{t('nav.voiceCommandDesc', 'พูดเพื่อบันทึกรายการ')}</span>
                   </div>
                 </div>
               </div>

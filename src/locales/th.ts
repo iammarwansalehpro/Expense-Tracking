@@ -39,6 +39,8 @@ export const th = {
     scanSlipDesc: 'อ่านข้อมูลจาก e-Slip',
     transferTitle: 'โอนเงิน',
     transferDesc: 'โอนข้ามกระเป๋า',
+    voiceCommandTitle: 'สั่งงานด้วยเสียง',
+    voiceCommandDesc: 'พูดเพื่อบันทึกรายการ',
   },
   add: {
     title: 'เพิ่มรายการ',

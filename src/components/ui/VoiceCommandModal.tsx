@@ -9,6 +9,7 @@ import { voiceService } from '@/services/voiceService';
 import { extractDataFromVoice, type VoiceExtractResult } from '@/services/aiService';
 import { addTransaction } from '@/services/transactionService';
 import { getCategoryStyle } from '@/utils/categoryStyles';
+import { useDragToClose } from '@/hooks/useDragToClose';
 import * as Icons from 'lucide-react';
 
 export default function VoiceCommandModal() {
@@ -24,6 +25,13 @@ export default function VoiceCommandModal() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
   const [parsedData, setParsedData] = useState<VoiceExtractResult | null>(null);
+
+  const { handlers: dragHandlers, style: dragStyle } = useDragToClose({
+    onClose: () => {
+      voiceService.stop();
+      setVoiceModalOpen(false);
+    },
+  });
 
   const mainWallet = wallets.find(w => w.isMain) || wallets[0];
 
@@ -138,20 +146,19 @@ export default function VoiceCommandModal() {
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300"
         onClick={handleClose}
       />
-      
-      <div className="relative w-full max-w-sm bg-white/90 backdrop-blur-2xl rounded-[40px] p-8 shadow-[0_32px_64px_rgba(46,16,101,0.2)] border border-white/60 animate-in zoom-in-95 fade-in duration-300 overflow-hidden flex flex-col items-center min-h-[400px] justify-between">
+      <div 
+        className="relative w-full max-w-sm bg-white/90 backdrop-blur-2xl rounded-t-[40px] md:rounded-[40px] p-8 shadow-[0_-8px_40px_rgba(46,16,101,0.1)] border border-white/60 animate-in slide-in-from-bottom-10 md:zoom-in-95 duration-300 overflow-hidden flex flex-col items-center min-h-[400px] justify-between mt-auto md:mt-0"
+        {...dragHandlers}
+        style={{ ...dragStyle, touchAction: 'none' }}
+      >
+        
+        {/* Drag Handle */}
+        <div className="w-12 h-1.5 bg-slate-200/60 rounded-full mx-auto mb-6 shrink-0" />
         
         {/* Glow Background Effect */}
         <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-[60px] opacity-20 pointer-events-none transition-all duration-700 ${isListening ? 'bg-indigo-500 scale-150 animate-pulse' : 'bg-[#A855F7] scale-100'}`} />
 
-        <button 
-          onClick={handleClose}
-          className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-slate-100/50 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors z-10"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <div className="flex-1 w-full flex flex-col items-center justify-center z-10 relative mt-8">
+        <div className="flex-1 w-full flex flex-col items-center justify-center z-10 relative">
           
           {/* Main Visual Indicator */}
           {!parsedData && !error ? (
