@@ -60,10 +60,12 @@
 }
 
 @layer base {
+  html, body {
+    overscroll-behavior-y: none;
+  }
   body {
     @apply bg-bg-app text-slate-800 antialiased;
     font-family: var(--font-sans);
-    overscroll-behavior-y: none;
   }
 }
 

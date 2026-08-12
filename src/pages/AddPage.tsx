@@ -398,14 +398,16 @@ export default function AddPage() {
                   {t('add.amount', 'Amount')}
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#2E1065]/50 font-bold">฿</span>
+                  <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold ${type === 'income' ? 'text-emerald-600' : type === 'expense' ? 'text-rose-500' : 'text-[#2E1065]/50'}`}>
+                    {type === 'income' ? '+' : type === 'expense' ? '-' : ''}฿
+                  </span>
                   <input 
                     type="number"
                     step="0.01"
                     required
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="w-full bg-white/60 backdrop-blur-sm rounded-[16px] px-10 py-3.5 text-[#2E1065] font-bold focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-white/50 shadow-inner"
+                    className={`w-full bg-white/60 backdrop-blur-sm rounded-[16px] px-10 py-3.5 font-bold focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-white/50 shadow-inner ${type === 'income' ? 'text-emerald-600' : type === 'expense' ? 'text-rose-500' : 'text-[#2E1065]'}`}
                     placeholder="0.00"
                   />
                 </div>

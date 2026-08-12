@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Mic, X, Check, Loader2, Sparkles, AlertCircle, Edit2, ChevronDown, Calendar, CreditCard, FileText, PlusCircle, AlignLeft, Pencil } from 'lucide-react';
+import { Mic, X, Check, Loader2, Sparkles, AlertCircle, Edit2, ChevronDown, Calendar, CreditCard, FileText, PlusCircle, MinusCircle, AlignLeft, Pencil } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useWalletStore } from '@/store/useWalletStore';
@@ -254,8 +254,34 @@ export default function VoiceCommandModal() {
           
           {parsedData && (
             <div className="flex flex-col items-center w-full animate-in slide-in-from-bottom-4 duration-500 mt-4">
-              <div className="w-16 h-16 bg-gradient-to-tr from-emerald-400 to-emerald-500 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/30 text-white">
-                <Check className="w-8 h-8" />
+              <div className="flex justify-between items-end mb-8 relative w-full">
+                <div className="flex gap-4 w-full">
+                  <button 
+                    type="button"
+                    onClick={() => setParsedData(prev => prev ? {...prev, type: 'income'} : null)}
+                    className={`flex-1 rounded-[24px] p-5 flex flex-col items-center justify-center gap-3 transition-all duration-300 shadow-sm border ${
+                      parsedData.type === 'income' ? 'bg-white/80 border-white/80 shadow-[0_4px_20px_rgba(31,38,135,0.1)]' : 'bg-white/30 border-white/40 hover:bg-white/40 backdrop-blur-md'
+                    }`}
+                  >
+                    <div className={`w-12 h-12 rounded-[16px] shadow-sm flex items-center justify-center border border-white/50 transition-colors ${parsedData.type === 'income' ? 'bg-[#8B5CF6]/10' : 'bg-white/50'}`}>
+                      <PlusCircle className={`w-6 h-6 ${parsedData.type === 'income' ? 'text-[#8B5CF6]' : 'text-[#2E1065]/40'}`} />
+                    </div>
+                    <span className={`font-bold text-sm ${parsedData.type === 'income' ? 'text-[#8B5CF6]' : 'text-[#2E1065]/60'}`}>{t('add.income', 'รายรับ')}</span>
+                  </button>
+                  
+                  <button 
+                    type="button"
+                    onClick={() => setParsedData(prev => prev ? {...prev, type: 'expense'} : null)}
+                    className={`flex-1 rounded-[24px] p-5 flex flex-col items-center justify-center gap-3 transition-all duration-300 shadow-sm border ${
+                      parsedData.type === 'expense' ? 'bg-white/80 border-white/80 shadow-[0_4px_20px_rgba(31,38,135,0.1)]' : 'bg-white/30 border-white/40 hover:bg-white/40 backdrop-blur-md'
+                    }`}
+                  >
+                    <div className={`w-12 h-12 rounded-[16px] shadow-sm flex items-center justify-center border border-white/50 transition-colors ${parsedData.type === 'expense' ? 'bg-[#F43F5E]/10' : 'bg-white/50'}`}>
+                      <MinusCircle className={`w-6 h-6 ${parsedData.type === 'expense' ? 'text-[#F43F5E]' : 'text-[#2E1065]/40'}`} />
+                    </div>
+                    <span className={`font-bold text-sm ${parsedData.type === 'expense' ? 'text-[#F43F5E]' : 'text-[#2E1065]/60'}`}>{t('add.expense', 'รายจ่าย')}</span>
+                  </button>
+                </div>
               </div>
               <div className="w-full bg-white/40 backdrop-blur-xl p-5 rounded-[32px] border border-white/50 shadow-[0_8px_32px_rgba(31,38,135,0.05)] mb-6 flex flex-col gap-4 text-left">
                 
@@ -345,8 +371,8 @@ export default function VoiceCommandModal() {
                     {t('add.amount', 'จำนวนเงิน')}
                   </label>
                   <div className="relative">
-                    <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold ${parsedData.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]/50'}`}>
-                      {parsedData.type === 'income' ? '+' : '-'}฿
+                    <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold ${parsedData.type === 'income' ? 'text-emerald-600' : parsedData.type === 'expense' ? 'text-rose-500' : 'text-[#2E1065]/50'}`}>
+                      {parsedData.type === 'income' ? '+' : parsedData.type === 'expense' ? '-' : ''}฿
                     </span>
                     <input 
                       type="number"
@@ -354,7 +380,7 @@ export default function VoiceCommandModal() {
                       required
                       value={parsedData.amount || ''}
                       onChange={e => setParsedData({...parsedData, amount: Number(e.target.value)})}
-                      className={`w-full bg-white/60 backdrop-blur-sm rounded-[16px] px-10 py-3.5 text-[#2E1065] font-bold focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-white/50 shadow-inner ${parsedData.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]'}`}
+                      className={`w-full bg-white/60 backdrop-blur-sm rounded-[16px] px-10 py-3.5 font-bold focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-white/50 shadow-inner ${parsedData.type === 'income' ? 'text-emerald-600' : parsedData.type === 'expense' ? 'text-rose-500' : 'text-[#2E1065]'}`}
                       placeholder="0.00"
                     />
                   </div>

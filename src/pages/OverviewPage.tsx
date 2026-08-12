@@ -64,7 +64,7 @@ export default function OverviewPage() {
   const [statsTimeframe, setStatsTimeframe] = useState<'weekly' | 'daily'>('weekly');
 
   // Compute dynamic chart data and totals
-  const { chartData, dailyChartData, totalIncome, totalExpense, todayExpense, dailyTotals } = useMemo(() => {
+  const { chartData, dailyChartData, totalIncome, totalExpense, dailyTotals } = useMemo(() => {
     const currentMonth = viewDate.getMonth();
     const currentYear = viewDate.getFullYear();
 
@@ -78,7 +78,6 @@ export default function OverviewPage() {
 
     let tIncome = 0;
     let tExpense = 0;
-    let tdExpense = 0;
     const totalsByDay: Record<number, number> = {};
     
     // Initialize daily chart data
@@ -94,12 +93,7 @@ export default function OverviewPage() {
       const tDate = new Date(t.date);
       if (tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear) {
         if (t.type === 'income') tIncome += t.amount;
-        if (t.type === 'expense') {
-          tExpense += t.amount;
-          if (tDate.getDate() === now.getDate() && tDate.getMonth() === now.getMonth() && tDate.getFullYear() === now.getFullYear()) {
-            tdExpense += t.amount;
-          }
-        }
+        if (t.type === 'expense') tExpense += t.amount;
 
         const day = tDate.getDate();
         if (!totalsByDay[day]) totalsByDay[day] = 0;
@@ -118,8 +112,8 @@ export default function OverviewPage() {
       }
     });
 
-    return { chartData: data, dailyChartData: dailyData, totalIncome: tIncome, totalExpense: tExpense, todayExpense: tdExpense, dailyTotals: totalsByDay };
-  }, [transactions, viewDate, t, now]);
+    return { chartData: data, dailyChartData: dailyData, totalIncome: tIncome, totalExpense: tExpense, dailyTotals: totalsByDay };
+  }, [transactions, viewDate, t]);
 
   const filteredTransactions = transactions.filter(t => {
     let effectiveType = t.type;
@@ -306,23 +300,13 @@ export default function OverviewPage() {
 
           {/* Expense Card */}
           <div className="flex-1 bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-xl rounded-[24px] p-4 border border-white/60 shadow-[0_8px_32px_rgba(31,38,135,0.05)] relative overflow-hidden flex flex-col gap-2 min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-rose-100 flex items-center justify-center shrink-0 shadow-sm border border-rose-50">
-                  <ArrowUp className="w-3.5 h-3.5 text-rose-600" />
-                </div>
-                <p className="text-[12px] font-bold text-[#2E1065]/70 tracking-wide uppercase truncate">
-                  {t('overview.totalExpenses')}
-                </p>
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-rose-100 flex items-center justify-center shrink-0 shadow-sm border border-rose-50">
+                <ArrowUp className="w-3.5 h-3.5 text-rose-600" />
               </div>
-              {todayExpense > 0 && (
-                <div className="px-2 py-0.5 bg-rose-500/10 border border-rose-500/20 rounded-full flex items-center gap-1 shrink-0">
-                  <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                  <span className="text-[10px] font-bold text-rose-600 whitespace-nowrap">
-                    {t('overview.day', 'วันนี้')} ฿{todayExpense.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                  </span>
-                </div>
-              )}
+              <p className="text-[12px] font-bold text-[#2E1065]/70 tracking-wide uppercase truncate">
+                {t('overview.totalExpenses')}
+              </p>
             </div>
             <div className="w-full mt-1">
               <AutoShrinkText className="font-black text-[26px] text-[#2E1065] tracking-tight w-full">
