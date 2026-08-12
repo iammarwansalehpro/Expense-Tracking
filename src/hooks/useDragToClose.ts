@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { TouchEvent } from 'react';
 
 interface UseDragToCloseProps {
@@ -12,6 +12,27 @@ export function useDragToClose({ onClose, threshold = 120, disabled = false }: U
   const [isDragging, setIsDragging] = useState(false);
   const startY = useRef<number>(0);
   const currentY = useRef<number>(0);
+  const isDraggingRef = useRef(false);
+
+  // Prevent pull-to-refresh synchronously
+  useEffect(() => {
+    const preventDefault = (e: globalThis.TouchEvent) => {
+      if (isDraggingRef.current && e.touches && e.touches.length > 0) {
+        const y = e.touches[0].clientY;
+        const delta = y - startY.current;
+        if (delta > 0) {
+          // If we are dragging the modal down, strictly prevent browser default (pull-to-refresh)
+          if (e.cancelable) {
+            e.preventDefault();
+          }
+        }
+      }
+    };
+    
+    // Attach globally and permanently, but it only acts when isDraggingRef is true
+    document.addEventListener('touchmove', preventDefault, { passive: false });
+    return () => document.removeEventListener('touchmove', preventDefault);
+  }, []);
 
   const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
     if (disabled) return;
@@ -27,6 +48,7 @@ export function useDragToClose({ onClose, threshold = 120, disabled = false }: U
     startY.current = e.touches[0].clientY;
     currentY.current = e.touches[0].clientY;
     setIsDragging(true);
+    isDraggingRef.current = true;
   };
 
   const handleTouchMove = (e: TouchEvent<HTMLDivElement>) => {
@@ -45,6 +67,7 @@ export function useDragToClose({ onClose, threshold = 120, disabled = false }: U
   const handleTouchEnd = () => {
     if (!isDragging || disabled) return;
     setIsDragging(false);
+    isDraggingRef.current = false;
     
     const delta = currentY.current - startY.current;
     if (delta > threshold) {
