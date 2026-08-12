@@ -29,7 +29,7 @@ export default function VoiceCommandModal() {
   const [error, setError] = useState('');
   const [parsedData, setParsedData] = useState<VoiceExtractResult | null>(null);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<any>(null);
 
   const { handlers: dragHandlers, style: dragStyle } = useDragToClose({
     onClose: () => {
@@ -308,10 +308,11 @@ export default function VoiceCommandModal() {
       <CategorySelectModal
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}
-        onSelect={(catName, type) => {
-          setParsedData(prev => prev ? { ...prev, category: catName, type } : null);
+        onSelect={(catName: string) => {
+          setParsedData(prev => prev ? { ...prev, category: catName } : null);
           setIsCategoryModalOpen(false);
         }}
+        type={parsedData?.type || 'expense'}
         selectedCategory={parsedData?.category || ''}
       />
     </div>,
