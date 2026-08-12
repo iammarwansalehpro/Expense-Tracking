@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Mic, X, Check, Loader2, Sparkles, AlertCircle, Edit2, ChevronDown } from 'lucide-react';
+import { Mic, X, Check, Loader2, Sparkles, AlertCircle, Edit2, ChevronDown, Calendar, CreditCard, FileText, PlusCircle, AlignLeft, Pencil } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useWalletStore } from '@/store/useWalletStore';
@@ -15,6 +15,7 @@ import CategorySelectModal from '@/components/ui/CategorySelectModal';
 import CustomDatePicker from '@/components/ui/CustomDatePicker';
 import CustomTimePicker from '@/components/ui/CustomTimePicker';
 import CustomSelect from '@/components/ui/CustomSelect';
+import AutoShrinkText from '@/components/ui/AutoShrinkText';
 import * as Icons from 'lucide-react';
 
 export default function VoiceCommandModal() {
@@ -233,75 +234,34 @@ export default function VoiceCommandModal() {
               <div className="w-16 h-16 bg-gradient-to-tr from-emerald-400 to-emerald-500 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/30 text-white">
                 <Check className="w-8 h-8" />
               </div>
-              
-              <div className="w-full bg-white/80 backdrop-blur p-4 rounded-3xl shadow-sm border border-slate-100 mb-6 flex flex-col gap-2">
+              <div className="w-full bg-white/40 backdrop-blur-xl p-5 rounded-[32px] border border-white/50 shadow-[0_8px_32px_rgba(31,38,135,0.05)] mb-6 flex flex-col gap-4 text-left">
                 
-                <div className="mb-3">
-                  <label className="text-xs font-bold text-slate-500 mb-1.5 block ml-1">ยอดเงิน</label>
-                  <div className="relative">
-                    <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold ${parsedData.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]/50'}`}>
-                      {parsedData.type === 'income' ? '+' : '-'}฿
-                    </span>
-                    <input 
-                      type="number"
-                      step="0.01"
-                      value={parsedData.amount || ''}
-                      onChange={e => setParsedData({...parsedData, amount: Number(e.target.value)})}
-                      className={`w-full bg-slate-50/50 rounded-[16px] px-10 py-3.5 text-lg font-bold focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-transparent focus:bg-white transition-all shadow-inner ${parsedData.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]'}`}
-                      placeholder="0.00"
-                    />
-                  </div>
-                </div>
-                
-                <div className="mb-3">
-                  <label className="text-xs font-bold text-slate-500 mb-1.5 block ml-1">รายการ</label>
-                  <input 
-                    type="text"
-                    value={parsedData.title || ''}
-                    onChange={e => setParsedData({...parsedData, title: e.target.value})}
-                    className="w-full bg-slate-50/50 rounded-[16px] px-4 py-3.5 text-base font-bold text-[#2E1065] focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-transparent focus:bg-white transition-all shadow-inner"
-                    placeholder="ชื่อรายการ"
-                  />
-                </div>
-                
-                <div className="mb-3">
-                  <label className="text-xs font-bold text-slate-500 mb-1.5 block ml-1">หมวดหมู่</label>
-                  <div 
-                    className="flex justify-between items-center bg-slate-50/50 p-3.5 rounded-[16px] border border-transparent hover:bg-slate-100 transition-all cursor-pointer shadow-inner"
-                    onClick={() => setIsCategoryModalOpen(true)}
-                  >
-                    <div className="flex items-center gap-3">
-                      {(() => {
-                        const catName = parsedData.category || 'อื่นๆ';
-                        const style = getCategoryStyle(catName, appCategories || undefined);
-                        const IconComponent = style.icon;
-                        return (
-                          <div className={`flex items-center justify-center w-8 h-8 rounded-xl shrink-0 ${style.color}`}>
-                             <IconComponent className={`w-4 h-4 ${style.textColor}`} />
-                          </div>
-                        );
-                      })()}
-                      <span className="text-base font-bold text-[#2E1065]">{parsedData.category || 'อื่นๆ'}</span>
+                {/* 1. Date & Time */}
+                <div>
+                  <label className="text-sm font-bold text-[#2E1065] flex items-center gap-2.5 mb-2">
+                    <div className="w-8 h-8 bg-white/60 rounded-xl flex items-center justify-center border border-white/50 shadow-sm">
+                      <Calendar className="w-4 h-4 text-[#8B5CF6]" />
                     </div>
-                    <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
+                    {t('add.dateTime', 'วันที่และเวลา')}
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="flex-[5]">
+                      <CustomDatePicker value={date} onChange={setDate} />
+                    </div>
+                    <div className="flex-[3]">
+                      <CustomTimePicker value={time} onChange={setTime} />
+                    </div>
                   </div>
                 </div>
 
-                <div className="h-[1px] w-full bg-slate-100/80 my-2" />
-
-                <div className="flex gap-3 w-full">
-                  <div className="flex-1">
-                    <label className="text-xs font-bold text-slate-500 mb-1.5 block ml-1">{t('add.date')}</label>
-                    <CustomDatePicker value={date} onChange={setDate} />
-                  </div>
-                  <div className="flex-1">
-                    <label className="text-xs font-bold text-slate-500 mb-1.5 block ml-1">{t('add.time')}</label>
-                    <CustomTimePicker value={time} onChange={setTime} />
-                  </div>
-                </div>
-
-                <div className="mt-3">
-                  <label className="text-xs font-bold text-slate-500 mb-1.5 block ml-1">{t('add.wallet')}</label>
+                {/* 2. Wallet */}
+                <div>
+                  <label className="text-sm font-bold text-[#2E1065] flex items-center gap-2.5 mb-2">
+                    <div className="w-8 h-8 bg-white/60 rounded-xl flex items-center justify-center border border-white/50 shadow-sm">
+                      <CreditCard className="w-4 h-4 text-[#8B5CF6]" />
+                    </div>
+                    {t('add.wallet')}
+                  </label>
                   <CustomSelect 
                     value={walletId}
                     disabled={parsedData.type === 'transfer'}
@@ -318,6 +278,79 @@ export default function VoiceCommandModal() {
                       };
                     })}
                     placeholder="เลือกกระเป๋าเงิน"
+                  />
+                </div>
+
+                {/* 3. Category */}
+                <div>
+                  <label className="text-sm font-bold text-[#2E1065] flex items-center gap-2.5 mb-2">
+                    <div className="w-8 h-8 bg-white/60 rounded-xl flex items-center justify-center border border-white/50 shadow-sm">
+                      <FileText className="w-4 h-4 text-[#8B5CF6]" />
+                    </div>
+                    {t('add.category')}
+                  </label>
+                  <button 
+                    type="button"
+                    onClick={() => setIsCategoryModalOpen(true)}
+                    className="w-full bg-white/60 backdrop-blur-sm border border-white/50 rounded-[16px] px-4 py-3.5 text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 transition-all shadow-inner h-14"
+                  >
+                    <span className="flex items-center gap-3 font-bold text-[#2E1065] overflow-hidden">
+                      {(() => {
+                        const catName = parsedData.category || 'อื่นๆ';
+                        const style = getCategoryStyle(catName, appCategories || undefined);
+                        const IconComponent = style.icon;
+                        return (
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center border shadow-sm ${style.color} ${style.textColor} shrink-0`}>
+                             <IconComponent className="w-4 h-4" />
+                          </div>
+                        );
+                      })()}
+                      <AutoShrinkText origin="left">{parsedData.category || 'อื่นๆ'}</AutoShrinkText>
+                    </span>
+                    <div className="w-6 h-6 rounded-full bg-[#8B5CF6]/10 flex items-center justify-center shrink-0">
+                      <PlusCircle className="w-4 h-4 text-[#8B5CF6]" />
+                    </div>
+                  </button>
+                </div>
+
+                {/* 4. Amount */}
+                <div>
+                  <label className="text-sm font-bold text-[#2E1065] flex items-center gap-2.5 mb-2">
+                    <div className="w-8 h-8 bg-white/60 rounded-xl flex items-center justify-center border border-white/50 shadow-sm">
+                      <AlignLeft className="w-4 h-4 text-[#8B5CF6]" />
+                    </div>
+                    {t('add.amount', 'จำนวนเงิน')}
+                  </label>
+                  <div className="relative">
+                    <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold ${parsedData.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]/50'}`}>
+                      {parsedData.type === 'income' ? '+' : '-'}฿
+                    </span>
+                    <input 
+                      type="number"
+                      step="0.01"
+                      required
+                      value={parsedData.amount || ''}
+                      onChange={e => setParsedData({...parsedData, amount: Number(e.target.value)})}
+                      className={`w-full bg-white/60 backdrop-blur-sm rounded-[16px] px-10 py-3.5 text-[#2E1065] font-bold focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-white/50 shadow-inner ${parsedData.type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]'}`}
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+
+                {/* 5. Title/Memo */}
+                <div>
+                  <label className="text-sm font-bold text-[#2E1065] flex items-center gap-2.5 mb-2">
+                    <div className="w-8 h-8 bg-white/60 rounded-xl flex items-center justify-center border border-white/50 shadow-sm">
+                      <Pencil className="w-4 h-4 text-[#8B5CF6]" />
+                    </div>
+                    {t('add.memo', 'บันทึกช่วยจำ')}
+                  </label>
+                  <input 
+                    type="text"
+                    value={parsedData.title || ''}
+                    onChange={e => setParsedData({...parsedData, title: e.target.value})}
+                    className="w-full bg-white/60 backdrop-blur-sm rounded-[16px] px-4 py-3.5 text-[#2E1065] font-bold focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 border border-white/50 shadow-inner placeholder:text-[#2E1065]/30"
+                    placeholder="เพิ่มบันทึกช่วยจำ..."
                   />
                 </div>
               </div>

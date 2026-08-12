@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown, Check } from 'lucide-react';
 import { getCategoryStyle } from '@/utils/categoryStyles';
+import AutoShrinkText from '@/components/ui/AutoShrinkText';
 
 export type SelectOption = string | { label: string; value: string; iconNode?: React.ReactNode };
 
@@ -35,10 +36,10 @@ export default function CustomSelect({ label, options, value, onChange, placehol
       const { icon: Icon, color, textColor } = getCategoryStyle(value);
       return (
         <span className="flex items-center gap-3 text-[#2E1065]">
-          <div className={`w-8 h-8 rounded-xl flex items-center justify-center border shadow-sm ${color} ${textColor}`}>
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center border shadow-sm shrink-0 ${color} ${textColor}`}>
             <Icon className="w-4 h-4" />
           </div>
-          {displayValue}
+          <AutoShrinkText origin="left">{displayValue}</AutoShrinkText>
         </span>
       );
     }
@@ -50,16 +51,16 @@ export default function CustomSelect({ label, options, value, onChange, placehol
       
     if (selectedOpt && selectedOpt.iconNode) {
       return (
-        <span className="flex items-center gap-3 text-[#2E1065]">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center border shadow-sm bg-white/60 text-[#8B5CF6]">
+        <span className="flex items-center gap-3 text-[#2E1065] overflow-hidden w-full">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center border shadow-sm bg-white/60 text-[#8B5CF6] shrink-0">
             {selectedOpt.iconNode}
           </div>
-          {displayValue}
+          <AutoShrinkText origin="left">{displayValue}</AutoShrinkText>
         </span>
       );
     }
 
-    return <span className="text-[#2E1065]">{displayValue}</span>;
+    return <span className="text-[#2E1065] overflow-hidden w-full"><AutoShrinkText origin="left">{displayValue}</AutoShrinkText></span>;
   };
 
   return (
@@ -72,10 +73,10 @@ export default function CustomSelect({ label, options, value, onChange, placehol
         onClick={() => !disabled && setIsOpen(true)}
         className={`w-full bg-white/60 backdrop-blur-sm border border-white/50 rounded-[16px] px-4 py-3.5 text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 transition-all shadow-inner h-14 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        <span className="font-bold text-[#2E1065] flex items-center h-full">
+        <span className="font-bold text-[#2E1065] flex items-center h-full overflow-hidden flex-1">
           {renderValue()}
         </span>
-        <ChevronDown className="w-5 h-5 text-[#2E1065]/40" />
+        <ChevronDown className="w-5 h-5 text-[#2E1065]/40 shrink-0 ml-2" />
       </button>
 
       {/* Bottom Sheet Overlay */}
