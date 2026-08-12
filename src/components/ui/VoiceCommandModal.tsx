@@ -150,7 +150,7 @@ export default function VoiceCommandModal() {
         onClick={handleClose}
       />
       <div 
-        className="relative w-full max-w-sm bg-white/90 backdrop-blur-2xl rounded-t-[40px] sm:rounded-[40px] p-8 pb-10 sm:pb-8 shadow-[0_-8px_40px_rgba(46,16,101,0.1)] border border-white/60 animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300 overflow-hidden flex flex-col items-center min-h-[400px] justify-between"
+        className="relative w-full max-w-full sm:max-w-md bg-white/90 backdrop-blur-2xl rounded-t-[40px] sm:rounded-[40px] p-8 pb-10 sm:pb-8 shadow-[0_-8px_40px_rgba(46,16,101,0.1)] border border-white/60 animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300 overflow-hidden flex flex-col items-center min-h-[400px] justify-between"
         {...dragHandlers}
         style={{ ...dragStyle, touchAction: 'none' }}
       >
@@ -236,8 +236,8 @@ export default function VoiceCommandModal() {
                     {(() => {
                       const catName = parsedData.category || 'อื่นๆ';
                       const dbCat = appCategories?.[catName];
-                      const style = getCategoryStyle(catName, parsedData.type || 'expense', dbCat);
-                      const IconComponent = (Icons as any)[style.icon] || Icons.HelpCircle;
+                      const style = getCategoryStyle(catName, appCategories || undefined);
+                      const IconComponent = style.icon;
                       return (
                         <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-50 rounded-full border border-slate-100">
                           <IconComponent className={`w-4 h-4 ${style.textColor}`} />

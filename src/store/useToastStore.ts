@@ -12,6 +12,7 @@ export interface Toast {
 interface ToastState {
   toasts: Toast[];
   addToast: (message: string, type?: ToastType) => void;
+  showToast: (message: string, type?: ToastType) => void;
   removeToast: (id: string) => void;
 }
 
@@ -25,6 +26,9 @@ export const useToastStore = create<ToastState>((set, get) => ({
     setTimeout(() => {
       get().removeToast(id);
     }, 3500);
+  },
+  showToast: (message, type = 'info') => {
+    get().addToast(message, type);
   },
   removeToast: (id) => {
     // Mark as leaving for animation
