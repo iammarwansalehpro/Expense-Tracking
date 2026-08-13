@@ -291,11 +291,11 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-transparent overflow-y-auto no-scrollbar animate-fade-in">
+    <div className="flex flex-col h-full bg-transparent no-scrollbar animate-fade-in">
       
       <AppHeader pageTitle={t('stats.title')} />
 
-      <div className="px-6 flex-1 flex flex-col pt-2 pb-32 overflow-y-auto no-scrollbar space-y-4">
+      <div className="px-6 flex-1 flex flex-col pt-2 pb-32 no-scrollbar space-y-4">
         
         {/* Global Month Selector */}
         <div className="flex justify-center mb-6 shrink-0">

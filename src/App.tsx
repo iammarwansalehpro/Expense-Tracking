@@ -106,7 +106,7 @@ function App() {
   }
 
   return (
-    <div className="absolute inset-0 w-full h-full bg-[#FDE8FE] dark:bg-[#0F0720] overflow-hidden flex flex-col mx-auto md:max-w-md md:shadow-2xl md:border-x border-slate-200 dark:border-white/10 transition-colors duration-500">
+    <div className="w-full min-h-[100dvh] bg-[#FDE8FE] dark:bg-[#0F0720] relative flex flex-col mx-auto md:max-w-md md:shadow-2xl md:border-x border-slate-200 dark:border-white/10 transition-colors duration-500">
       
       {/* Aurora Mesh Gradient Background Elements */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
@@ -125,7 +125,7 @@ function App() {
       ) : (
         <>
           {/* Main Content Area */}
-          <main className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar relative z-0">
+          <main className="flex-1 w-full relative z-10 flex flex-col">
             {currentPage === 'home' && <HomePage />}
             {currentPage === 'overview' && <OverviewPage />}
             {currentPage === 'statistics' && <AnalyticsPage />}

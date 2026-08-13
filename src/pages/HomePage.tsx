@@ -147,7 +147,7 @@ export default function HomePage() {
       <AppHeader />
 
       {/* Main Scrollable Area */}
-      <div className="flex-1 flex flex-col pt-2 pb-32 overflow-y-auto no-scrollbar">
+      <div className="flex-1 flex flex-col pt-2 pb-32 no-scrollbar">
         
         <CreditCardDueAlert onPayClick={handlePayClick} />
 

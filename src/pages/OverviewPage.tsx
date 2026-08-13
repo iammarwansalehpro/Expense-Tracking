@@ -256,7 +256,7 @@ export default function OverviewPage() {
     <div className="flex flex-col h-full bg-transparent animate-fade-in">
       <AppHeader pageTitle={t('overview.title')} />
 
-      <div className="px-6 flex-1 flex flex-col pt-2 pb-32 overflow-y-auto no-scrollbar">
+      <div className="px-6 flex-1 flex flex-col pt-2 pb-32  no-scrollbar">
         {/* Global Month Selector */}
         <div className="flex justify-center mb-6 shrink-0">
           <div className="bg-white/30 backdrop-blur-xl px-5 py-2.5 rounded-full flex items-center gap-5 shadow-[0_4px_20px_rgba(31,38,135,0.05)] border border-white/50">

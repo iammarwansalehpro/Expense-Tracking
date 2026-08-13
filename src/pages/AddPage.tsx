@@ -233,7 +233,7 @@ export default function AddPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden relative">
-          <div className="overflow-y-auto px-6 pb-32 no-scrollbar flex-1 flex flex-col">
+          <div className=" px-6 pb-32 no-scrollbar flex-1 flex flex-col">
             {/* Top Toggles (Glassmorphism) */}
             <div className="flex justify-between items-end mb-8 relative">
             {type === 'transfer' ? (
