@@ -255,10 +255,10 @@ export default function AddPage() {
                   type === 'income' ? 'bg-white/80 border-white/80 shadow-[0_4px_20px_rgba(31,38,135,0.1)]' : 'bg-white/30 border-white/40 hover:bg-white/40 backdrop-blur-md'
                 }`}
               >
-                <div className={`w-12 h-12 rounded-[16px] shadow-sm flex items-center justify-center border border-white/50 transition-colors ${type === 'income' ? 'bg-[#8B5CF6]/10' : 'bg-white/50'}`}>
-                  <PlusCircle className={`w-6 h-6 ${type === 'income' ? 'text-[#8B5CF6]' : 'text-[#2E1065]/40'}`} />
+                <div className={`w-12 h-12 rounded-[16px] shadow-sm flex items-center justify-center border border-white/50 transition-colors ${type === 'income' ? 'bg-emerald-500/10' : 'bg-white/50'}`}>
+                  <PlusCircle className={`w-6 h-6 ${type === 'income' ? 'text-emerald-500' : 'text-[#2E1065]/40'}`} />
                 </div>
-                <span className={`font-bold text-sm ${type === 'income' ? 'text-[#8B5CF6]' : 'text-[#2E1065]/60'}`}>{t('add.income')}</span>
+                <span className={`font-bold text-sm ${type === 'income' ? 'text-emerald-600' : 'text-[#2E1065]/60'}`}>{t('add.income')}</span>
               </button>
               
               <button 
@@ -501,7 +501,7 @@ export default function AddPage() {
             type="submit"
             disabled={loading}
             className={`pointer-events-auto w-full py-4 rounded-[24px] text-white font-bold text-lg shadow-[0_8px_20px_rgba(31,38,135,0.15)] border border-white/30 transition-transform active:scale-95 flex items-center justify-center gap-2 ${
-              type === 'income' ? 'bg-gradient-to-tr from-indigo-500 to-purple-500' : 'bg-gradient-to-tr from-orange-400 to-rose-500'
+              type === 'income' ? 'bg-gradient-to-tr from-emerald-400 to-emerald-500' : 'bg-gradient-to-tr from-orange-400 to-rose-500'
             }`}
           >
             {loading ? (
