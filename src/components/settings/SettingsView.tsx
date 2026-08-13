@@ -169,6 +169,12 @@ export default function SettingsView() {
     setApiKeys(newKeys);
   };
 
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [user?.photoURL]);
+
   return (
     <div className="stagger-children">
       {/* Profile card - Tap 5 times to reveal admin */}
@@ -184,8 +190,14 @@ export default function SettingsView() {
             className="w-[72px] h-[72px] rounded-full flex items-center justify-center text-3xl font-black shadow-[0_8px_24px_rgba(139,92,246,0.25)] border-[3px] border-white dark:border-slate-800 relative overflow-hidden shrink-0"
             style={{ background: 'var(--gradient-hero)', color: 'white' }}
           >
-            {user?.photoURL ? (
-              <img src={user.photoURL} alt={user.displayName || 'Profile'} className="w-full h-full object-cover" />
+            {user?.photoURL && !imgError ? (
+              <img 
+                src={user.photoURL} 
+                alt={user.displayName || 'Profile'} 
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+                onError={() => setImgError(true)}
+              />
             ) : (
               <>
                 <div className="absolute inset-0 bg-white/20" />

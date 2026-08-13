@@ -65,6 +65,7 @@ export function EditProfileModal({ isOpen, onClose }: ModalProps) {
                 src={photoUrl} 
                 alt="Profile Preview" 
                 className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
                 onError={(e) => {
                   e.currentTarget.src = ''; // reset on error
                   e.currentTarget.style.display = 'none';
@@ -887,7 +888,15 @@ export function AdminUsersModal({ isOpen, onClose }: ModalProps) {
                 <div key={u.uid} className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
                   <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex-shrink-0 overflow-hidden">
                     {u.photo ? (
-                      <img src={u.photo} alt={u.name} className="w-full h-full object-cover" />
+                      <img 
+                        src={u.photo} 
+                        alt={u.name} 
+                        className="w-full h-full object-cover" 
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-slate-500 font-bold">
                         {u.name.charAt(0).toUpperCase()}

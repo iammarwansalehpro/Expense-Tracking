@@ -35,20 +35,23 @@ function App() {
 
   // Apply Theme
   useEffect(() => {
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    const metaThemeColors = document.querySelectorAll('meta[name="theme-color"]');
+    const targetBg = theme === 'dark' ? '#0F0720' : '#FDE8FE';
     
+    metaThemeColors.forEach((meta) => {
+      meta.setAttribute('content', targetBg);
+    });
+
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
+      document.documentElement.style.colorScheme = 'dark';
+      document.documentElement.style.backgroundColor = '#0F0720';
       document.body.style.backgroundColor = '#0F0720';
-      if (metaThemeColor) {
-        metaThemeColor.setAttribute('content', '#0F0720');
-      }
     } else {
       document.documentElement.classList.remove('dark');
+      document.documentElement.style.colorScheme = 'light';
+      document.documentElement.style.backgroundColor = '#FDE8FE';
       document.body.style.backgroundColor = '#FDE8FE';
-      if (metaThemeColor) {
-        metaThemeColor.setAttribute('content', '#FDE8FE');
-      }
     }
   }, [theme]);
 

@@ -129,7 +129,7 @@ export default function BottomNav() {
       />
 
       <div 
-        className={`fixed bottom-0 left-0 right-0 z-50 px-6 pt-4 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+        className={`fixed bottom-0 left-0 right-0 z-50 px-6 pt-4 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)] pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
           isSettingsModalOpen ? 'translate-y-[200%] opacity-0' : 'translate-y-0 opacity-100'
         }`}
       >
@@ -144,12 +144,12 @@ export default function BottomNav() {
             <div className={`relative flex items-center justify-center w-[52px] h-[52px] group transition-all duration-300 delay-[0ms] ${isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}>
               <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 flex items-center">
                 <div
-                  className="px-4 py-2 bg-white/40 backdrop-blur-[40px] saturate-[200%] rounded-[20px] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15),inset_0_2px_3px_-1px_rgba(255,255,255,0.8),inset_0_0_0_1px_rgba(255,255,255,0.5)] cursor-pointer hover:bg-white/60 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] transition-all duration-300"
+                  className="px-4 py-2 bg-white/50 dark:bg-[#1E1035]/90 backdrop-blur-[40px] saturate-[200%] rounded-[20px] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/60 dark:border-white/15 cursor-pointer hover:bg-white/70 dark:hover:bg-[#1E1035] hover:-translate-y-0.5 transition-all duration-300"
                   onClick={handleScanClick}
                 >
                   <div className="flex flex-col items-end text-right w-max max-w-[125px] whitespace-normal break-words">
-                    <span className="text-[13px] font-bold text-[#2E1065] drop-shadow-sm leading-tight">{t('nav.scanSlipTitle')}</span>
-                    <span className="text-[10px] font-medium text-[#2E1065]/70 leading-tight">{t('nav.scanSlipDesc')}</span>
+                    <span className="text-[13px] font-bold text-[#2E1065] dark:text-white drop-shadow-sm leading-tight">{t('nav.scanSlipTitle')}</span>
+                    <span className="text-[10px] font-medium text-[#2E1065]/70 dark:text-white/70 leading-tight">{t('nav.scanSlipDesc')}</span>
                   </div>
                 </div>
               </div>
@@ -166,15 +166,15 @@ export default function BottomNav() {
             <div className={`relative flex items-center justify-center w-[52px] h-[52px] group transition-all duration-300 delay-[50ms] ${isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}>
               <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 flex items-center">
                 <div
-                  className="px-4 py-2 bg-white/40 backdrop-blur-[40px] saturate-[200%] rounded-[20px] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15),inset_0_2px_3px_-1px_rgba(255,255,255,0.8),inset_0_0_0_1px_rgba(255,255,255,0.5)] cursor-pointer hover:bg-white/60 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] transition-all duration-300"
+                  className="px-4 py-2 bg-white/50 dark:bg-[#1E1035]/90 backdrop-blur-[40px] saturate-[200%] rounded-[20px] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/60 dark:border-white/15 cursor-pointer hover:bg-white/70 dark:hover:bg-[#1E1035] hover:-translate-y-0.5 transition-all duration-300"
                   onClick={() => {
                     setCurrentPage('add');
                     setAddMenuOpen(false);
                   }}
                 >
                   <div className="flex flex-col items-end text-right w-max max-w-[125px] whitespace-normal break-words">
-                    <span className="text-[13px] font-bold text-[#2E1065] drop-shadow-sm leading-tight">{t('nav.addManualTitle')}</span>
-                    <span className="text-[10px] font-medium text-[#2E1065]/70 leading-tight">{t('nav.addManualDesc')}</span>
+                    <span className="text-[13px] font-bold text-[#2E1065] dark:text-white drop-shadow-sm leading-tight">{t('nav.addManualTitle')}</span>
+                    <span className="text-[10px] font-medium text-[#2E1065]/70 dark:text-white/70 leading-tight">{t('nav.addManualDesc')}</span>
                   </div>
                 </div>
               </div>
@@ -194,15 +194,15 @@ export default function BottomNav() {
             <div className={`relative flex items-center justify-center w-[52px] h-[52px] group transition-all duration-300 delay-[100ms] ${isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}>
               <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 flex items-center">
                 <div
-                  className="px-4 py-2 bg-white/40 backdrop-blur-[40px] saturate-[200%] rounded-[20px] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15),inset_0_2px_3px_-1px_rgba(255,255,255,0.8),inset_0_0_0_1px_rgba(255,255,255,0.5)] cursor-pointer hover:bg-white/60 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] transition-all duration-300"
+                  className="px-4 py-2 bg-white/50 dark:bg-[#1E1035]/90 backdrop-blur-[40px] saturate-[200%] rounded-[20px] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/60 dark:border-white/15 cursor-pointer hover:bg-white/70 dark:hover:bg-[#1E1035] hover:-translate-y-0.5 transition-all duration-300"
                   onClick={() => {
                     useAppStore.getState().setTransferModalOpen(true);
                     setAddMenuOpen(false);
                   }}
                 >
                   <div className="flex flex-col items-end text-right w-max max-w-[125px] whitespace-normal break-words">
-                    <span className="text-[13px] font-bold text-[#2E1065] drop-shadow-sm leading-tight">{t('nav.transferTitle', 'โอนเงิน')}</span>
-                    <span className="text-[10px] font-medium text-[#2E1065]/70 leading-tight">{t('nav.transferDesc', 'โอนข้ามกระเป๋า')}</span>
+                    <span className="text-[13px] font-bold text-[#2E1065] dark:text-white drop-shadow-sm leading-tight">{t('nav.transferTitle', 'โอนเงิน')}</span>
+                    <span className="text-[10px] font-medium text-[#2E1065]/70 dark:text-white/70 leading-tight">{t('nav.transferDesc', 'โอนข้ามกระเป๋า')}</span>
                   </div>
                 </div>
               </div>
@@ -222,15 +222,15 @@ export default function BottomNav() {
             <div className={`relative flex items-center justify-center w-[52px] h-[52px] group transition-all duration-300 delay-[150ms] ${isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}>
               <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 flex items-center">
                 <div
-                  className="px-4 py-2 bg-white/40 backdrop-blur-[40px] saturate-[200%] rounded-[20px] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15),inset_0_2px_3px_-1px_rgba(255,255,255,0.8),inset_0_0_0_1px_rgba(255,255,255,0.5)] cursor-pointer hover:bg-white/60 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] transition-all duration-300"
+                  className="px-4 py-2 bg-white/50 dark:bg-[#1E1035]/90 backdrop-blur-[40px] saturate-[200%] rounded-[20px] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/60 dark:border-white/15 cursor-pointer hover:bg-white/70 dark:hover:bg-[#1E1035] hover:-translate-y-0.5 transition-all duration-300"
                   onClick={() => {
                     useAppStore.getState().setVoiceModalOpen(true);
                     setAddMenuOpen(false);
                   }}
                 >
                   <div className="flex flex-col items-end text-right w-max max-w-[125px] whitespace-normal break-words">
-                    <span className="text-[13px] font-bold text-[#2E1065] drop-shadow-sm leading-tight">{t('nav.voiceCommandTitle', 'สั่งงานด้วยเสียง')}</span>
-                    <span className="text-[10px] font-medium text-[#2E1065]/70 leading-tight">{t('nav.voiceCommandDesc', 'พูดเพื่อบันทึกรายการ')}</span>
+                    <span className="text-[13px] font-bold text-[#2E1065] dark:text-white drop-shadow-sm leading-tight">{t('nav.voiceCommandTitle', 'สั่งงานด้วยเสียง')}</span>
+                    <span className="text-[10px] font-medium text-[#2E1065]/70 dark:text-white/70 leading-tight">{t('nav.voiceCommandDesc', 'พูดเพื่อบันทึกรายการ')}</span>
                   </div>
                 </div>
               </div>
@@ -249,12 +249,12 @@ export default function BottomNav() {
           </div>
 
           {/* Floating Navigation Bar (Glassmorphism) */}
-          <div className="bg-white/30 backdrop-blur-[20px] h-16 shadow-[0_8px_32px_rgba(31,38,135,0.15)] z-50 rounded-[2rem] border border-white/50 px-2">
+          <div className="bg-white/40 dark:bg-[#1E1035]/80 backdrop-blur-[24px] saturate-[180%] h-16 shadow-[0_8px_32px_rgba(31,38,135,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-50 rounded-[2rem] border border-white/60 dark:border-white/10 px-2 transition-colors duration-500">
             <div className="grid grid-cols-5 h-full relative items-center">
               
               {/* Animated Active Pill */}
               <div 
-                className="absolute h-12 bg-white/40 rounded-full transition-all duration-300 ease-out z-0 shadow-sm border border-white/50"
+                className="absolute h-12 bg-white/60 dark:bg-white/15 rounded-full transition-all duration-300 ease-out z-0 shadow-sm border border-white/60 dark:border-white/10"
                 style={{ 
                   width: 'calc(20% - 10px)', 
                   left: `calc(${activeIndex * 20}% + 5px)`,
@@ -276,7 +276,7 @@ export default function BottomNav() {
                     key={item.id}
                     onClick={() => setCurrentPage(item.id as PageId)}
                     className={`w-full h-full flex flex-col items-center justify-center relative z-10 transition-colors duration-300 ${
-                      isActive ? 'text-[#2E1065]' : 'text-[#2E1065]/40 hover:text-[#2E1065]/70'
+                      isActive ? 'text-[#2E1065] dark:text-purple-200' : 'text-[#2E1065]/40 dark:text-white/40 hover:text-[#2E1065]/70 dark:hover:text-white/70'
                     }`}
                   >
                     <Icon 

@@ -20,34 +20,34 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full px-6 bg-transparent animate-fade-in relative overflow-hidden">
+    <div className="flex-1 w-full min-h-[100dvh] flex flex-col items-center justify-center px-6 py-12 bg-transparent animate-fade-in relative z-10">
 
       {/* Decorative background blurs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#A855F7]/20 rounded-full blur-[80px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#3B82F6]/20 rounded-full blur-[80px] pointer-events-none" />
+      <div className="absolute top-[10%] left-[-10%] w-[60vw] h-[60vw] bg-[#A855F7]/20 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[10%] right-[-10%] w-[60vw] h-[60vw] bg-[#3B82F6]/20 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="flex flex-col items-center mb-16 relative z-10 text-center">
+      <div className="flex flex-col items-center mb-12 relative z-10 text-center">
         {/* App Icon */}
         {appIconName.startsWith('http') ? (
           <img 
             src={appIconName} 
             alt="App Icon" 
-            className="w-[180px] h-[180px] object-contain drop-shadow-2xl mb-3 transition-transform duration-500 hover:scale-105" 
+            className="w-[180px] h-[180px] object-contain drop-shadow-2xl mb-4 transition-transform duration-500 hover:scale-105" 
           />
         ) : (
-          <div className="w-[160px] h-[160px] bg-gradient-to-br from-white/90 to-white/40 backdrop-blur-xl rounded-[48px] flex items-center justify-center border border-white/60 shadow-[0_12px_40px_rgba(46,16,101,0.12)] mb-3 relative group hover:scale-105 transition-transform duration-500">
+          <div className="w-[160px] h-[160px] bg-gradient-to-br from-white/90 to-white/40 backdrop-blur-xl rounded-[48px] flex items-center justify-center border border-white/60 shadow-[0_12px_40px_rgba(46,16,101,0.12)] mb-4 relative group hover:scale-105 transition-transform duration-500">
             <div className="absolute inset-0 bg-gradient-to-tr from-[#A855F7]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-[48px]" />
-            <AppIcon className="w-[80px] h-[80px] text-[#2E1065] drop-shadow-lg relative z-10" />
+            <AppIcon className="w-[80px] h-[80px] text-[#2E1065] dark:text-white drop-shadow-lg relative z-10" />
           </div>
         )}
 
         {/* App Title */}
-        <h1 className="text-[42px] font-black tracking-tighter leading-none mb-4 bg-clip-text text-transparent bg-gradient-to-r from-[#2E1065] to-[#6D28D9] drop-shadow-sm">
+        <h1 className="text-[42px] font-black tracking-tighter leading-none mb-3 bg-clip-text text-transparent bg-gradient-to-r from-[#2E1065] to-[#6D28D9] dark:from-white dark:to-purple-200 drop-shadow-sm">
           {appName}
         </h1>
 
         {/* App Slogan */}
-        <p className="text-[#2E1065]/60 font-bold text-[12px] uppercase tracking-[0.2em] max-w-[280px] leading-relaxed">
+        <p className="text-[#2E1065]/60 dark:text-white/60 font-bold text-[12px] uppercase tracking-[0.2em] max-w-[280px] leading-relaxed">
           {appSlogan}
         </p>
       </div>
@@ -55,7 +55,7 @@ export default function LoginPage() {
       <div className="w-full max-w-[320px] relative z-10 flex flex-col gap-5">
         <button
           onClick={handleGoogleSignIn}
-          className="w-full bg-white/70 backdrop-blur-xl text-[#2E1065] font-bold py-4 px-6 rounded-[24px] shadow-[0_8px_24px_rgba(31,38,135,0.05)] border border-white/80 flex items-center justify-center gap-3 active:scale-95 transition-all hover:bg-white/90 hover:shadow-[0_12px_32px_rgba(31,38,135,0.1)] group"
+          className="w-full bg-white/70 dark:bg-white/15 backdrop-blur-xl text-[#2E1065] dark:text-white font-bold py-4 px-6 rounded-[24px] shadow-[0_8px_24px_rgba(31,38,135,0.08)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.3)] border border-white/80 dark:border-white/20 flex items-center justify-center gap-3 active:scale-95 transition-all hover:bg-white/90 dark:hover:bg-white/25 hover:shadow-[0_12px_32px_rgba(31,38,135,0.12)] group"
         >
           <svg className="w-[22px] h-[22px]" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -66,7 +66,7 @@ export default function LoginPage() {
           <span className="flex-1 text-center text-[15.5px] mr-[22px] tracking-wide">Continue with Google</span>
         </button>
 
-        <div className="flex items-center justify-center text-[#2E1065]/40 text-[9px] sm:text-[11px] font-bold tracking-widest mt-2 whitespace-nowrap">
+        <div className="flex items-center justify-center text-[#2E1065]/40 dark:text-white/40 text-[9px] sm:text-[11px] font-bold tracking-widest mt-2 whitespace-nowrap">
           Created by Marwan Saleh &copy; All rights reserved.
         </div>
       </div>

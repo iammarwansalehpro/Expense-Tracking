@@ -37,6 +37,7 @@
   ],
   "start_url": ".",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "theme_color": "#FDE8FE",
   "background_color": "#FDE8FE"
 }
