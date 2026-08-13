@@ -35,10 +35,18 @@ function App() {
 
   // Apply Theme
   useEffect(() => {
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    
     if (theme === 'dark' && user) {
       document.documentElement.classList.add('dark');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', '#0F0720');
+      }
     } else {
       document.documentElement.classList.remove('dark');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', '#FDE8FE');
+      }
     }
   }, [theme, user]);
 
