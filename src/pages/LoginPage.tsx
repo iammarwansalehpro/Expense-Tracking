@@ -20,11 +20,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex-1 w-full min-h-[100dvh] flex flex-col items-center justify-center px-6 py-12 bg-transparent animate-fade-in relative z-10">
+    <div className="flex-1 w-full max-w-full min-h-[100dvh] flex flex-col items-center justify-center px-6 py-12 bg-transparent animate-fade-in relative z-10 overflow-x-hidden">
 
       {/* Decorative background blurs */}
-      <div className="absolute top-[10%] left-[-10%] w-[60vw] h-[60vw] bg-[#A855F7]/20 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[10%] right-[-10%] w-[60vw] h-[60vw] bg-[#3B82F6]/20 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-[10%] -left-[10%] w-[60vw] max-w-[300px] h-[60vw] max-h-[300px] bg-[#A855F7]/20 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[10%] -right-[10%] w-[60vw] max-w-[300px] h-[60vw] max-h-[300px] bg-[#3B82F6]/20 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="flex flex-col items-center mb-12 relative z-10 text-center">
         {/* App Icon */}
