@@ -37,18 +37,20 @@ function App() {
   useEffect(() => {
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     
-    if (theme === 'dark' && user) {
+    if (theme === 'dark') {
       document.documentElement.classList.add('dark');
+      document.body.style.backgroundColor = '#0F0720';
       if (metaThemeColor) {
         metaThemeColor.setAttribute('content', '#0F0720');
       }
     } else {
       document.documentElement.classList.remove('dark');
+      document.body.style.backgroundColor = '#FDE8FE';
       if (metaThemeColor) {
         metaThemeColor.setAttribute('content', '#FDE8FE');
       }
     }
-  }, [theme, user]);
+  }, [theme]);
 
   // Apply Font
   useEffect(() => {
