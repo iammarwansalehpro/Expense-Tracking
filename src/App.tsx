@@ -106,7 +106,7 @@ function App() {
   }
 
   return (
-    <div className="w-full h-[100dvh] bg-[#FDE8FE] dark:bg-[#0F0720] relative overflow-hidden flex flex-col mx-auto md:max-w-md md:shadow-2xl md:border-x border-slate-200 dark:border-white/10 transition-colors duration-500">
+    <div className="w-full h-full min-h-[100dvh] bg-[#FDE8FE] dark:bg-[#0F0720] relative overflow-hidden flex flex-col mx-auto md:max-w-md md:shadow-2xl md:border-x border-slate-200 dark:border-white/10 transition-colors duration-500">
       
       {/* Aurora Mesh Gradient Background Elements */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">

@@ -60,12 +60,17 @@
 }
 
 @layer base {
-  html, body {
+  html, body, #root {
+    @apply h-full w-full;
     overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-bg-app text-slate-800 antialiased;
+    @apply bg-[#FDE8FE] text-slate-800 antialiased;
     font-family: var(--font-sans);
+  }
+  html.dark body {
+    @apply bg-[#0F0720];
   }
 }
 
