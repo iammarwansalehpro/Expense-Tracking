@@ -10,7 +10,7 @@ export default function PageHeader({ title, showBack }: PageHeaderProps) {
   const setCurrentPage = useAppStore((s) => s.setCurrentPage);
 
   return (
-    <header className="px-5 pt-5 pb-4 flex items-center justify-between sticky top-0 z-20" style={{ background: 'var(--bg-primary)' }}>
+    <header className="px-5 pt-5 pb-3 flex items-center justify-between sticky top-0 z-20 bg-gradient-to-b from-[#FDE8FE] via-[#FDE8FE]/80 to-transparent dark:from-[#0F0720] dark:via-[#0F0720]/80 dark:to-transparent rounded-b-3xl backdrop-blur-[2px]">
       <div className="flex items-center gap-3">
         {showBack && (
           <button

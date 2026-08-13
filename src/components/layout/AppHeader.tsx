@@ -18,7 +18,7 @@ export default function AppHeader({ pageTitle }: AppHeaderProps) {
   const AppIcon = getIconComponent(appIconName);
 
   return (
-    <div className="w-full pb-6 px-6 pt-[calc(env(safe-area-inset-top)+1.5rem)] flex justify-between items-center shrink-0">
+    <div className="w-full pb-4 px-6 pt-[calc(env(safe-area-inset-top)+1.5rem)] flex justify-between items-center shrink-0 sticky top-0 z-50 bg-gradient-to-b from-[#FDE8FE] via-[#FDE8FE]/80 to-transparent dark:from-[#0F0720] dark:via-[#0F0720]/80 dark:to-transparent rounded-b-3xl backdrop-blur-[2px]">
       {/* Logo & Title */}
       <div className="flex items-center gap-2.5">
         {appIconName.startsWith('http') ? (

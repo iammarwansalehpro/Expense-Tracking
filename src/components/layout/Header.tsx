@@ -16,7 +16,7 @@ export default function Header({
   onRightClick,
 }: HeaderProps) {
   return (
-    <header className="flex items-center justify-between px-6 py-5 bg-white">
+    <header className="flex items-center justify-between px-6 pb-3 pt-5 bg-gradient-to-b from-[#FDE8FE] via-[#FDE8FE]/80 to-transparent dark:from-[#0F0720] dark:via-[#0F0720]/80 dark:to-transparent rounded-b-3xl backdrop-blur-[2px]">
       <div 
         className="w-10 h-10 flex items-center justify-start cursor-pointer text-slate-800"
         onClick={onLeftClick}
