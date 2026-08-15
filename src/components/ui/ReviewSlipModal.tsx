@@ -53,21 +53,67 @@ export default function ReviewSlipModal() {
     onClose: handleClose,
   });
 
-  // Auto-match wallet (e.g. SPayLater, ShopeePay, credit cards) for scanned slips
+  // Auto-match wallet (e.g. SPayLater, ShopeePay, specific bank, credit cards) for scanned slips
   useEffect(() => {
     if (scannedSlips.length > 0 && wallets.length > 0) {
       scannedSlips.forEach((slip, idx) => {
         if (!slip.walletId) {
-          const bankLower = (slip.bank || '').toLowerCase();
-          const matchedWallet = wallets.find(w => {
-            const wName = w.name.toLowerCase();
-            return (
-              (bankLower.includes('spaylater') && (wName.includes('spaylater') || wName.includes('shopee') || w.type === 'credit_card')) ||
-              (bankLower.includes('shopeepay') && (wName.includes('shopeepay') || wName.includes('shopee'))) ||
-              (bankLower.includes('truemoney') && wName.includes('truemoney')) ||
-              (bankLower && wName.includes(bankLower))
-            );
-          });
+          const bankLower = (slip.bank || '').toLowerCase().trim();
+          const titleLower = (slip.title || '').toLowerCase().trim();
+
+          let matchedWallet: Wallet | undefined;
+
+          // 1. SPayLater / Shopee match
+          if (bankLower.includes('spaylater') || bankLower.includes('spay') || titleLower.includes('spaylater')) {
+            matchedWallet = wallets.find(w => {
+              const n = w.name.toLowerCase();
+              return n.includes('spaylater') || n.includes('spay') || n.includes('shopee') || n.includes('ช้อปปี้');
+            });
+          }
+
+          // 2. ShopeePay match
+          if (!matchedWallet && bankLower.includes('shopeepay')) {
+            matchedWallet = wallets.find(w => {
+              const n = w.name.toLowerCase();
+              return n.includes('shopeepay') || n.includes('shopee') || n.includes('ช้อปปี้');
+            });
+          }
+
+          // 3. TrueMoney match
+          if (!matchedWallet && (bankLower.includes('truemoney') || bankLower.includes('true'))) {
+            matchedWallet = wallets.find(w => {
+              const n = w.name.toLowerCase();
+              return n.includes('truemoney') || n.includes('true wallet') || n.includes('ทรู');
+            });
+          }
+
+          // 4. Exact bank keyword match (kbank, scb, ttb, bbl, ktb, gsb, bay, krungsri, uob, cimb)
+          if (!matchedWallet && bankLower) {
+            const bankCodes = ['kbank', 'scb', 'ttb', 'bbl', 'ktb', 'gsb', 'bay', 'krungsri', 'uob', 'cimb'];
+            for (const code of bankCodes) {
+              if (bankLower.includes(code)) {
+                matchedWallet = wallets.find(w => w.name.toLowerCase().includes(code));
+                if (matchedWallet) break;
+              }
+            }
+          }
+
+          // 5. Name contains bank or vice versa
+          if (!matchedWallet && bankLower) {
+            matchedWallet = wallets.find(w => {
+              const n = w.name.toLowerCase();
+              return n.includes(bankLower) || bankLower.includes(n);
+            });
+          }
+
+          // 6. If bank is SPayLater or credit card and user only has 1 credit card in total
+          if (!matchedWallet && (bankLower.includes('spaylater') || bankLower.includes('credit'))) {
+            const ccWallets = wallets.filter(w => w.type === 'credit_card');
+            if (ccWallets.length === 1) {
+              matchedWallet = ccWallets[0];
+            }
+          }
+
           if (matchedWallet) {
             updateScannedSlip(idx, { walletId: matchedWallet.id });
           } else if (mainWallet) {
@@ -436,6 +482,48 @@ export default function ReviewSlipModal() {
                   })}
                 </div>
               )}
+            </div>
+
+            {/* Wallet Selection Card on Main Review View */}
+            <div className="mb-6 bg-white/30 backdrop-blur-md rounded-[28px] p-5 border border-white/50 shadow-sm">
+              <div className="flex justify-between items-center mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-xl bg-purple-100/60 flex items-center justify-center text-[#8B5CF6]">
+                    <WalletIcon className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-base font-bold text-[#2E1065]">{t('review.wallet', 'กระเป๋าเงิน')}</h3>
+                </div>
+                {scannedSlips.length > 1 && (
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      const currentWid = currentSlip.walletId || mainWallet.id;
+                      scannedSlips.forEach((_, idx) => {
+                        updateScannedSlip(idx, { walletId: currentWid });
+                      });
+                      useToastStore.getState().showToast('นำกระเป๋าเงินนี้ไปใช้กับทุกรายการแล้ว', 'success');
+                    }}
+                    className="text-xs font-bold text-[#8B5CF6] hover:underline bg-purple-50 hover:bg-purple-100 px-3 py-1 rounded-full active:scale-95 transition-all border border-purple-200/50 shadow-sm"
+                  >
+                    ใช้กับทุกรายการ
+                  </button>
+                )}
+              </div>
+              
+              <CustomSelect 
+                value={currentSlip.walletId || mainWallet.id}
+                onChange={setWalletStr}
+                options={wallets.map(w => {
+                  const iconName = w.icon === 'CreditCard' ? 'Landmark' : w.icon;
+                  const WIcon = (Icons as any)[iconName] || Icons.Wallet;
+                  return {
+                    label: w.name,
+                    value: w.id,
+                    iconNode: <WIcon className={`w-4 h-4 ${w.color.replace('bg-', 'text-')}`} />
+                  };
+                })}
+                placeholder={t('review.walletPlaceholder')}
+              />
             </div>
 
             {isEditing && (
