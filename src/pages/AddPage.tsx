@@ -233,7 +233,7 @@ export default function AddPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden relative">
-          <div className=" px-6 pb-32 no-scrollbar flex-1 flex flex-col">
+          <div className="overflow-y-auto px-6 pb-36 no-scrollbar flex-1 flex flex-col">
             {/* Top Toggles (Glassmorphism) */}
             <div className="flex justify-between items-end mb-8 relative">
             {type === 'transfer' ? (
@@ -496,7 +496,7 @@ export default function AddPage() {
             </div>
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 p-5 flex z-10 pointer-events-none">
+          <div className="absolute bottom-0 left-0 right-0 p-5 flex z-10 pointer-events-none bg-gradient-to-t from-white/90 via-white/70 to-transparent pb-8">
             <button
             type="submit"
             disabled={loading}

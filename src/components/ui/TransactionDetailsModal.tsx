@@ -97,7 +97,7 @@ export default function TransactionDetailsModal({ transactionId, onClose }: Prop
 
       <div 
         {...dragHandlers}
-        style={{ ...dragStyle, touchAction: 'none' }}
+        style={dragStyle}
         className={`fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl rounded-t-[32px] p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-[101] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] border-t border-white/60 flex flex-col max-h-[85vh] ${
           isVisible ? 'translate-y-0' : 'translate-y-full'
         }`}

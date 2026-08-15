@@ -37,10 +37,16 @@ export function useDragToClose({ onClose, threshold = 120, disabled = false }: U
   const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
     if (disabled) return;
     
+    const target = e.target as HTMLElement;
+
+    // Do not start drag-to-close on interactive form controls
+    if (target.closest('input, textarea, select, button, [contenteditable="true"]')) {
+      return;
+    }
+    
     // If the target is within a scrollable container that is currently scrolled down,
     // don't start dragging the modal to allow native scrolling.
-    const target = e.target as HTMLElement;
-    const scrollable = target.closest('.overflow-y-auto') as HTMLElement;
+    const scrollable = target.closest('.overflow-y-auto, .overflow-y-scroll, .overflow-auto') as HTMLElement;
     if (scrollable && scrollable.scrollTop > 5) {
       return;
     }

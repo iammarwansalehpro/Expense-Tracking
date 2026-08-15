@@ -171,7 +171,7 @@ export default function VoiceCommandModal() {
       />
       <div 
         {...dragHandlers}
-        style={{ ...dragStyle, touchAction: 'none' }}
+        style={dragStyle}
         className="bg-white/80 backdrop-blur-[30px] rounded-t-[40px] border-t border-white/60 w-full max-w-md mx-auto shadow-[0_-10px_40px_rgba(31,38,135,0.15)] relative animate-slide-up flex flex-col h-[95vh]"
       >
         
