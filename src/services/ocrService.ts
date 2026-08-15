@@ -13,28 +13,39 @@ export interface OCRResult {
 }
 
 const PROMPT_TEMPLATE = (categoriesList: string) => `
-You are a highly intelligent financial data extractor.
-I will provide you with an image of a Thai bank transfer slip.
-Extract the transaction details and provide the output STRICTLY as a JSON object with no additional text or formatting.
+You are an expert AI financial data extractor for Thai receipts, bank transfer slips, e-commerce order summaries, and billing statements (such as Shopee SPayLater, Lazada, Grab, 7-Eleven, supermarket receipts, credit card statements, and bank transfer slips).
 
-The JSON must have the following keys:
-- amount (number): The exact transfer amount (exclude fees).
-- date (string): The date and time of the transaction in ISO format (YYYY-MM-DDTHH:mm). Make sure to convert Buddhist year to Gregorian if necessary (e.g. 2569 -> 2026).
-- bank (string): The SENDER's bank (ธนาคารต้นทาง/ผู้โอน) or the bank system used. E.g. "TTB", "KBank", "SCB", "Krungthai", "Bangkok Bank", "PromptPay", "GSB", "Krungsri", etc. 
-- title (string): The name of the receiver (person or company) without titles like นาย/นาง.
-- rawText (string): A short summary of the slip text, max 100 chars.
-- category (string): Analyze the rawText, title, and bank to infer the most appropriate category for this expense. MUST be exactly one of these: [\${categoriesList}]. If none fit perfectly, pick the closest one or return null.
+Analyze the provided image carefully. The image may contain:
+A) A SINGLE bank transfer slip (e.g. KBank, SCB, TTB, Krungthai, PromptPay, GSB, etc.).
+B) A MULTI-ITEM statement / order history / receipt (e.g. Shopee SPayLater billing statement, Shopee order list, supermarket receipt, invoice, credit card statement) with multiple items and amounts.
 
-If you are unsure of a value, provide null for it.
+For EACH transaction or line item found in the image, extract the following information. Return STRICTLY a JSON array of objects (e.g. [{...}, {...}]):
 
-Example JSON output:
-{"amount": 100.0, "date": "2026-08-04T19:13", "bank": "TTB", "title": "วาสนา สาและ", "rawText": "โอนเงินสำเร็จ", "category": "อาหาร"}
+Each item in the array MUST have the following keys:
+- amount (number): The exact transaction amount for this item (positive number).
+- date (string): The date and time of the transaction in ISO format (YYYY-MM-DDTHH:mm). If only month/year is shown (e.g. "ก.ค. 2026"), use that month with year converted to Gregorian (e.g. 2569 -> 2026, e.g. "2026-07-15T12:00"). If date is not visible on the item, use the statement header date or current year-month.
+- bank (string): The payment method, sender bank, or platform name. E.g. "SPayLater", "ShopeePay", "Shopee", "Lazada", "KBank", "SCB", "TTB", "PromptPay", "Credit Card", "Cash", etc.
+- title (string): The clean, concise product or recipient name. Remove cluttered emojis at the start, but keep the meaningful product name intact (e.g. "🐱อกไก่ฟรีซดราย🐶ขนมฟรีซดราย2.5L" -> "อกไก่ฟรีซดราย ขนมฟรีซดราย 2.5L", "MICHELIN ใบปัดน้ำฝน..." -> "ใบปัดน้ำฝนหลัง MICHELIN", "(ส่งตรงจากโรงงาน)ถ่าน..." -> "ถ่านปิ้งย่างไร้ควัน กะลามะพร้าว 100%").
+- rawText (string): Short snippet or original text of this item (max 100 chars).
+- category (string): Analyze the item title and purpose to assign the MOST APPROPRIATE category for this expense. MUST be chosen from this list: [\${categoriesList}]. If none fit, pick the closest one (e.g. cat/pet food -> "สัตว์เลี้ยง", wiper/car -> "เดินทาง" or "ของใช้", shirt/clothes -> "ซื้อของ", food/drink -> "อาหาร").
+
+Rules:
+1. If the image has multiple product items (like Shopee SPayLater statement), extract ALL individual items separately as distinct objects in the JSON array.
+2. If there are 8-10 items listed, return all 8-10 objects in the array.
+3. If the image is a single bank transfer slip, return an array with exactly 1 object.
+4. Output MUST be ONLY valid JSON with NO markdown explanation, NO backticks.
+
+Example Output format:
+[
+  {"amount": 183.0, "date": "2026-07-15T12:00", "bank": "SPayLater", "title": "อกไก่ฟรีซดราย ขนมฟรีซดราย 2.5L", "rawText": "อกไก่ฟรีซดราย 2.5L ฿183", "category": "สัตว์เลี้ยง"},
+  {"amount": 66.0, "date": "2026-07-15T12:00", "bank": "SPayLater", "title": "ถ่านปิ้งย่างไร้ควัน กะลามะพร้าว 100%", "rawText": "ถ่านปิ้งย่างไร้ควัน ฿66", "category": "ของใช้"}
+]
 `;
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-const compressImage = (file: File, maxWidth = 1000, quality = 0.8): Promise<File> => {
-  return new Promise((resolve, reject) => {
+const compressImage = (file: File, maxWidth = 1400, quality = 0.85): Promise<File> => {
+  return new Promise((resolve) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
@@ -85,9 +96,8 @@ const fileToGenerativePart = async (file: File) => {
   });
 };
 
-export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> => {
+export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult[]> => {
   const categories = await fetchCategories();
-
 
   const keys = await getApiKeys();
   const geminiKeys = keys.filter(k => !k.startsWith('gsk_')); // Filter out Groq keys
@@ -100,7 +110,6 @@ export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> =
   const finalPrompt = PROMPT_TEMPLATE(categoryListStr);
 
   const compressedFile = await compressImage(imageFile);
-  
   const imagePart = await fileToGenerativePart(compressedFile);
 
   if (activeKeyIndex >= geminiKeys.length) activeKeyIndex = 0;
@@ -120,7 +129,6 @@ export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> =
     let lastError = null;
     let hasQuotaError = false;
 
-
     const genAI = new GoogleGenerativeAI(currentKey);
 
     for (const config of modelConfigs) {
@@ -129,7 +137,6 @@ export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> =
       let modelAttempt = 0;
       while (modelAttempt < maxRetriesPerModel) {
         try {
-
           const model = genAI.getGenerativeModel(
             { model: config.model },
             { apiVersion: config.apiVersion }
@@ -157,17 +164,36 @@ export const extractDataFromSlip = async (imageFile: File): Promise<OCRResult> =
     }
 
     if (resultText) {
-      resultText = resultText.replace(/```json/g, '').replace(/```/g, '').trim();
+      resultText = resultText.replace(/```(?:json)?\n?/g, '').trim();
       try {
-        const data = JSON.parse(resultText);
-        return {
-          amount: data.amount,
-          date: data.date,
-          title: data.title,
-          bank: data.bank,
-          rawText: data.rawText || "AI Extracted",
-          category: data.category,
-        };
+        const parsed = JSON.parse(resultText);
+        let items: any[] = [];
+        if (Array.isArray(parsed)) {
+          items = parsed;
+        } else if (parsed && typeof parsed === 'object') {
+          if (Array.isArray(parsed.items)) {
+            items = parsed.items;
+          } else if (Array.isArray(parsed.transactions)) {
+            items = parsed.transactions;
+          } else {
+            items = [parsed];
+          }
+        }
+
+        const normalized: OCRResult[] = items
+          .filter(item => item && (item.amount != null || item.title))
+          .map(item => ({
+            amount: item.amount != null && !isNaN(Number(item.amount)) ? Number(item.amount) : undefined,
+            date: typeof item.date === 'string' ? item.date : undefined,
+            title: typeof item.title === 'string' ? item.title.trim() : 'รายการที่สแกน',
+            bank: typeof item.bank === 'string' ? item.bank : 'Slip',
+            rawText: typeof item.rawText === 'string' ? item.rawText : 'AI Extracted',
+            category: typeof item.category === 'string' ? item.category : undefined,
+          }));
+
+        if (normalized.length > 0) {
+          return normalized;
+        }
       } catch (parseErr) {
         console.error("JSON Parse Error:", parseErr, "Raw Text:", resultText);
         throw new Error("AI ตอบกลับมาผิดรูปแบบ (ไม่ใช่ JSON)");

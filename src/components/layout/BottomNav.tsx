@@ -82,30 +82,34 @@ export default function BottomNav() {
       const results = [];
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        const previewUrl = URL.createObjectURL(file);
         // Update image preview and progress for the current file
-        setScanImageUrl(URL.createObjectURL(file));
+        setScanImageUrl(previewUrl);
         setScanProgress({ current: i + 1, total: files.length });
         
-        const data = await extractDataFromSlip(file);
+        const dataList = await extractDataFromSlip(file);
         
-        let bankStr = data.bank || 'Slip';
-
-        results.push({
-          amount: data.amount,
-          date: data.date,
-          title: data.title,
-          rawText: data.rawText,
-          imageUrl: URL.createObjectURL(file), // Reuse the URL
-          bank: bankStr,
-          category: data.category || '',
-          note: ''
-        });
+        for (const data of dataList) {
+          const bankStr = data.bank || 'Slip';
+          results.push({
+            amount: data.amount,
+            date: data.date,
+            title: data.title,
+            rawText: data.rawText,
+            imageUrl: previewUrl,
+            bank: bankStr,
+            category: data.category || '',
+            note: ''
+          });
+        }
       }
       
-      setScannedSlips(results);
-      
-      // Open the new Review Modal
-      setReviewModalOpen(true);
+      if (results.length > 0) {
+        setScannedSlips(results);
+        setReviewModalOpen(true);
+      } else {
+        alert("ไม่พบข้อมูลรายการในรูปภาพ กรุณาลองใหม่อีกครั้ง");
+      }
     } catch (error: any) {
       console.error("Scan error:", error);
       if (error?.message?.includes('429') || String(error).includes('429')) {

@@ -183,6 +183,7 @@ export const en: Translations = {
     edit: 'Edit',
     saveNext: 'Save & Next',
     save: 'Save Transaction',
+    saveAll: 'Save All',
     done: 'Done',
     minimize: 'Minimize',
     noMerchant: 'No merchant found',

@@ -53,6 +53,31 @@ export default function ReviewSlipModal() {
     onClose: handleClose,
   });
 
+  // Auto-match wallet (e.g. SPayLater, ShopeePay, credit cards) for scanned slips
+  useEffect(() => {
+    if (scannedSlips.length > 0 && wallets.length > 0) {
+      scannedSlips.forEach((slip, idx) => {
+        if (!slip.walletId) {
+          const bankLower = (slip.bank || '').toLowerCase();
+          const matchedWallet = wallets.find(w => {
+            const wName = w.name.toLowerCase();
+            return (
+              (bankLower.includes('spaylater') && (wName.includes('spaylater') || wName.includes('shopee') || w.type === 'credit_card')) ||
+              (bankLower.includes('shopeepay') && (wName.includes('shopeepay') || wName.includes('shopee'))) ||
+              (bankLower.includes('truemoney') && wName.includes('truemoney')) ||
+              (bankLower && wName.includes(bankLower))
+            );
+          });
+          if (matchedWallet) {
+            updateScannedSlip(idx, { walletId: matchedWallet.id });
+          } else if (mainWallet) {
+            updateScannedSlip(idx, { walletId: mainWallet.id });
+          }
+        }
+      });
+    }
+  }, [scannedSlips.length, wallets, mainWallet]);
+
   // Sync scroll position when index changes externally
   useEffect(() => {
     if (scrollContainerRef.current) {
@@ -68,6 +93,62 @@ export default function ReviewSlipModal() {
 
   const currentSlip = scannedSlips[currentScanIndex];
   if (!currentSlip) return null;
+
+  const handleSaveAll = async () => {
+    if (!user || scannedSlips.length === 0) return;
+    
+    setLoading(true);
+    try {
+      let savedCount = 0;
+      for (const slip of scannedSlips) {
+        if (!slip.amount) continue;
+        const parsedAmount = Number(slip.amount);
+        let finalDate = '';
+        let finalTime = '';
+        
+        if (slip.date) {
+          const d = new Date(slip.date);
+          if (!isNaN(d.getTime())) {
+            finalDate = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            finalTime = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+          } else {
+            const now = new Date();
+            finalDate = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            finalTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+          }
+        } else {
+          const now = new Date();
+          finalDate = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+          finalTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        }
+
+        const title = slip.title || 'Slip Expense';
+        const category = (slip.category || 'อื่นๆ') as TransactionCategory;
+        const walletId = slip.walletId || mainWallet?.id;
+
+        await addTransaction(user.uid, {
+          type: 'expense',
+          amount: parsedAmount,
+          title: title,
+          category: category,
+          date: finalDate,
+          time: finalTime,
+          note: slip.note || '',
+          walletId: walletId,
+        });
+        savedCount++;
+      }
+
+      useToastStore.getState().showToast(`บันทึกสำเร็จทั้งหมด ${savedCount} รายการ`, 'success');
+      handleClose();
+      useAppStore.getState().setScannedSlips([]);
+    } catch (error) {
+      console.error(error);
+      useToastStore.getState().showToast('เกิดข้อผิดพลาดในการบันทึกบางรายการ', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSaveCurrent = async () => {
     if (!user || !currentSlip.amount || !currentSlip.category) return;
@@ -206,10 +287,19 @@ export default function ReviewSlipModal() {
 
         <div className="px-6 pb-4 flex justify-between items-start shrink-0">
           <div className="w-full flex flex-col items-center justify-center">
-            <h2 className="text-[26px] font-bold text-[#2E1065] tracking-tight text-center flex items-center justify-center">
-              {t('review.title')} {scannedSlips.length > 1 && <span className="text-sm ml-2 px-2 py-0.5 bg-black/5 rounded-full">{currentScanIndex + 1}/{scannedSlips.length}</span>}
+            <h2 className="text-[26px] font-bold text-[#2E1065] tracking-tight text-center flex items-center justify-center gap-2">
+              {t('review.title')}
+              {scannedSlips.length > 1 && (
+                <span className="text-xs px-2.5 py-1 bg-[#8B5CF6]/15 text-[#8B5CF6] font-extrabold rounded-full">
+                  {currentScanIndex + 1}/{scannedSlips.length}
+                </span>
+              )}
             </h2>
-            <p className="text-sm font-medium text-[#2E1065]/60 mt-1 text-center">{t('review.subtitle')}</p>
+            <p className="text-sm font-medium text-[#2E1065]/60 mt-1 text-center">
+              {scannedSlips.length > 1 
+                ? `พบ ${scannedSlips.length} รายการจากภาพ (ปัดซ้าย/ขวาเพื่อตรวจ)` 
+                : t('review.subtitle')}
+            </p>
           </div>
         </div>
 
@@ -488,49 +578,63 @@ export default function ReviewSlipModal() {
           </div>
         </div>
 
-        {/* Footer Actions (Transparent) */}
-        <div className="absolute bottom-0 left-0 right-0 p-5 flex gap-3 z-10 pointer-events-none">
-          {!isEditing ? (
-            <>
-              {scannedSlips.length > 1 && (
-                <button 
-                  onClick={handleSkipCurrent}
-                  className="pointer-events-auto w-14 h-14 shrink-0 rounded-[20px] border border-white/60 bg-white/40 backdrop-blur-md text-[#2E1065] font-bold hover:bg-white/60 transition-colors flex justify-center items-center shadow-sm"
-                >
-                  <Trash2 className="w-5 h-5 text-red-500" />
-                </button>
-              )}
-              <button 
-                onClick={() => setIsEditing(true)}
-                className="pointer-events-auto flex-[1] py-4 rounded-[20px] border border-white/60 bg-white/40 backdrop-blur-md text-[#2E1065] font-bold hover:bg-white/60 transition-colors flex justify-center items-center gap-2 shadow-sm"
-              >
-                <Pencil className="w-4 h-4" /> {t('review.edit')}
-              </button>
-              <button 
-                onClick={handleSaveCurrent}
-                disabled={loading}
-                className="pointer-events-auto flex-[2] py-4 rounded-[20px] bg-gradient-to-tr from-[#A855F7] to-[#8B5CF6] text-white font-bold shadow-[0_8px_20px_rgba(139,92,246,0.3)] border border-white/30 active:scale-[0.98] transition-all disabled:opacity-50"
-              >
-                {loading ? t('add.saving') : scannedSlips.length > 1 ? t('review.saveNext') : t('review.save')}
-              </button>
-            </>
-          ) : (
-            <>
-              <button 
-                onClick={() => setIsEditing(false)}
-                className="pointer-events-auto flex-[1] py-4 rounded-[20px] border border-white/60 bg-white/40 backdrop-blur-md text-[#2E1065] font-bold hover:bg-white/60 transition-colors shadow-sm"
-              >
-                {t('review.minimize')}
-              </button>
-              <button 
-                onClick={handleSaveCurrent}
-                disabled={loading}
-                className="pointer-events-auto flex-[2] py-4 rounded-[20px] bg-gradient-to-tr from-[#A855F7] to-[#8B5CF6] text-white font-bold shadow-[0_8px_20px_rgba(139,92,246,0.3)] border border-white/30 active:scale-[0.98] transition-all disabled:opacity-50"
-              >
-                {loading ? t('add.saving') : scannedSlips.length > 1 ? t('review.saveNext') : t('review.done')}
-              </button>
-            </>
+        {/* Footer Actions (Transparent with Glass Backing) */}
+        <div className="absolute bottom-0 left-0 right-0 p-5 flex flex-col gap-2.5 z-10 pointer-events-none bg-gradient-to-t from-white/95 via-white/85 to-transparent pb-7">
+          {scannedSlips.length > 1 && !isEditing && (
+            <button
+              onClick={handleSaveAll}
+              disabled={loading}
+              className="pointer-events-auto w-full py-3.5 rounded-[22px] bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-base shadow-[0_4px_15px_rgba(16,185,129,0.3)] border border-white/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2 hover:opacity-95 disabled:opacity-50"
+            >
+              <Check className="w-5 h-5 stroke-[2.5]" />
+              {loading ? t('add.saving') : `บันทึกทั้งหมด (${scannedSlips.length} รายการ)`}
+            </button>
           )}
+
+          <div className="flex gap-2.5 w-full">
+            {!isEditing ? (
+              <>
+                {scannedSlips.length > 1 && (
+                  <button 
+                    onClick={handleSkipCurrent}
+                    title="ลบรายการนี้"
+                    className="pointer-events-auto w-12 h-12 shrink-0 rounded-[18px] border border-white/60 bg-white/60 backdrop-blur-md text-red-500 font-bold hover:bg-red-50 transition-colors flex justify-center items-center shadow-sm active:scale-95"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
+                <button 
+                  onClick={() => setIsEditing(true)}
+                  className="pointer-events-auto flex-[1] py-3.5 rounded-[18px] border border-white/60 bg-white/60 backdrop-blur-md text-[#2E1065] font-bold hover:bg-white transition-colors flex justify-center items-center gap-1.5 shadow-sm text-sm"
+                >
+                  <Pencil className="w-4 h-4" /> {t('review.edit')}
+                </button>
+                <button 
+                  onClick={handleSaveCurrent}
+                  disabled={loading}
+                  className="pointer-events-auto flex-[2] py-3.5 rounded-[18px] bg-gradient-to-tr from-[#A855F7] to-[#8B5CF6] text-white font-bold text-sm shadow-[0_8px_20px_rgba(139,92,246,0.3)] border border-white/30 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
+                >
+                  {loading ? t('add.saving') : scannedSlips.length > 1 ? `${t('review.saveNext')} →` : t('review.save')}
+                </button>
+              </>
+            ) : (
+              <>
+                <button 
+                  onClick={() => setIsEditing(false)}
+                  className="pointer-events-auto flex-[1] py-3.5 rounded-[18px] border border-white/60 bg-white/60 backdrop-blur-md text-[#2E1065] font-bold hover:bg-white transition-colors shadow-sm text-sm"
+                >
+                  {t('review.minimize')}
+                </button>
+                <button 
+                  onClick={handleSaveCurrent}
+                  disabled={loading}
+                  className="pointer-events-auto flex-[2] py-3.5 rounded-[18px] bg-gradient-to-tr from-[#A855F7] to-[#8B5CF6] text-white font-bold text-sm shadow-[0_8px_20px_rgba(139,92,246,0.3)] border border-white/30 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
+                >
+                  {loading ? t('add.saving') : scannedSlips.length > 1 ? `${t('review.saveNext')} →` : t('review.done')}
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 

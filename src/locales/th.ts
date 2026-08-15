@@ -181,6 +181,7 @@ export const th = {
     edit: 'แก้ไข',
     saveNext: 'บันทึกและถัดไป',
     save: 'บันทึกรายการ',
+    saveAll: 'บันทึกทั้งหมด',
     done: 'เสร็จสิ้น',
     minimize: 'ย่อลง',
     noMerchant: 'ไม่พบชื่อผู้รับ',
