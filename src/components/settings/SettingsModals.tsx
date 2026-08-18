@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { X, CheckCircle2, Upload, Download, Type, User, Tag, Plus, Trash2, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { X, CheckCircle2, Upload, Download, Type, User, Tag, Plus, Trash2, ArrowUpRight, ArrowDownRight, ShieldCheck, Lock, EyeOff, Database, UserCheck } from 'lucide-react';
 import { updateProfile } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { ref, set } from 'firebase/database';
@@ -175,6 +175,124 @@ export function AboutModal({ isOpen, onClose }: ModalProps) {
         <button onClick={onClose} className="w-full py-3 rounded-xl font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
           ตกลง
         </button>
+      </div>
+    </div>
+  );
+}
+
+// 3.5 Privacy Policy Modal
+export function PrivacyPolicyModal({ isOpen, onClose }: ModalProps) {
+  if (!isOpen) return null;
+
+  const policies = [
+    {
+      icon: ShieldCheck,
+      color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
+      title: 'การเข้ารหัสและความปลอดภัยของข้อมูล',
+      desc: 'ข้อมูลทางการเงินและรายการธุรกรรมทั้งหมดของคุณได้รับการปกป้องด้วยการเข้ารหัสความปลอดภัยระดับมาตรฐานสากล (TLS/HTTPS Encryption) ข้อมูลถูกจัดเก็บบนฐานข้อมูลที่มีการจำกัดสิทธิ์อย่างเข้มงวด',
+    },
+    {
+      icon: Lock,
+      color: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
+      title: 'ความเป็นเจ้าของข้อมูลของผู้ใช้ (Data Ownership)',
+      desc: 'คุณเป็นเจ้าของข้อมูลของคุณ 100% ระบบทำการแยกพื้นที่จัดเก็บข้อมูลตามบัญชีผู้ใช้งาน (User Isolation) อย่างเด็ดขาด ป้องกันไม่ให้ผู้อื่นสามารถเข้าถึงข้อมูลของคุณได้',
+    },
+    {
+      icon: EyeOff,
+      color: 'text-purple-500 bg-purple-500/10 border-purple-500/20',
+      title: 'ไม่เปิดเผยหรือขายข้อมูลให้บุคคลที่สาม',
+      desc: 'เรายึดถือนโยบายไม่ขาย ไม่แลกเปลี่ยน และไม่เปิดเผยข้อมูลส่วนบุคคลหรือประวัติการใช้จ่ายของคุณให้กับตัวแทนโฆษณา หรือบุคคลภายนอกใดๆ ทั้งสิ้น ข้อมูลของคุณถูกใช้เพื่อการแสดงผลในแอปพลิเคชันของคุณเท่านั้น',
+    },
+    {
+      icon: Database,
+      color: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
+      title: 'การจัดเก็บข้อมูลบนอุปกรณ์และคลาวด์',
+      desc: 'แอปพลิเคชันจัดเก็บข้อมูลที่จำเป็นสำหรับการซิงค์ระหว่างอุปกรณ์ผ่านระบบคลาวด์ที่ปลอดภัย และบันทึกข้อมูลแคชในเครื่องของคุณเพื่อให้สามารถทำงานได้อย่างรวดเร็วและราบรื่น',
+    },
+    {
+      icon: UserCheck,
+      color: 'text-rose-500 bg-rose-500/10 border-rose-500/20',
+      title: 'สิทธิ์ในการควบคุมและลบข้อมูล (User Rights)',
+      desc: 'คุณมีสิทธิ์เต็มที่ในการจัดการข้อมูลของคุณ ไม่ว่าจะเป็นการส่งออกข้อมูล (Export CSV/JSON), การแก้ไข, หรือการลบข้อมูลธุรกรรมทั้งหมดออกจากระบบได้ตลอดเวลาตามต้องการ',
+    },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 sm:p-6 animate-fade-in">
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={onClose} />
+      <div className="relative bg-white/95 dark:bg-[#1E1035]/95 backdrop-blur-2xl p-6 sm:p-7 rounded-[32px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] border border-white/80 dark:border-white/15 w-full max-w-md max-h-[85vh] flex flex-col animate-scale-in">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-white/10 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 flex items-center justify-center text-emerald-500 shadow-sm">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-[#2E1065] dark:text-white tracking-tight">
+                นโยบายความเป็นส่วนตัว
+              </h3>
+              <p className="text-[11px] font-semibold text-[#2E1065]/60 dark:text-white/60">
+                Privacy & Data Protection Policy
+              </p>
+            </div>
+          </div>
+          <button 
+            onClick={onClose} 
+            className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Content (Scrollable) */}
+        <div className="flex-1 overflow-y-auto no-scrollbar py-4 space-y-3 pr-0.5">
+          <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2.5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+              ข้อมูลทางการเงินของคุณเป็นความลับสูงสุดและได้รับการปกป้องตามมาตรฐาน
+            </p>
+          </div>
+
+          {policies.map((p, idx) => {
+            const Icon = p.icon;
+            return (
+              <div 
+                key={idx} 
+                className="p-4 rounded-2xl bg-slate-50/80 dark:bg-white/5 border border-slate-100 dark:border-white/10 hover:bg-slate-100/80 dark:hover:bg-white/10 transition-colors"
+              >
+                <div className="flex items-center gap-2.5 mb-1.5">
+                  <div className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 border ${p.color}`}>
+                    <Icon className="w-3.5 h-3.5" />
+                  </div>
+                  <h4 className="font-bold text-[13px] text-[#2E1065] dark:text-white">
+                    {p.title}
+                  </h4>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium pl-9.5">
+                  {p.desc}
+                </p>
+              </div>
+            );
+          })}
+
+          <div className="text-center pt-2 pb-1">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+              PaySave Data Protection • Updated August 2026
+            </span>
+          </div>
+        </div>
+
+        {/* Footer Button */}
+        <div className="pt-3 border-t border-slate-100 dark:border-white/10 shrink-0">
+          <button 
+            onClick={onClose} 
+            className="w-full py-3.5 rounded-2xl font-bold text-sm bg-gradient-to-r from-[#2E1065] to-[#4C1D95] text-white shadow-lg shadow-[#2E1065]/20 hover:opacity-95 active:scale-98 transition-all"
+          >
+            รับทราบและเข้าใจ
+          </button>
+        </div>
+
       </div>
     </div>
   );

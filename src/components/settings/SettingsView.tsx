@@ -5,6 +5,7 @@ import {
   Tag,
   Download,
   Shield,
+  ShieldCheck,
   Info,
   ChevronRight,
   Moon,
@@ -26,9 +27,9 @@ import { APP_VERSION } from '@/lib/constants';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useTranslation } from '@/hooks/useTranslation';
-import { EditProfileModal, FontSelectModal, AboutModal, ExportImportModal, AdminAppInfoModal, AdminCategoryModal, AdminAiModal, AdminUsersModal } from './SettingsModals';
+import { EditProfileModal, FontSelectModal, AboutModal, PrivacyPolicyModal, ExportImportModal, AdminAppInfoModal, AdminCategoryModal, AdminAiModal, AdminUsersModal } from './SettingsModals';
 
-type ModalType = 'none' | 'profile' | 'font' | 'about' | 'export' | 'adminApp' | 'adminCategory' | 'adminAi' | 'adminUsers';
+type ModalType = 'none' | 'profile' | 'font' | 'about' | 'privacy' | 'export' | 'adminApp' | 'adminCategory' | 'adminAi' | 'adminUsers';
 
 interface SettingItem {
   icon: typeof User;
@@ -95,6 +96,14 @@ export default function SettingsView() {
           action: 'about',
           iconColor: '#64748b',
           iconBg: '#64748b18',
+        },
+        {
+          icon: ShieldCheck,
+          label: t('settings.privacy', 'นโยบายความเป็นส่วนตัว'),
+          sublabel: t('settings.privacyDesc', 'ความปลอดภัยและการปกป้องข้อมูล'),
+          action: 'privacy',
+          iconColor: '#10b981',
+          iconBg: '#10b98118',
         },
       ],
     },
@@ -446,6 +455,7 @@ export default function SettingsView() {
       <EditProfileModal isOpen={activeModal === 'profile'} onClose={() => setActiveModal('none')} />
       <FontSelectModal isOpen={activeModal === 'font'} onClose={() => setActiveModal('none')} />
       <AboutModal isOpen={activeModal === 'about'} onClose={() => setActiveModal('none')} />
+      <PrivacyPolicyModal isOpen={activeModal === 'privacy'} onClose={() => setActiveModal('none')} />
       <ExportImportModal isOpen={activeModal === 'export'} onClose={() => setActiveModal('none')} />
       <AdminAppInfoModal isOpen={activeModal === 'adminApp'} onClose={() => setActiveModal('none')} />
       <AdminCategoryModal isOpen={activeModal === 'adminCategory'} onClose={() => setActiveModal('none')} />

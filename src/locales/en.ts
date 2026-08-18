@@ -98,6 +98,8 @@ export const en: Translations = {
     exportImport: 'Export / Import Data',
     exportImportDesc: 'CSV, JSON',
     about: 'About App',
+    privacy: 'Privacy Policy',
+    privacyDesc: 'Security and data protection',
     adminMode: 'Admin Mode',
     logout: 'Logout',
   },

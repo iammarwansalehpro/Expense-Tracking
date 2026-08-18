@@ -96,6 +96,8 @@ export const th = {
     exportImport: 'ส่งออก / นำเข้าข้อมูล',
     exportImportDesc: 'CSV, JSON',
     about: 'เกี่ยวกับแอป',
+    privacy: 'นโยบายความเป็นส่วนตัว',
+    privacyDesc: 'ความปลอดภัยและการปกป้องข้อมูล',
     adminMode: 'โหมดผู้ดูแลระบบ',
     logout: 'ออกจากระบบ',
   },
