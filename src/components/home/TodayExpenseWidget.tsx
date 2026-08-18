@@ -159,12 +159,21 @@ export default function TodayExpenseWidget() {
 
               {/* ยอดเงินรวม */}
               <div className="text-right">
-                <span className={`text-[23px] font-black tracking-tight ${
+                <span className={`text-[24px] font-black tracking-tight inline-flex items-baseline ${
                   stats.todayExpense > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-[#2E1065]/70 dark:text-white/70'
                 }`}>
-                  {stats.todayExpense > 0 
-                    ? `-฿${stats.todayExpense.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
-                    : '฿0.00'}
+                  {stats.todayExpense > 0 ? (
+                    <>
+                      <span>-</span>
+                      <span className="text-[16px] font-bold mx-0.5 opacity-90">฿</span>
+                      <span>{stats.todayExpense.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-[16px] font-bold mr-0.5 opacity-90">฿</span>
+                      <span>0.00</span>
+                    </>
+                  )}
                 </span>
               </div>
             </div>
