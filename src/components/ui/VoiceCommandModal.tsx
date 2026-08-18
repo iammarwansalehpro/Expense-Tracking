@@ -38,7 +38,23 @@ export default function VoiceCommandModal() {
   const mainWallet = wallets.find(w => w.isMain) || wallets[0];
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [time, setTime] = useState<string>(new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }));
-  const [walletId, setWalletId] = useState<string>('');
+  const [walletId, setWalletId] = useState<string>(mainWallet?.id || '');
+
+  const resetState = () => {
+    setIsListening(false);
+    setTranscript('');
+    setIsProcessing(false);
+    setError('');
+    setParsedData(null);
+    setIsCategoryModalOpen(false);
+
+    // Reset date, time, and wallet to fresh initial defaults
+    const now = new Date();
+    setDate(now.toISOString().split('T')[0]);
+    setTime(now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }));
+    const defaultWallet = wallets.find(w => w.isMain) || wallets[0];
+    setWalletId(defaultWallet ? defaultWallet.id : '');
+  };
 
   useEffect(() => {
     if (wallets && wallets.length > 0 && !walletId && mainWallet) {
@@ -49,10 +65,10 @@ export default function VoiceCommandModal() {
   const { handlers: dragHandlers, style: dragStyle } = useDragToClose({
     onClose: () => {
       voiceService.stop();
+      resetState();
       setVoiceModalOpen(false);
     },
   });
-
 
   useEffect(() => {
     if (isVoiceModalOpen) {
@@ -63,23 +79,16 @@ export default function VoiceCommandModal() {
     }
   }, [isVoiceModalOpen]);
 
-  const resetState = () => {
-    setIsListening(false);
-    setTranscript('');
-    setIsProcessing(false);
-    setError('');
-    setParsedData(null);
-  };
-
   const handleClose = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     voiceService.stop();
+    resetState();
     setVoiceModalOpen(false);
   };
 
   const startListening = () => {
     if (!voiceService.isSupported()) {
-      setError('เบราว์เซอร์ของคุณไม่รองรับการสั่งงานด้วยเสียง (Web Speech API)');
+      setError(t('voice.browserNotSupport', 'เบราว์เซอร์ของคุณไม่รองรับการสั่งงานด้วยเสียง (Web Speech API)'));
       return;
     }
 
@@ -100,7 +109,7 @@ export default function VoiceCommandModal() {
       },
       (err) => {
         console.error('Speech API Error:', err);
-        setError('ไม่สามารถรับเสียงได้ กรุณาตรวจสอบไมโครโฟนของคุณ');
+        setError(t('voice.micError', 'ไม่สามารถรับเสียงได้ กรุณาตรวจสอบไมโครโฟนของคุณ'));
         setIsListening(false);
       },
       () => {
@@ -112,7 +121,7 @@ export default function VoiceCommandModal() {
 
   const handleProcessVoice = async (text: string) => {
     if (!text.trim()) {
-      setError('ไม่ได้ยินเสียง กรุณาลองใหม่อีกครั้ง');
+      setError(t('voice.noVoiceError', 'ไม่ได้ยินเสียง กรุณาลองใหม่อีกครั้ง'));
       return;
     }
     
@@ -120,11 +129,19 @@ export default function VoiceCommandModal() {
     voiceService.stop();
 
     try {
-      const result = await extractDataFromVoice(text);
+      const result = await extractDataFromVoice(text, wallets);
       setParsedData(result);
+
+      // Auto-select detected wallet if found, otherwise reset/ensure main wallet is selected
+      const defaultWallet = wallets.find(w => w.isMain) || wallets[0];
+      if (result.walletId && wallets.some(w => w.id === result.walletId)) {
+        setWalletId(result.walletId);
+      } else {
+        setWalletId(defaultWallet ? defaultWallet.id : '');
+      }
     } catch (err: any) {
       console.error('Voice Processing Error:', err);
-      setError('ระบบไม่สามารถประมวลผลคำสั่งเสียงของคุณได้ในขณะนี้ กรุณาลองพูดใหม่อีกครั้ง');
+      setError(t('voice.processError', 'ระบบไม่สามารถประมวลผลคำสั่งเสียงของคุณได้ในขณะนี้ กรุณาลองพูดใหม่อีกครั้ง'));
     } finally {
       setIsProcessing(false);
     }
@@ -132,7 +149,7 @@ export default function VoiceCommandModal() {
 
   const handleSave = async () => {
     if (!user || !parsedData || !parsedData.amount) {
-      showToast('ข้อมูลไม่ครบถ้วน กรุณาลองพูดใหม่อีกครั้ง', 'error');
+      showToast(t('voice.incompleteError', 'ข้อมูลไม่ครบถ้วน กรุณาลองพูดใหม่อีกครั้ง'), 'error');
       return;
     }
 
@@ -146,16 +163,17 @@ export default function VoiceCommandModal() {
         date: date,
         time: time,
         walletId: walletId || mainWallet?.id || '',
-        note: `บันทึกด้วยเสียง: "${transcript}"`,
+        note: `${t('voice.voiceNotePrefix', 'บันทึกด้วยเสียง')}: "${transcript}"`,
       };
 
       await addTransaction(user.uid, newTransaction);
 
-      showToast('บันทึกรายการด้วยเสียงสำเร็จ', 'success');
+      showToast(t('voice.saveSuccess', 'บันทึกรายการด้วยเสียงสำเร็จ'), 'success');
+      resetState();
       setVoiceModalOpen(false);
     } catch (err: any) {
       console.error(err);
-      showToast('เกิดข้อผิดพลาดในการบันทึก', 'error');
+      showToast(t('voice.saveError', 'เกิดข้อผิดพลาดในการบันทึก'), 'error');
     } finally {
       setIsProcessing(false);
     }
@@ -184,7 +202,7 @@ export default function VoiceCommandModal() {
         <div className="px-6 pb-4 flex justify-between items-center shrink-0 z-20">
           <h2 className="text-[26px] font-bold text-[#2E1065] flex items-center gap-2 tracking-tight">
             <Mic className="w-6 h-6 text-[#8B5CF6]" />
-            สั่งงานด้วยเสียง
+            {t('voice.title', 'สั่งงานด้วยเสียง')}
           </h2>
           <button 
             onClick={handleClose}
@@ -206,7 +224,7 @@ export default function VoiceCommandModal() {
           {!parsedData && !error && (
             <div className="flex flex-col items-center w-full">
               <div 
-                className={`relative w-28 h-28 flex items-center justify-center rounded-full shadow-lg transition-all duration-300 ${isListening ? 'bg-indigo-600 scale-110 shadow-indigo-500/50' : 'bg-slate-800'}`}
+                className={`relative w-28 h-28 flex items-center justify-center rounded-full shadow-lg transition-all duration-300 cursor-pointer ${isListening ? 'bg-indigo-600 scale-110 shadow-indigo-500/50' : 'bg-slate-800 hover:bg-slate-700'}`}
                 onClick={isListening ? () => voiceService.stop() : startListening}
               >
                 {isListening && (
@@ -220,16 +238,22 @@ export default function VoiceCommandModal() {
               </div>
               
               <h3 className="mt-8 text-[22px] font-bold text-[#2E1065] text-center">
-                {isProcessing ? 'กำลังประมวลผล...' : isListening ? 'กำลังฟัง...' : 'แตะเพื่อพูด'}
+                {isProcessing ? t('voice.processing', 'กำลังประมวลผล...') : isListening ? t('voice.listening', 'กำลังฟัง...') : t('voice.tapToSpeak', 'แตะเพื่อพูด')}
               </h3>
               
               <div className="mt-4 min-h-[60px] w-full flex flex-col items-center justify-center px-4">
                 {transcript ? (
-                  <p className="text-center text-lg font-medium text-[#2E1065]">{transcript}</p>
+                  <p className="text-center text-lg font-medium text-[#2E1065] bg-white/50 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/60 shadow-sm">{transcript}</p>
                 ) : (
-                  <div className="flex flex-col items-center text-slate-400 gap-1 text-center">
-                    <span className="font-medium">พูดชื่อรายการ และ ยอดเงิน</span>
-                    <span className="text-sm opacity-80">เช่น "ซื้อของที่ 7-11 50 บาท"</span>
+                  <div className="flex flex-col items-center text-slate-500 gap-1.5 text-center">
+                    <span className="font-bold text-sm text-[#2E1065]">
+                      {t('voice.speakHint', 'พูดชื่อรายการ ยอดเงิน และกระเป๋าเงิน')}
+                    </span>
+                    <div className="flex flex-col gap-1 text-xs opacity-75 mt-1">
+                      <span>{t('voice.example1', 'เช่น "กินข้าว 150 บาท ด้วยเงินสด"')}</span>
+                      <span>{t('voice.example2', 'หรือ "โอนเงิน 500 ผ่านบัญชีกรุงไทย"')}</span>
+                      <span>{t('voice.example3', 'หรือ "ซื้อของ 1,200 รูดบัตรเครดิต"')}</span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -241,13 +265,13 @@ export default function VoiceCommandModal() {
               <div className="w-24 h-24 bg-red-100 text-red-500 rounded-full flex items-center justify-center mb-6 shadow-inner">
                 <AlertCircle className="w-12 h-12" />
               </div>
-              <h3 className="text-xl font-bold text-[#2E1065] mb-2 text-center">เกิดข้อผิดพลาด</h3>
+              <h3 className="text-xl font-bold text-[#2E1065] mb-2 text-center">{t('voice.errorTitle', 'เกิดข้อผิดพลาด')}</h3>
               <p className="text-sm text-[#2E1065]/60 text-center px-4 mb-8">{error}</p>
               <button 
                 onClick={startListening}
-                className="px-8 py-3 bg-slate-900 text-white rounded-full font-bold shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
+                className="px-8 py-3 bg-slate-900 text-white rounded-full font-bold shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 active:scale-95"
               >
-                ลองอีกครั้ง
+                {t('voice.tryAgain', 'ลองอีกครั้ง')}
               </button>
             </div>
           )}
@@ -305,12 +329,20 @@ export default function VoiceCommandModal() {
 
                 {/* 2. Wallet */}
                 <div>
-                  <label className="text-sm font-bold text-[#2E1065] flex items-center gap-2.5 mb-2">
-                    <div className="w-8 h-8 bg-white/60 rounded-xl flex items-center justify-center border border-white/50 shadow-sm">
-                      <CreditCard className="w-4 h-4 text-[#8B5CF6]" />
-                    </div>
-                    {t('add.wallet')}
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-bold text-[#2E1065] flex items-center gap-2.5">
+                      <div className="w-8 h-8 bg-white/60 rounded-xl flex items-center justify-center border border-white/50 shadow-sm">
+                        <CreditCard className="w-4 h-4 text-[#8B5CF6]" />
+                      </div>
+                      {t('add.wallet')}
+                    </label>
+                    {parsedData?.walletId && parsedData.walletId === walletId && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#8B5CF6]/15 text-[#8B5CF6] text-[11px] font-bold border border-[#8B5CF6]/20 shadow-sm animate-fade-in">
+                        <Sparkles className="w-3 h-3 text-[#8B5CF6]" />
+                        <span>{t('voice.detectedWallet', 'ตรวจพบจากเสียง')}</span>
+                      </span>
+                    )}
+                  </div>
                   <CustomSelect 
                     value={walletId}
                     disabled={parsedData.type === 'transfer'}
@@ -423,7 +455,7 @@ export default function VoiceCommandModal() {
                 onClick={startListening}
                 className="flex-1 py-4 rounded-[24px] font-bold text-lg text-[#2E1065]/70 bg-white shadow-[0_8px_20px_rgba(31,38,135,0.05)] border border-white/50 hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center gap-2"
               >
-                <Mic className="w-5 h-5" /> พูดใหม่
+                <Mic className="w-5 h-5" /> {t('voice.speakAgain', 'พูดใหม่')}
               </button>
               <button 
                 onClick={handleSave}
@@ -433,7 +465,7 @@ export default function VoiceCommandModal() {
                 }`}
               >
                 {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
-                {isProcessing ? 'กำลังบันทึก...' : 'บันทึกรายการ'}
+                {isProcessing ? t('voice.saving', 'กำลังบันทึก...') : t('voice.saveTx', 'บันทึกรายการ')}
               </button>
             </div>
           </div>

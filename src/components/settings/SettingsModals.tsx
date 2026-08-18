@@ -1,19 +1,34 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { X, CheckCircle2, Upload, Download, Type, User, Tag, Plus, Trash2, ArrowUpRight, ArrowDownRight, ShieldCheck, Lock, EyeOff, Database, UserCheck } from 'lucide-react';
+import { 
+  X, CheckCircle2, Upload, Download, Type, User, Tag, Plus, Trash2, 
+  ArrowUpRight, ArrowDownRight, ShieldCheck, Lock, EyeOff, Database, 
+  UserCheck, FileSpreadsheet, FileJson, AlertTriangle, Calendar, 
+  Loader2, ChevronRight, FileCheck 
+} from 'lucide-react';
 import { updateProfile } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { ref, set } from 'firebase/database';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
+import { useWalletStore } from '@/store/useWalletStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useThemeStore, type AppFont } from '@/store/useThemeStore';
+import { useTranslation } from '@/hooks/useTranslation';
 import { fetchCategories, getApiKeys, setApiKeys as saveApiKeysToDb } from '@/services/transactionService';
+import { 
+  exportTransactionsToCSV, 
+  exportFullBackupJSON, 
+  validateImportFile, 
+  executeImport, 
+  type ImportValidationResult 
+} from '@/services/dataTransferService';
 import { Settings as SettingsIcon, Info, Users } from 'lucide-react';
 import { APP_VERSION } from '@/lib/constants';
 import { useConfirmStore } from '@/store/useConfirmStore';
 import { useToastStore } from '@/store/useToastStore';
 import { getCategoryStyle, getAllCategoriesGrouped, AVAILABLE_ICONS, AVAILABLE_COLORS, getIconComponent, CATEGORY_SEED, type DBCategory, type CategoryTab } from '@/utils/categoryStyles';
 import CustomSelect from '@/components/ui/CustomSelect';
+import AutoShrinkText from '@/components/ui/AutoShrinkText';
 
 interface ModalProps {
   isOpen: boolean;
@@ -22,10 +37,12 @@ interface ModalProps {
 
 // 1. Edit Profile Modal
 export function EditProfileModal({ isOpen, onClose }: ModalProps) {
+  const { t } = useTranslation();
   const { user, setUser } = useAuthStore();
   const [name, setName] = useState(user?.displayName || '');
   const [photoUrl, setPhotoUrl] = useState(user?.photoURL || '');
   const [loading, setLoading] = useState(false);
+  const showToast = useToastStore(s => s.showToast);
 
   if (!isOpen) return null;
 
@@ -38,9 +55,10 @@ export function EditProfileModal({ isOpen, onClose }: ModalProps) {
         photoURL: photoUrl
       });
       setUser({ ...auth.currentUser });
+      showToast(t('settings.editProfileModal.saveSuccess', 'อัปเดตโปรไฟล์สำเร็จ'), 'success');
       onClose();
-    } catch (e) {
-      alert("Failed to update profile");
+    } catch (e: any) {
+      showToast(e.message || t('settings.editProfileModal.saveError', 'Failed to update profile'), 'error');
     } finally {
       setLoading(false);
     }
@@ -53,8 +71,12 @@ export function EditProfileModal({ isOpen, onClose }: ModalProps) {
         
         {/* Header */}
         <div className="text-center mb-6">
-          <h3 className="text-2xl font-black mb-1 bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">แก้ไขโปรไฟล์</h3>
-          <p className="text-xs text-slate-500 font-medium">ปรับแต่งข้อมูลส่วนตัวของคุณ</p>
+          <h3 className="text-2xl font-black mb-1 bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+            {t('settings.editProfileModal.title', 'แก้ไขโปรไฟล์')}
+          </h3>
+          <p className="text-xs text-slate-500 font-medium">
+            {t('settings.editProfileModal.subtitle', 'ปรับแต่งข้อมูลส่วนตัวของคุณ')}
+          </p>
         </div>
         
         {/* Avatar Preview */}
@@ -83,23 +105,25 @@ export function EditProfileModal({ isOpen, onClose }: ModalProps) {
 
         <div className="space-y-4 mb-8">
           <div>
-            <label className="text-[11px] font-black uppercase tracking-wider mb-2 block text-slate-400 ml-1">ชื่อผู้ใช้งาน</label>
+            <label className="text-[11px] font-black uppercase tracking-wider mb-2 block text-slate-400 ml-1">
+              {t('settings.editProfileModal.username', 'ชื่อผู้ใช้งาน')}
+            </label>
             <input 
               type="text" 
               value={name}
               onChange={e => setName(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-800/50 rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-purple-500/50 outline-none border border-slate-200 dark:border-slate-700/50 transition-all"
-              placeholder="กรอกชื่อของคุณ"
+              placeholder={t('settings.editProfileModal.usernamePlaceholder', 'กรอกชื่อของคุณ')}
             />
           </div>
         </div>
         
         <div className="flex gap-3">
           <button onClick={onClose} className="flex-1 py-3.5 rounded-2xl font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-            ยกเลิก
+            {t('settings.editProfileModal.cancel', 'ยกเลิก')}
           </button>
           <button onClick={handleSave} disabled={loading} className="flex-[1.5] py-3.5 rounded-2xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30 disabled:opacity-50 hover:shadow-purple-500/50 transition-all active:scale-95">
-            {loading ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}
+            {loading ? t('settings.editProfileModal.saving', 'กำลังบันทึก...') : t('settings.editProfileModal.save', 'บันทึกข้อมูล')}
           </button>
         </div>
       </div>
@@ -109,6 +133,7 @@ export function EditProfileModal({ isOpen, onClose }: ModalProps) {
 
 // 2. Font Selection Modal
 export function FontSelectModal({ isOpen, onClose }: ModalProps) {
+  const { t } = useTranslation();
   const { font, setFont } = useThemeStore();
   const fonts: AppFont[] = ['Noto Sans Thai', 'Prompt', 'Sarabun'];
 
@@ -118,7 +143,9 @@ export function FontSelectModal({ isOpen, onClose }: ModalProps) {
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-5 animate-fade-in">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white dark:bg-slate-900 p-6 rounded-[2rem] shadow-2xl w-full max-w-[320px] animate-slide-up">
-        <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>เลือกฟอนต์แอป</h3>
+        <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+          {t('settings.fontSelectModal.title', 'เลือกฟอนต์แอป')}
+        </h3>
         <div className="space-y-3 mb-6">
           {fonts.map(f => (
             <button 
@@ -135,7 +162,9 @@ export function FontSelectModal({ isOpen, onClose }: ModalProps) {
             </button>
           ))}
         </div>
-        <button onClick={onClose} className="w-full py-3 rounded-xl font-bold bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300">ปิด</button>
+        <button onClick={onClose} className="w-full py-3 rounded-xl font-bold bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+          {t('settings.fontSelectModal.close', 'ปิด')}
+        </button>
       </div>
     </div>
   );
@@ -143,6 +172,7 @@ export function FontSelectModal({ isOpen, onClose }: ModalProps) {
 
 // 3. About Modal
 export function AboutModal({ isOpen, onClose }: ModalProps) {
+  const { t } = useTranslation();
   const appName = useAppStore(s => s.appName);
   const appIconName = useAppStore(s => s.appIcon);
   const AppIcon = getIconComponent(appIconName);
@@ -151,7 +181,7 @@ export function AboutModal({ isOpen, onClose }: ModalProps) {
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-5 animate-fade-in">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white dark:bg-slate-900 p-8 rounded-[2rem] shadow-2xl w-full max-w-[320px] animate-slide-up text-center">
+      <div className="relative bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl w-full max-w-[340px] animate-slide-up text-center border border-slate-100 dark:border-slate-800">
         <div className="w-24 h-24 mx-auto bg-gradient-to-br from-white/90 to-white/40 dark:from-slate-800/90 dark:to-slate-800/40 backdrop-blur-xl rounded-[32px] flex items-center justify-center border border-white/60 dark:border-white/10 shadow-[0_12px_32px_rgba(46,16,101,0.08)] mb-6 relative group overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-tr from-[#A855F7]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-[32px]" />
           {appIconName.startsWith('http') ? (
@@ -165,15 +195,17 @@ export function AboutModal({ isOpen, onClose }: ModalProps) {
           <span className="px-2 py-0.5 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 text-xs font-bold tracking-widest uppercase border border-purple-200 dark:border-purple-800/50 shadow-sm">
             v{APP_VERSION}
           </span>
-          <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Latest</span>
+          <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">
+            {t('settings.aboutModal.latest', 'Latest')}
+          </span>
         </div>
         
         <p className="text-sm text-slate-600 dark:text-slate-400 mb-8 leading-relaxed font-medium">
-          แอปพลิเคชันจัดการการเงินระดับมืออาชีพ ที่ช่วยให้การจดบันทึกรายรับรายจ่ายของคุณเป็นเรื่องง่าย รวดเร็ว และแม่นยำมากยิ่งขึ้น
+          {t('settings.aboutModal.description', 'แอปพลิเคชันจัดการการเงินระดับมืออาชีพ ที่ช่วยให้การจดบันทึกรายรับรายจ่ายของคุณเป็นเรื่องง่าย รวดเร็ว และแม่นยำมากยิ่งขึ้น')}
         </p>
         
-        <button onClick={onClose} className="w-full py-3 rounded-xl font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-          ตกลง
+        <button onClick={onClose} className="w-full py-3.5 rounded-2xl font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+          {t('settings.aboutModal.ok', 'ตกลง')}
         </button>
       </div>
     </div>
@@ -182,38 +214,39 @@ export function AboutModal({ isOpen, onClose }: ModalProps) {
 
 // 3.5 Privacy Policy Modal
 export function PrivacyPolicyModal({ isOpen, onClose }: ModalProps) {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   const policies = [
     {
       icon: ShieldCheck,
       color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
-      title: 'การเข้ารหัสและความปลอดภัยของข้อมูล',
-      desc: 'ข้อมูลทางการเงินและรายการธุรกรรมทั้งหมดของคุณได้รับการปกป้องด้วยการเข้ารหัสความปลอดภัยระดับมาตรฐานสากล (TLS/HTTPS Encryption) ข้อมูลถูกจัดเก็บบนฐานข้อมูลที่มีการจำกัดสิทธิ์อย่างเข้มงวด',
+      title: t('settings.privacyModal.p1Title', 'การเข้ารหัสและความปลอดภัยของข้อมูล'),
+      desc: t('settings.privacyModal.p1Desc', 'ข้อมูลทางการเงินและรายการธุรกรรมทั้งหมดของคุณได้รับการปกป้องด้วยการเข้ารหัสความปลอดภัยระดับมาตรฐานสากล (TLS/HTTPS Encryption) ข้อมูลถูกจัดเก็บบนฐานข้อมูลที่มีการจำกัดสิทธิ์อย่างเข้มงวด'),
     },
     {
       icon: Lock,
       color: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
-      title: 'ความเป็นเจ้าของข้อมูลของผู้ใช้ (Data Ownership)',
-      desc: 'คุณเป็นเจ้าของข้อมูลของคุณ 100% ระบบทำการแยกพื้นที่จัดเก็บข้อมูลตามบัญชีผู้ใช้งาน (User Isolation) อย่างเด็ดขาด ป้องกันไม่ให้ผู้อื่นสามารถเข้าถึงข้อมูลของคุณได้',
+      title: t('settings.privacyModal.p2Title', 'ความเป็นเจ้าของข้อมูลของผู้ใช้ (Data Ownership)'),
+      desc: t('settings.privacyModal.p2Desc', 'คุณเป็นเจ้าของข้อมูลของคุณ 100% ระบบทำการแยกพื้นที่จัดเก็บข้อมูลตามบัญชีผู้ใช้งาน (User Isolation) อย่างเด็ดขาด ป้องกันไม่ให้ผู้อื่นสามารถเข้าถึงข้อมูลของคุณได้'),
     },
     {
       icon: EyeOff,
       color: 'text-purple-500 bg-purple-500/10 border-purple-500/20',
-      title: 'ไม่เปิดเผยหรือขายข้อมูลให้บุคคลที่สาม',
-      desc: 'เรายึดถือนโยบายไม่ขาย ไม่แลกเปลี่ยน และไม่เปิดเผยข้อมูลส่วนบุคคลหรือประวัติการใช้จ่ายของคุณให้กับตัวแทนโฆษณา หรือบุคคลภายนอกใดๆ ทั้งสิ้น ข้อมูลของคุณถูกใช้เพื่อการแสดงผลในแอปพลิเคชันของคุณเท่านั้น',
+      title: t('settings.privacyModal.p3Title', 'ไม่เปิดเผยหรือขายข้อมูลให้บุคคลที่สาม'),
+      desc: t('settings.privacyModal.p3Desc', 'เรายึดถือนโยบายไม่ขาย ไม่แลกเปลี่ยน และไม่เปิดเผยข้อมูลส่วนบุคคลหรือประวัติการใช้จ่ายของคุณให้กับตัวแทนโฆษณา หรือบุคคลภายนอกใดๆ ทั้งสิ้น ข้อมูลของคุณถูกใช้เพื่อการแสดงผลในแอปพลิเคชันของคุณเท่านั้น'),
     },
     {
       icon: Database,
       color: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
-      title: 'การจัดเก็บข้อมูลบนอุปกรณ์และคลาวด์',
-      desc: 'แอปพลิเคชันจัดเก็บข้อมูลที่จำเป็นสำหรับการซิงค์ระหว่างอุปกรณ์ผ่านระบบคลาวด์ที่ปลอดภัย และบันทึกข้อมูลแคชในเครื่องของคุณเพื่อให้สามารถทำงานได้อย่างรวดเร็วและราบรื่น',
+      title: t('settings.privacyModal.p4Title', 'การจัดเก็บข้อมูลบนอุปกรณ์และคลาวด์'),
+      desc: t('settings.privacyModal.p4Desc', 'แอปพลิเคชันจัดเก็บข้อมูลที่จำเป็นสำหรับการซิงค์ระหว่างอุปกรณ์ผ่านระบบคลาวด์ที่ปลอดภัย และบันทึกข้อมูลแคชในเครื่องของคุณเพื่อให้สามารถทำงานได้อย่างรวดเร็วและราบรื่น'),
     },
     {
       icon: UserCheck,
       color: 'text-rose-500 bg-rose-500/10 border-rose-500/20',
-      title: 'สิทธิ์ในการควบคุมและลบข้อมูล (User Rights)',
-      desc: 'คุณมีสิทธิ์เต็มที่ในการจัดการข้อมูลของคุณ ไม่ว่าจะเป็นการส่งออกข้อมูล (Export CSV/JSON), การแก้ไข, หรือการลบข้อมูลธุรกรรมทั้งหมดออกจากระบบได้ตลอดเวลาตามต้องการ',
+      title: t('settings.privacyModal.p5Title', 'สิทธิ์ในการควบคุมและลบข้อมูล (User Rights)'),
+      desc: t('settings.privacyModal.p5Desc', 'คุณมีสิทธิ์เต็มที่ในการจัดการข้อมูลของคุณ ไม่ว่าจะเป็นการส่งออกข้อมูล (Export CSV/JSON), การแก้ไข, หรือการลบข้อมูลธุรกรรมทั้งหมดออกจากระบบได้ตลอดเวลาตามต้องการ'),
     },
   ];
 
@@ -230,10 +263,10 @@ export function PrivacyPolicyModal({ isOpen, onClose }: ModalProps) {
             </div>
             <div>
               <h3 className="text-lg font-black text-[#2E1065] dark:text-white tracking-tight">
-                นโยบายความเป็นส่วนตัว
+                {t('settings.privacyModal.title', 'นโยบายความเป็นส่วนตัว')}
               </h3>
               <p className="text-[11px] font-semibold text-[#2E1065]/60 dark:text-white/60">
-                Privacy & Data Protection Policy
+                {t('settings.privacyModal.subtitle', 'Privacy & Data Protection Policy')}
               </p>
             </div>
           </div>
@@ -250,7 +283,7 @@ export function PrivacyPolicyModal({ isOpen, onClose }: ModalProps) {
           <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2.5">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
-              ข้อมูลทางการเงินของคุณเป็นความลับสูงสุดและได้รับการปกป้องตามมาตรฐาน
+              {t('settings.privacyModal.banner', 'ข้อมูลทางการเงินของคุณเป็นความลับสูงสุดและได้รับการปกป้องตามมาตรฐาน')}
             </p>
           </div>
 
@@ -276,10 +309,16 @@ export function PrivacyPolicyModal({ isOpen, onClose }: ModalProps) {
             );
           })}
 
-          <div className="text-center pt-2 pb-1">
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-              PaySave Data Protection • Updated August 2026
-            </span>
+          {/* Smart Auto-Fit Credit Badge */}
+          <div className="pt-2.5 pb-1 px-1 flex justify-center">
+            <div className="w-full max-w-[320px] py-1.5 px-3.5 rounded-full bg-slate-100/70 dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/10 shadow-xs flex items-center justify-center">
+              <AutoShrinkText 
+                origin="center" 
+                className="text-[10.5px] font-bold text-slate-400 dark:text-slate-400/80 tracking-wider select-none"
+              >
+                Created by Marwan Saleh &copy; All rights reserved.
+              </AutoShrinkText>
+            </div>
           </div>
         </div>
 
@@ -289,7 +328,7 @@ export function PrivacyPolicyModal({ isOpen, onClose }: ModalProps) {
             onClick={onClose} 
             className="w-full py-3.5 rounded-2xl font-bold text-sm bg-gradient-to-r from-[#2E1065] to-[#4C1D95] text-white shadow-lg shadow-[#2E1065]/20 hover:opacity-95 active:scale-98 transition-all"
           >
-            รับทราบและเข้าใจ
+            {t('settings.privacyModal.acknowledge', 'รับทราบและเข้าใจ')}
           </button>
         </div>
 
@@ -298,53 +337,594 @@ export function PrivacyPolicyModal({ isOpen, onClose }: ModalProps) {
   );
 }
 
-// 4. Export / Import Data Modal
+// 4. Export / Import Data Modal (World-Class & Professional)
 export function ExportImportModal({ isOpen, onClose }: ModalProps) {
-  const { transactions } = useTransactionStore();
+  const { t, language } = useTranslation();
+  const transactions = useTransactionStore(s => s.transactions);
+  const wallets = useWalletStore(s => s.wallets);
+  const appCategories = useAppStore(s => s.appCategories);
+  const showToast = useToastStore(s => s.showToast);
+
+  const [activeTab, setActiveTab] = useState<'export' | 'import'>('export');
+  const [filterRange, setFilterRange] = useState<'all' | 'this_month' | 'last_month' | 'this_year'>('all');
+  
+  // Import states
+  const [isDragging, setIsDragging] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationResult, setValidationResult] = useState<ImportValidationResult | null>(null);
+  const [importMode, setImportMode] = useState<'merge' | 'replace'>('merge');
+  const [skipDuplicates, setSkipDuplicates] = useState(true);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState<{ current: number; total: number } | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Reset states when opened/closed
+  useEffect(() => {
+    if (!isOpen) {
+      setValidationResult(null);
+      setImportProgress(null);
+      setIsImporting(false);
+      setShowPreview(false);
+    }
+  }, [isOpen]);
+
+  // Filtered transactions calculation for export stats
+  const filteredTxs = useMemo(() => {
+    const now = new Date();
+    if (filterRange === 'this_month') {
+      return transactions.filter(t => {
+        const d = new Date(t.date);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      });
+    } else if (filterRange === 'last_month') {
+      const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      return transactions.filter(t => {
+        const d = new Date(t.date);
+        return d.getMonth() === lastMonth.getMonth() && d.getFullYear() === lastMonth.getFullYear();
+      });
+    } else if (filterRange === 'this_year') {
+      return transactions.filter(t => {
+        const d = new Date(t.date);
+        return d.getFullYear() === now.getFullYear();
+      });
+    }
+    return transactions;
+  }, [transactions, filterRange]);
+
+  const totalIncome = filteredTxs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const totalExpense = filteredTxs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
 
   if (!isOpen) return null;
 
-  const handleExportJSON = () => {
-    const dataStr = JSON.stringify(transactions, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = 'paysave_transactions.json';
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
+  // Handlers for Export
+  const handleExportCSV = () => {
+    try {
+      exportTransactionsToCSV(transactions, wallets, filterRange);
+      showToast(language === 'en' ? 'CSV file exported successfully' : 'ส่งออกไฟล์ CSV เรียบร้อยแล้ว', 'success');
+    } catch (e: any) {
+      showToast(e.message || 'Export error', 'error');
+    }
   };
 
-  const handleExportCSV = () => {
-    if (transactions.length === 0) return;
-    const header = Object.keys(transactions[0]).join(',');
-    const rows = transactions.map(t => Object.values(t).map(v => `"${v}"`).join(','));
-    const csvStr = [header, ...rows].join('\n');
-    const dataUri = 'data:text/csv;charset=utf-8,'+ encodeURIComponent(csvStr);
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', 'paysave_transactions.csv');
-    linkElement.click();
+  const handleExportJSON = () => {
+    try {
+      exportFullBackupJSON(transactions, wallets, appCategories || undefined);
+      showToast(language === 'en' ? 'Backup file exported successfully' : 'สำรองไฟล์ JSON เรียบร้อยแล้ว', 'success');
+    } catch (e: any) {
+      showToast(e.message || 'Export error', 'error');
+    }
+  };
+
+  // Handlers for File Selection & Drag-n-Drop
+  const handleFileSelect = async (file: File) => {
+    setIsValidating(true);
+    setValidationResult(null);
+    try {
+      const result = await validateImportFile(file, transactions, wallets);
+      setValidationResult(result);
+      if (!result.isValid) {
+        showToast(result.errors[0] || 'Invalid file format', 'error');
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Failed to parse file', 'error');
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileSelect(e.dataTransfer.files[0]);
+    }
+  };
+
+  const doImport = async () => {
+    if (!validationResult) return;
+    setIsImporting(true);
+    setImportProgress({ current: 0, total: validationResult.transactions.length });
+
+    try {
+      const res = await executeImport(
+        validationResult, 
+        importMode, 
+        skipDuplicates, 
+        (current, total) => {
+          setImportProgress({ current, total });
+        }
+      );
+
+      showToast(res.message, 'success');
+      setValidationResult(null);
+      setImportProgress(null);
+      onClose();
+    } catch (err: any) {
+      showToast(err.message || 'Import error', 'error');
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  // Handler for Executing Import
+  const handleStartImport = async () => {
+    if (!validationResult || !validationResult.isValid) return;
+
+    if (importMode === 'replace') {
+      useConfirmStore.getState().showConfirm({
+        title: language === 'en' ? 'Confirm Overwrite (Replace All)' : 'ยืนยันการเขียนทับข้อมูลเดิม',
+        message: language === 'en' 
+          ? 'Are you sure you want to replace all existing transactions with this file? Existing records cannot be recovered.'
+          : 'คุณแน่ใจหรือไม่ที่จะล้างข้อมูลธุรกรรมเดิมทั้งหมด แล้วแทนที่ด้วยข้อมูลจากไฟล์นี้? การกระทำนี้ไม่สามารถย้อนกลับได้',
+        confirmText: language === 'en' ? 'Replace All' : 'เขียนทับทั้งหมด',
+        cancelText: language === 'en' ? 'Cancel' : 'ยกเลิก',
+        isDestructive: true,
+        onConfirm: () => {
+          doImport();
+        }
+      });
+    } else {
+      doImport();
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-5 animate-fade-in">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white dark:bg-slate-900 p-6 rounded-[2rem] shadow-2xl w-full max-w-[320px] animate-slide-up">
-        <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>จัดการข้อมูล</h3>
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 sm:p-6 animate-fade-in">
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={onClose} />
+      <div className="relative bg-white/95 dark:bg-[#1E1035]/95 backdrop-blur-2xl p-6 sm:p-7 rounded-[32px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] border border-white/80 dark:border-white/15 w-full max-w-md max-h-[90vh] flex flex-col animate-scale-in">
         
-        <div className="space-y-3 mb-6">
-          <button onClick={handleExportJSON} className="w-full py-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-            <Download className="w-6 h-6 text-blue-500" />
-            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">ส่งออกเป็น JSON</span>
-          </button>
-          
-          <button onClick={handleExportCSV} className="w-full py-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-            <Download className="w-6 h-6 text-green-500" />
-            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">ส่งออกเป็น CSV</span>
+        {/* Header */}
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-white/10 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-[#8B5CF6]/15 flex items-center justify-center text-[#8B5CF6] shadow-sm">
+              <Database className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-[#2E1065] dark:text-white tracking-tight">
+                {t('dataTransfer.title', 'ส่งออก / นำเข้าข้อมูล')}
+              </h3>
+              <p className="text-[11px] font-semibold text-[#2E1065]/60 dark:text-white/60">
+                {t('dataTransfer.subtitle', 'สำรองและจัดการข้อมูลธุรกรรมของคุณ')}
+              </p>
+            </div>
+          </div>
+          <button 
+            onClick={onClose} 
+            className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
+          >
+            <X className="w-4 h-4" />
           </button>
         </div>
-        
-        <button onClick={onClose} className="w-full py-3 rounded-xl font-bold bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300">ปิด</button>
+
+        {/* Tab Switcher */}
+        <div className="grid grid-cols-2 gap-1.5 p-1.5 bg-slate-100/80 dark:bg-white/5 rounded-2xl my-4 shrink-0 border border-slate-200/50 dark:border-white/10">
+          <button
+            type="button"
+            onClick={() => setActiveTab('export')}
+            className={`py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all ${
+              activeTab === 'export'
+                ? 'bg-white dark:bg-[#2E1065] text-[#2E1065] dark:text-white shadow-sm border border-slate-200/60 dark:border-white/20'
+                : 'text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Upload className="w-4 h-4" />
+            <span>{t('dataTransfer.tabExport', 'ส่งออกข้อมูล')}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('import')}
+            className={`py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all ${
+              activeTab === 'import'
+                ? 'bg-white dark:bg-[#2E1065] text-[#2E1065] dark:text-white shadow-sm border border-slate-200/60 dark:border-white/20'
+                : 'text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Download className="w-4 h-4" />
+            <span>{t('dataTransfer.tabImport', 'นำเข้าข้อมูล')}</span>
+          </button>
+        </div>
+
+        {/* Tab Content (Scrollable) */}
+        <div className="flex-1 overflow-y-auto no-scrollbar pr-0.5 space-y-4">
+          
+          {/* TAB 1: EXPORT */}
+          {activeTab === 'export' && (
+            <div className="space-y-4 animate-fade-in">
+              {/* Range Filter */}
+              <div>
+                <label className="text-xs font-bold text-[#2E1065] dark:text-white flex items-center gap-1.5 mb-2">
+                  <Calendar className="w-3.5 h-3.5 text-[#8B5CF6]" />
+                  {t('dataTransfer.filterRange', 'ช่วงเวลาที่ต้องการส่งออก')}
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                  {[
+                    { id: 'all', label: t('dataTransfer.rangeAll', 'ทั้งหมด') },
+                    { id: 'this_month', label: t('dataTransfer.rangeThisMonth', 'เดือนนี้') },
+                    { id: 'last_month', label: t('dataTransfer.rangeLastMonth', 'เดือนที่แล้ว') },
+                    { id: 'this_year', label: t('dataTransfer.rangeThisYear', 'ปีนี้') },
+                  ].map((r) => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => setFilterRange(r.id as any)}
+                      className={`py-2 px-2 rounded-xl text-[11px] font-bold transition-all ${
+                        filterRange === r.id
+                          ? 'bg-[#2E1065] text-white shadow-sm'
+                          : 'bg-slate-100/80 dark:bg-white/5 text-slate-600 dark:text-white/70 hover:bg-slate-200/60 dark:hover:bg-white/10'
+                      }`}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Stats Summary Badge */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 border border-purple-100 dark:border-purple-800/30 flex items-center justify-between text-xs font-bold text-[#2E1065] dark:text-white">
+                <div>
+                  <span className="opacity-60 block text-[10px] uppercase font-bold">{t('dataTransfer.selectedData', 'ข้อมูลที่เลือก')}</span>
+                  <span className="text-sm font-black">{filteredTxs.length} {t('dataTransfer.items', 'รายการ')}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-emerald-600 dark:text-emerald-400 block">+฿{totalIncome.toLocaleString()}</span>
+                  <span className="text-rose-600 dark:text-rose-400 block">-฿{totalExpense.toLocaleString()}</span>
+                </div>
+              </div>
+
+              {/* Option 1: Excel CSV */}
+              <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-white/5 border border-slate-200/70 dark:border-white/10 flex flex-col gap-2.5 hover:border-emerald-400/50 transition-all">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                      <FileSpreadsheet className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-[13px] text-[#2E1065] dark:text-white flex items-center gap-2">
+                        {t('dataTransfer.csvTitle', 'Excel / CSV Spreadsheet')}
+                      </h4>
+                      <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 px-2 py-0.5 rounded-md inline-flex items-center gap-1 mt-0.5">
+                        <FileSpreadsheet className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                        {t('dataTransfer.csvBadge', 'แนะนำสำหรับสรุปบัญชี')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                  {t('dataTransfer.csvDesc', 'เหมาะสำหรับเปิดดูใน Excel, Google Sheets พร้อมรองรับภาษาไทย UTF-8 สมบูรณ์')}
+                </p>
+                <button
+                  type="button"
+                  onClick={handleExportCSV}
+                  disabled={filteredTxs.length === 0}
+                  className="mt-1 w-full py-2.5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>{t('dataTransfer.exportBtn', 'ดาวน์โหลดไฟล์')} CSV (.csv)</span>
+                </button>
+              </div>
+
+              {/* Option 2: JSON Backup */}
+              <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-white/5 border border-slate-200/70 dark:border-white/10 flex flex-col gap-2.5 hover:border-purple-400/50 transition-all">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-[#8B5CF6]/15 text-[#8B5CF6] flex items-center justify-center shrink-0 border border-[#8B5CF6]/20">
+                      <FileJson className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-[13px] text-[#2E1065] dark:text-white flex items-center gap-2">
+                        {t('dataTransfer.jsonTitle', 'PaySave JSON Full Backup')}
+                      </h4>
+                      <span className="text-[10px] font-bold text-[#8B5CF6] dark:text-[#A78BFA] bg-[#8B5CF6]/10 dark:bg-[#8B5CF6]/15 border border-[#8B5CF6]/20 px-2 py-0.5 rounded-md inline-flex items-center gap-1 mt-0.5">
+                        <ShieldCheck className="w-3 h-3 text-[#8B5CF6]" />
+                        {t('dataTransfer.jsonBadge', 'สำรองข้อมูลฉบับสมบูรณ์')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                  {t('dataTransfer.jsonDesc', 'สำรองข้อมูลฉบับสมบูรณ์ (รายการ, กระเป๋าเงิน, การตั้งค่า) เพื่อนำไปกู้คืนบนเครื่องอื่น')}
+                </p>
+                <button
+                  type="button"
+                  onClick={handleExportJSON}
+                  disabled={transactions.length === 0}
+                  className="mt-1 w-full py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-[#2E1065] to-[#4C1D95] hover:opacity-95 active:scale-98 text-white shadow-md shadow-[#2E1065]/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>{t('dataTransfer.exportBtn', 'ดาวน์โหลดไฟล์')} JSON (.json)</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: IMPORT */}
+          {activeTab === 'import' && (
+            <div className="space-y-4 animate-fade-in">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json,.csv,.txt"
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    handleFileSelect(e.target.files[0]);
+                  }
+                }}
+              />
+
+              {/* State A: Upload Dropzone */}
+              {!validationResult && !isValidating && (
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`p-6 rounded-3xl border-2 border-dashed flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
+                    isDragging
+                      ? 'border-[#8B5CF6] bg-[#8B5CF6]/10 scale-[1.02]'
+                      : 'border-slate-300 dark:border-white/20 bg-slate-50/70 dark:bg-white/[0.03] hover:bg-slate-100/70 dark:hover:bg-white/[0.06] hover:border-[#8B5CF6]/60'
+                  }`}
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#8B5CF6]/20 to-[#A855F7]/20 text-[#8B5CF6] flex items-center justify-center mb-3 shadow-inner">
+                    <Download className="w-7 h-7" />
+                  </div>
+                  <h4 className="font-bold text-sm text-[#2E1065] dark:text-white mb-1">
+                    {t('dataTransfer.dropZoneTitle', 'ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์')}
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    {t('dataTransfer.dropZoneSub', 'รองรับไฟล์ .JSON (PaySave Backup) หรือ .CSV')}
+                  </p>
+                </div>
+              )}
+
+              {/* State B: Validating Spinner */}
+              {isValidating && (
+                <div className="p-8 rounded-3xl bg-slate-50 dark:bg-white/5 flex flex-col items-center justify-center text-center gap-3">
+                  <Loader2 className="w-8 h-8 text-[#8B5CF6] animate-spin" />
+                  <span className="text-xs font-bold text-[#2E1065] dark:text-white">
+                    {t('dataTransfer.validating', 'กำลังตรวจสอบไฟล์...')}
+                  </span>
+                </div>
+              )}
+
+              {/* State C: Validation Success & Ready to Import */}
+              {validationResult && validationResult.isValid && !isImporting && (
+                <div className="space-y-3.5 animate-scale-in">
+                  
+                  {/* File Info Pill */}
+                  <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
+                    <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                      <FileCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <div className="min-w-0">
+                        <span className="text-xs font-bold text-emerald-900 dark:text-emerald-300 block truncate">
+                          {validationResult.fileName}
+                        </span>
+                        <span className="text-[10px] font-semibold text-emerald-700/70 dark:text-emerald-400/70">
+                          {validationResult.fileSize} • {validationResult.fileType.toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setValidationResult(null);
+                        if (fileInputRef.current) fileInputRef.current.value = '';
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-white/80 dark:bg-white/10 text-xs font-bold text-slate-600 dark:text-white hover:bg-white shadow-xs shrink-0"
+                    >
+                      {t('dataTransfer.changeFile', 'เปลี่ยนไฟล์')}
+                    </button>
+                  </div>
+
+                  {/* Summary Grid */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10">
+                      <span className="text-[10px] font-bold text-slate-400 block uppercase">
+                        {t('dataTransfer.totalRecords', 'จำนวนรายการ')}
+                      </span>
+                      <span className="text-base font-black text-[#2E1065] dark:text-white">
+                        {validationResult.stats.totalCount} {t('dataTransfer.items', 'รายการ')}
+                      </span>
+                      <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 block mt-0.5">
+                        +{validationResult.stats.incomeCount} / -{validationResult.stats.expenseCount}
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10">
+                      <span className="text-[10px] font-bold text-slate-400 block uppercase">
+                        {t('dataTransfer.totalIncome', 'ยอดรวม')}
+                      </span>
+                      <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 block">
+                        +฿{validationResult.stats.totalIncome.toLocaleString()}
+                      </span>
+                      <span className="text-xs font-black text-rose-600 dark:text-rose-400 block">
+                        -฿{validationResult.stats.totalExpense.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Duplicate warning if any */}
+                  {validationResult.stats.duplicateCount > 0 && (
+                    <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-2.5 text-xs font-semibold text-amber-800 dark:text-amber-300">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                      <span>
+                        {t('dataTransfer.duplicatesFound', 'พบรายการที่อาจซ้ำกับข้อมูลเดิม')} {validationResult.stats.duplicateCount} {t('dataTransfer.items', 'รายการ')}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Import Mode Radio Selection */}
+                  <div className="space-y-2 pt-1">
+                    <label className="text-xs font-bold text-[#2E1065] dark:text-white block">
+                      {t('dataTransfer.importMode', 'โหมดการนำเข้าข้อมูล')}
+                    </label>
+
+                    <div 
+                      onClick={() => setImportMode('merge')}
+                      className={`p-3 rounded-2xl border cursor-pointer transition-all ${
+                        importMode === 'merge'
+                          ? 'bg-[#8B5CF6]/10 border-[#8B5CF6] shadow-xs'
+                          : 'bg-slate-50 dark:bg-white/5 border-slate-200/70 dark:border-white/10 hover:bg-slate-100/60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <input 
+                          type="radio" 
+                          name="importMode" 
+                          checked={importMode === 'merge'} 
+                          onChange={() => setImportMode('merge')}
+                          className="accent-[#8B5CF6]" 
+                        />
+                        <div>
+                          <span className="text-xs font-bold text-[#2E1065] dark:text-white block">
+                            {t('dataTransfer.modeMerge', 'รวมกับข้อมูลปัจจุบัน (Merge)')}
+                          </span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 block">
+                            {t('dataTransfer.modeMergeDesc', 'เพิ่มรายการใหม่เข้าไป และคงข้อมูลเดิมไว้')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div 
+                      onClick={() => setImportMode('replace')}
+                      className={`p-3 rounded-2xl border cursor-pointer transition-all ${
+                        importMode === 'replace'
+                          ? 'bg-rose-500/10 border-rose-500 shadow-xs'
+                          : 'bg-slate-50 dark:bg-white/5 border-slate-200/70 dark:border-white/10 hover:bg-slate-100/60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <input 
+                          type="radio" 
+                          name="importMode" 
+                          checked={importMode === 'replace'} 
+                          onChange={() => setImportMode('replace')}
+                          className="accent-rose-500" 
+                        />
+                        <div>
+                          <span className="text-xs font-bold text-rose-600 dark:text-rose-400 block">
+                            {t('dataTransfer.modeReplace', 'เขียนทับข้อมูลเดิมทั้งหมด (Replace)')}
+                          </span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 block">
+                            {t('dataTransfer.modeReplaceDesc', 'ล้างข้อมูลธุรกรรมเดิมและแทนที่ด้วยข้อมูลจากไฟล์นี้')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Skip duplicates toggle (when in merge mode) */}
+                  {importMode === 'merge' && validationResult.stats.duplicateCount > 0 && (
+                    <label className="flex items-center gap-2 px-1 cursor-pointer select-none">
+                      <input 
+                        type="checkbox" 
+                        checked={skipDuplicates}
+                        onChange={(e) => setSkipDuplicates(e.target.checked)}
+                        className="rounded accent-[#8B5CF6] w-4 h-4"
+                      />
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        {t('dataTransfer.skipDuplicates', 'ข้ามรายการที่ซ้ำกันอัตโนมัติ')}
+                      </span>
+                    </label>
+                  )}
+
+                  {/* Preview Toggle & Accordion */}
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setShowPreview(!showPreview)}
+                      className="text-xs font-bold text-[#8B5CF6] hover:underline flex items-center gap-1"
+                    >
+                      <span>{showPreview ? t('dataTransfer.hidePreview', 'ซ่อนตัวอย่างข้อมูล') : t('dataTransfer.previewTitle', 'ดูตัวอย่างข้อมูล (5 รายการแรก)')}</span>
+                      <ChevronRight className={`w-3.5 h-3.5 transition-transform ${showPreview ? 'rotate-90' : ''}`} />
+                    </button>
+
+                    {showPreview && (
+                      <div className="mt-2 space-y-1.5 p-2 rounded-2xl bg-slate-100/60 dark:bg-white/5 border border-slate-200/50 dark:border-white/10 max-h-40 overflow-y-auto no-scrollbar">
+                        {validationResult.previewRows.map((tx, idx) => (
+                          <div key={idx} className="p-2 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-between text-xs shadow-2xs">
+                            <div className="min-w-0 pr-2">
+                              <span className="font-bold text-[#2E1065] dark:text-white block truncate">{tx.title}</span>
+                              <span className="text-[10px] text-slate-400">{tx.date} • {tx.category} • {tx.walletName}</span>
+                            </div>
+                            <span className={`font-black shrink-0 ${tx.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                              {tx.type === 'income' ? '+' : '-'}฿{tx.amount.toLocaleString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Start Import Button */}
+                  <button
+                    type="button"
+                    onClick={handleStartImport}
+                    className="w-full py-3.5 rounded-2xl font-bold text-sm bg-gradient-to-r from-[#2E1065] to-[#4C1D95] text-white shadow-lg shadow-[#2E1065]/20 flex items-center justify-center gap-2 hover:opacity-95 active:scale-98 transition-all"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>{t('dataTransfer.btnImport', 'เริ่มนำเข้าข้อมูล')} ({validationResult.stats.totalCount} {t('dataTransfer.items', 'รายการ')})</span>
+                  </button>
+                </div>
+              )}
+
+              {/* State D: Importing in Progress */}
+              {isImporting && (
+                <div className="p-8 rounded-3xl bg-slate-50 dark:bg-white/5 flex flex-col items-center justify-center text-center gap-4 animate-fade-in">
+                  <div className="relative">
+                    <Loader2 className="w-12 h-12 text-[#8B5CF6] animate-spin" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-[#2E1065] dark:text-white mb-1">
+                      {t('dataTransfer.importing', 'กำลังนำเข้าข้อมูล...')}
+                    </h4>
+                    {importProgress && (
+                      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        {importProgress.current} / {importProgress.total} {t('dataTransfer.items', 'รายการ')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+            </div>
+          )}
+
+        </div>
+
       </div>
     </div>
   );

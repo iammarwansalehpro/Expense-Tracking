@@ -234,14 +234,19 @@ export default function HomePage() {
                           onClick={(e) => {
                             e.stopPropagation();
                             useConfirmStore.getState().showConfirm({
-                              title: t('home.confirmDeleteWallet') || 'Delete Wallet',
-                              message: 'คุณแน่ใจหรือไม่ว่าต้องการลบกระเป๋าเงินนี้? ข้อมูลที่เกี่ยวข้องจะไม่สามารถกู้คืนได้',
-                              confirmText: 'ลบกระเป๋าเงิน',
-                              cancelText: 'ยกเลิก',
+                              title: t('home.confirmDeleteWallet') || (language === 'en' ? 'Delete Wallet' : 'ลบกระเป๋าเงิน'),
+                              message: language === 'en' 
+                                ? 'Are you sure you want to delete this wallet? Related data cannot be recovered.' 
+                                : 'คุณแน่ใจหรือไม่ว่าต้องการลบกระเป๋าเงินนี้? ข้อมูลที่เกี่ยวข้องจะไม่สามารถกู้คืนได้',
+                              confirmText: language === 'en' ? 'Delete' : 'ลบกระเป๋าเงิน',
+                              cancelText: language === 'en' ? 'Cancel' : 'ยกเลิก',
                               isDestructive: true,
                               onConfirm: () => {
                                 deleteWallet(wallet.id);
-                                useToastStore.getState().addToast('ลบกระเป๋าเงินเรียบร้อยแล้ว', 'success');
+                                useToastStore.getState().addToast(
+                                  language === 'en' ? 'Wallet deleted successfully' : 'ลบกระเป๋าเงินเรียบร้อยแล้ว',
+                                  'success'
+                                );
                                 // Scroll back to main wallet
                                 const mainIdx = wallets.findIndex(w => w.isMain);
                                 setTimeout(() => {
@@ -539,7 +544,7 @@ export default function HomePage() {
                     <div className="flex-1 min-w-0 pr-2">
                       <h4 className="font-bold text-[#2E1065] text-[15px] mb-0.5 truncate">{tx.title || tx.category}</h4>
                       <p className="text-[11px] font-medium text-[#2E1065]/60 whitespace-nowrap">
-                        {new Date(tx.date).toLocaleDateString('th-TH', { day: '2-digit', month: 'long', year: 'numeric' })}
+                        {new Date(tx.date).toLocaleDateString(language === 'en' ? 'en-US' : 'th-TH', { day: '2-digit', month: 'long', year: 'numeric' })}
                       </p>
                     </div>
                   </div>

@@ -3,6 +3,7 @@ import { useWalletStore } from '@/store/useWalletStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { AlertCircle, CreditCard, ArrowRight } from 'lucide-react';
 import type { Wallet } from '@/types';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface CreditCardAlert {
   wallet: Wallet;
@@ -18,6 +19,7 @@ interface Props {
 export default function CreditCardDueAlert({ onPayClick }: Props) {
   const wallets = useWalletStore(s => s.wallets);
   const transactions = useTransactionStore(s => s.transactions);
+  const { t, language } = useTranslation();
 
   const alerts = useMemo(() => {
     const ccWallets = wallets.filter(w => w.type === 'credit_card');
@@ -131,15 +133,17 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
           <div>
             <h4 className={`font-bold text-[13px] ${style.text}`}>
               {alert.urgency === 'overdue' 
-                ? 'เลยกำหนดชำระแล้ว' 
+                ? (language === 'en' ? 'Overdue payment!' : 'เลยกำหนดชำระแล้ว') 
                 : alert.urgency === 'urgent'
-                  ? alert.daysUntilDue === 0 ? 'ครบกำหนดชำระวันนี้!' : `ครบกำหนดชำระพรุ่งนี้!`
-                  : `จะครบกำหนดในอีก ${alert.daysUntilDue} วัน`}
+                  ? alert.daysUntilDue === 0 
+                    ? (language === 'en' ? 'Due today!' : 'ครบกำหนดชำระวันนี้!') 
+                    : (language === 'en' ? 'Due tomorrow!' : 'ครบกำหนดชำระพรุ่งนี้!')
+                  : (language === 'en' ? `Due in ${alert.daysUntilDue} days` : `จะครบกำหนดในอีก ${alert.daysUntilDue} วัน`)}
             </h4>
             <div className="text-[11px] font-medium text-slate-600 mt-0.5 flex items-center gap-1.5">
               <CreditCard className="w-3 h-3" />
               <span className="truncate max-w-[120px] inline-block">{alert.wallet.name}</span>
-              <span className="font-bold text-slate-800">฿{alert.outstandingBalance.toLocaleString('th-TH', { minimumFractionDigits: 0 })}</span>
+              <span className="font-bold text-slate-800">฿{alert.outstandingBalance.toLocaleString(language === 'en' ? 'en-US' : 'th-TH', { minimumFractionDigits: 0 })}</span>
             </div>
           </div>
         </div>
@@ -148,7 +152,7 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
           onClick={() => onPayClick(alert.wallet.id)}
           className={`shrink-0 h-8 px-3 rounded-xl ${style.bg} text-white font-bold text-xs flex items-center gap-1 shadow-sm active:scale-95 transition-transform`}
         >
-          ชำระเลย
+          {language === 'en' ? 'Pay Now' : 'ชำระเลย'}
           <ArrowRight className="w-3 h-3" />
         </button>
       </div>

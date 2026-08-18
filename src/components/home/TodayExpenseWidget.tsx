@@ -20,7 +20,7 @@ export default function TodayExpenseWidget() {
   const transactions = useTransactionStore((s) => s.transactions);
   const dailyBudget = useSettingsStore((s) => s.dailyBudget);
   const setDailyBudget = useSettingsStore((s) => s.setDailyBudget);
-  const { language } = useTranslation();
+  const { t, language } = useTranslation();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [budgetInput, setBudgetInput] = useState(String(dailyBudget || 500));
@@ -105,10 +105,15 @@ export default function TodayExpenseWidget() {
     const num = parseFloat(budgetInput.replace(/,/g, ''));
     if (!isNaN(num) && num > 0) {
       setDailyBudget(num);
-      useToastStore.getState().addToast(`ตั้งเป้าหมายรายวัน ฿${num.toLocaleString()} เรียบร้อยแล้ว`, 'success');
+      useToastStore.getState().addToast(
+        language === 'en'
+          ? `Daily budget set to ฿${num.toLocaleString()} successfully`
+          : `ตั้งเป้าหมายรายวัน ฿${num.toLocaleString()} เรียบร้อยแล้ว`,
+        'success'
+      );
       setIsEditModalOpen(false);
     } else {
-      useToastStore.getState().addToast('กรุณาระบุจำนวนเงินที่ถูกต้อง', 'error');
+      useToastStore.getState().addToast(t('home.invalidAmount'), 'error');
     }
   };
 
@@ -149,10 +154,10 @@ export default function TodayExpenseWidget() {
 
                 <div className="flex flex-col">
                   <span className="text-[#2E1065] dark:text-white font-extrabold text-[16px] tracking-tight">
-                    ยอดใช้จ่ายวันนี้
+                    {t('home.todayExpense')}
                   </span>
                   <span className="text-[11px] font-medium text-[#2E1065]/60 dark:text-white/60 mt-0.5">
-                    รวมทุกรายการแล้ว
+                    {t('home.allIncluded')}
                   </span>
                 </div>
               </div>
@@ -184,12 +189,12 @@ export default function TodayExpenseWidget() {
                 {/* ฝั่งซ้าย: เป้าหมาย + ปุ่มแก้ไข */}
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-[#2E1065]/80 dark:text-white/80 text-[12px]">
-                    เป้าหมาย <span className="font-extrabold text-[#2E1065] dark:text-white">฿{stats.target.toLocaleString()}</span>
+                    {t('home.target')} <span className="font-extrabold text-[#2E1065] dark:text-white">฿{stats.target.toLocaleString()}</span>
                   </span>
                   <button
                     onClick={handleOpenModal}
                     className="w-6 h-6 rounded-full bg-white/70 dark:bg-white/15 flex items-center justify-center shadow-sm border border-white/60 dark:border-white/20 text-[#2E1065] dark:text-white hover:text-[#8B5CF6] hover:bg-white hover:scale-110 active:scale-95 transition-all ml-0.5"
-                    title="กำหนด/แก้ไขเป้าหมายรายวัน"
+                    title={t('home.editDailyBudget')}
                     aria-label="Edit daily target"
                   >
                     <Edit2 className="w-3 h-3" />
@@ -201,11 +206,11 @@ export default function TodayExpenseWidget() {
                   <span className="font-bold text-[12px]">
                     {stats.isOverBudget ? (
                       <span className="text-rose-600 dark:text-rose-400 font-extrabold">
-                        เกินงบ ฿{Math.abs(stats.remaining).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {t('home.overBudget')} ฿{Math.abs(stats.remaining).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     ) : (
                       <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">
-                        คงเหลือ ฿{stats.remaining.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {t('home.remaining')} ฿{stats.remaining.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     )}
                   </span>
@@ -225,9 +230,13 @@ export default function TodayExpenseWidget() {
           {/* ส่วนล่าง (ใต้เส้นคั่น): จำนวนรายการ & เปรียบเทียบ vs เมื่อวาน */}
           <div className="flex items-center justify-between pt-2.5 border-t border-[#2E1065]/8 dark:border-white/10 relative z-10">
             {/* ฝั่งซ้าย: จำนวนรายการ */}
-            <div className="flex items-center px-3 py-1 bg-white/50 dark:bg-white/10 rounded-full border border-white/60 dark:border-white/10 shadow-sm">
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-white/50 dark:bg-white/10 rounded-full border border-white/60 dark:border-white/10 shadow-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-gradient-to-tr from-rose-600 to-red-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
+              </span>
               <span className="text-[11px] font-bold text-[#2E1065] dark:text-white">
-                {stats.todayCount > 0 ? `${stats.todayCount} รายการ` : 'ยังไม่มีรายการ'}
+                {stats.todayCount > 0 ? `${stats.todayCount} ${t('home.items')}` : t('home.noItemsToday')}
               </span>
             </div>
 
@@ -236,30 +245,30 @@ export default function TodayExpenseWidget() {
               {stats.trendType === 'up' && (
                 <div className="flex items-center gap-1 text-rose-600 dark:text-rose-400 text-[11px] font-bold bg-rose-500/10 px-2.5 py-1 rounded-full border border-rose-500/20">
                   <TrendingUp className="w-3.5 h-3.5" />
-                  <span>+{stats.trendPercent}% vs เมื่อวาน</span>
+                  <span>+{stats.trendPercent}% {t('home.vsYesterday')}</span>
                 </div>
               )}
               {stats.trendType === 'down' && (
                 <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
                   <TrendingDown className="w-3.5 h-3.5" />
-                  <span>-{stats.trendPercent}% vs เมื่อวาน</span>
+                  <span>-{stats.trendPercent}% {t('home.vsYesterday')}</span>
                 </div>
               )}
               {stats.trendType === 'equal' && (
                 <div className="flex items-center gap-1 text-[#2E1065]/70 dark:text-white/70 text-[11px] font-bold bg-[#2E1065]/5 dark:bg-white/10 px-2.5 py-1 rounded-full">
                   <Minus className="w-3.5 h-3.5" />
-                  <span>เท่ากับเมื่อวาน</span>
+                  <span>{t('home.equalYesterday')}</span>
                 </div>
               )}
               {stats.trendType === 'no_yesterday' && (
                 <div className="flex items-center gap-1 text-[#2E1065]/70 dark:text-white/70 text-[11px] font-bold bg-[#2E1065]/5 dark:bg-white/10 px-2.5 py-1 rounded-full">
-                  <span>วันนี้ใช้ไป ฿{stats.todayExpense.toLocaleString()}</span>
+                  <span>{t('home.spentToday')} ฿{stats.todayExpense.toLocaleString()}</span>
                 </div>
               )}
               {stats.trendType === 'zero_today' && (
                 <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>ยังไม่มีรายจ่ายวันนี้</span>
+                  <span>{t('home.noExpenseToday')}</span>
                 </div>
               )}
             </div>
@@ -290,10 +299,10 @@ export default function TodayExpenseWidget() {
               </div>
               <div>
                 <h3 className="text-lg font-black text-[#2E1065] dark:text-white tracking-tight">
-                  กำหนดเป้าหมายรายวัน
+                  {t('home.setDailyBudget')}
                 </h3>
                 <p className="text-xs text-[#2E1065]/60 dark:text-white/60 font-medium">
-                  ตั้งงบประมาณที่คุณต้องการใช้ต่อวัน
+                  {t('home.setDailyBudgetDesc')}
                 </p>
               </div>
             </div>
@@ -319,7 +328,7 @@ export default function TodayExpenseWidget() {
               {/* Preset Buttons */}
               <div>
                 <span className="text-[11px] font-bold text-[#2E1065]/60 dark:text-white/60 mb-2 block uppercase tracking-wider">
-                  ตัวเลือกด่วน
+                  {t('home.quickPresets')}
                 </span>
                 <div className="grid grid-cols-5 gap-1.5">
                   {BUDGET_PRESETS.map((preset) => (
@@ -346,14 +355,14 @@ export default function TodayExpenseWidget() {
                   onClick={() => setIsEditModalOpen(false)}
                   className="flex-1 py-3.5 rounded-2xl font-bold text-sm bg-slate-100 dark:bg-white/10 text-[#2E1065]/70 dark:text-white/70 hover:bg-slate-200 dark:hover:bg-white/20 transition-all active:scale-95"
                 >
-                  ยกเลิก
+                  {t('home.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 py-3.5 rounded-2xl font-bold text-sm bg-gradient-to-r from-[#2E1065] to-[#4C1D95] text-white shadow-lg shadow-[#2E1065]/20 flex items-center justify-center gap-1.5 hover:opacity-95 transition-all active:scale-95"
                 >
                   <Check className="w-4 h-4" />
-                  <span>บันทึกเป้าหมาย</span>
+                  <span>{t('home.saveBudget')}</span>
                 </button>
               </div>
             </form>
