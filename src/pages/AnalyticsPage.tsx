@@ -301,17 +301,19 @@ export default function AnalyticsPage() {
         <div className="flex justify-center mb-6 shrink-0">
           <div className="bg-white/30 backdrop-blur-xl px-5 py-2.5 rounded-full flex items-center gap-5 shadow-[0_4px_20px_rgba(31,38,135,0.05)] border border-white/50">
             <button 
+              type="button"
               onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1))}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/50 active:scale-95 transition-all bg-white/40 text-[#2E1065] shadow-sm"
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/50 active:scale-95 transition-all bg-white/40 text-[#2E1065] shadow-sm outline-none focus:outline-none focus-visible:outline-none select-none"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <span className="font-bold text-[#2E1065] text-base min-w-[100px] text-center">
+            <span className="font-bold text-[#2E1065] text-base min-w-[100px] text-center select-none">
               {currentMonthStr}
             </span>
             <button 
+              type="button"
               onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/50 active:scale-95 transition-all bg-white/40 text-[#2E1065] shadow-sm"
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/50 active:scale-95 transition-all bg-white/40 text-[#2E1065] shadow-sm outline-none focus:outline-none focus-visible:outline-none select-none"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -321,13 +323,15 @@ export default function AnalyticsPage() {
         {/* Transaction Type Toggle */}
         <div className="flex bg-white/40 backdrop-blur-xl border border-white/50 p-1.5 rounded-[20px] shadow-sm mb-4">
           <button 
-            className={`flex-1 py-3 rounded-[16px] text-sm font-bold transition-all duration-300 ${activeTab === 'income' ? 'bg-white/70 text-[#2E1065] shadow-sm border border-white/60' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80'}`}
+            type="button"
+            className={`flex-1 py-3 rounded-[16px] text-sm font-bold transition-all duration-300 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none select-none ${activeTab === 'income' ? 'bg-white/70 text-[#2E1065] shadow-sm border border-white/60' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80 border border-transparent'}`}
             onClick={() => setActiveTab('income')}
           >
             {t('overview.income')}
           </button>
           <button 
-            className={`flex-1 py-3 rounded-[16px] text-sm font-bold transition-all duration-300 ${activeTab === 'expense' ? 'bg-white/70 text-[#2E1065] shadow-sm border border-white/60' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80'}`}
+            type="button"
+            className={`flex-1 py-3 rounded-[16px] text-sm font-bold transition-all duration-300 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none select-none ${activeTab === 'expense' ? 'bg-white/70 text-[#2E1065] shadow-sm border border-white/60' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80 border border-transparent'}`}
             onClick={() => setActiveTab('expense')}
           >
             {t('overview.expense')}

@@ -87,6 +87,15 @@
   html.dark body, html.dark #root {
     background-color: #0F0720;
   }
+
+  /* Global Button & Element Focus Polish */
+  button, [role="button"], a, input, select, textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:focus, button:focus-visible, [role="button"]:focus, [role="button"]:focus-visible {
+    outline: none !important;
+    box-shadow: none;
+  }
 }
 
 /* Hide scrollbar for clean mobile look */

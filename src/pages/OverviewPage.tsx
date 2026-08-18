@@ -431,13 +431,15 @@ export default function OverviewPage() {
         {/* Transaction Type Toggle */}
         <div className="flex bg-white/20 backdrop-blur-xl border border-white/30 p-1.5 rounded-[20px] mb-6 shadow-inner">
           <button
-            className={`flex-1 py-3 rounded-[16px] text-sm font-bold transition-all duration-300 ${activeTab === 'income' ? 'bg-white/60 text-[#2E1065] shadow-sm border border-white/50' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80'}`}
+            type="button"
+            className={`flex-1 py-3 rounded-[16px] text-sm font-bold transition-all duration-300 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none select-none ${activeTab === 'income' ? 'bg-white/60 text-[#2E1065] shadow-sm border border-white/50' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80 border border-transparent'}`}
             onClick={() => setActiveTab('income')}
           >
             {t('overview.income')}
           </button>
           <button
-            className={`flex-1 py-3 rounded-[16px] text-sm font-bold transition-all duration-300 ${activeTab === 'expense' ? 'bg-white/60 text-[#2E1065] shadow-sm border border-white/50' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80'}`}
+            type="button"
+            className={`flex-1 py-3 rounded-[16px] text-sm font-bold transition-all duration-300 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none select-none ${activeTab === 'expense' ? 'bg-white/60 text-[#2E1065] shadow-sm border border-white/50' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80 border border-transparent'}`}
             onClick={() => setActiveTab('expense')}
           >
             {t('overview.expense')}
