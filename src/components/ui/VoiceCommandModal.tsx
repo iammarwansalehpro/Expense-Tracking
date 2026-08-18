@@ -18,6 +18,45 @@ import CustomSelect from '@/components/ui/CustomSelect';
 import AutoShrinkText from '@/components/ui/AutoShrinkText';
 import * as Icons from 'lucide-react';
 
+function AnimatedVoiceTranscript({ text, isProcessing, isListening }: { text: string; isProcessing: boolean; isListening: boolean }) {
+  const [displayedText, setDisplayedText] = useState('');
+  const textRef = useRef(text);
+  textRef.current = text;
+
+  useEffect(() => {
+    if (!text) {
+      setDisplayedText('');
+      return;
+    }
+
+    let i = displayedText.length;
+    const interval = setInterval(() => {
+      const currentTarget = textRef.current;
+      if (i < currentTarget.length) {
+        setDisplayedText(currentTarget.slice(0, i + 1));
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 60);
+
+    return () => clearInterval(interval);
+  }, [text]);
+
+  return (
+    <div className="flex flex-col items-center justify-center w-full px-4 py-2 animate-fade-in">
+      <div className="relative max-w-md text-center flex flex-wrap items-center justify-center">
+        <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-relaxed bg-clip-text text-transparent bg-gradient-to-r from-[#2E1065] to-[#6D28D9] dark:from-white dark:to-white/70 drop-shadow-sm">
+          &ldquo;{displayedText || text}&rdquo;
+          {(isListening || isProcessing) && (
+            <span className="inline-block w-[3px] h-[22px] ml-1 bg-[#8B5CF6] dark:bg-[#A78BFA] animate-blink align-middle translate-y-[-2px] rounded-full" />
+          )}
+        </h2>
+      </div>
+    </div>
+  );
+}
+
 export default function VoiceCommandModal() {
   const { t, language } = useTranslation();
   const isVoiceModalOpen = useAppStore(s => s.isVoiceModalOpen);
@@ -216,7 +255,7 @@ export default function VoiceCommandModal() {
           <div className={`overflow-y-auto px-6 pb-40 no-scrollbar flex-1 flex flex-col ${!parsedData ? 'items-center justify-center' : ''}`}>
         
         {/* Glow Background Effect */}
-        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-[60px] opacity-20 pointer-events-none transition-all duration-700 ${isListening ? 'bg-indigo-500 scale-150 animate-pulse' : 'bg-[#A855F7] scale-100'}`} />
+        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-[60px] opacity-20 pointer-events-none transition-all duration-700 ${isListening || isProcessing ? 'bg-indigo-500 scale-150 animate-pulse' : 'bg-[#A855F7] scale-100'}`} />
 
         <div className={`flex-1 w-full flex flex-col z-10 relative ${!parsedData ? 'items-center justify-center' : 'pt-4'}`}>
           
@@ -224,8 +263,12 @@ export default function VoiceCommandModal() {
           {!parsedData && !error && (
             <div className="flex flex-col items-center w-full">
               <div 
-                className={`relative w-28 h-28 flex items-center justify-center rounded-full shadow-lg transition-all duration-300 cursor-pointer ${isListening ? 'bg-indigo-600 scale-110 shadow-indigo-500/50' : 'bg-slate-800 hover:bg-slate-700'}`}
-                onClick={isListening ? () => voiceService.stop() : startListening}
+                className={`relative w-28 h-28 flex items-center justify-center rounded-full shadow-lg transition-all duration-300 cursor-pointer ${
+                  isListening || isProcessing 
+                    ? 'bg-indigo-600 scale-110 shadow-indigo-500/50' 
+                    : 'bg-slate-800 hover:bg-slate-700 hover:scale-105'
+                }`}
+                onClick={isListening ? () => voiceService.stop() : isProcessing ? undefined : startListening}
               >
                 {isListening && (
                   <div className="absolute inset-0 rounded-full border-4 border-white/20 animate-ping" style={{ animationDuration: '2s' }} />
@@ -243,16 +286,18 @@ export default function VoiceCommandModal() {
               
               <div className="mt-4 min-h-[60px] w-full flex flex-col items-center justify-center px-4">
                 {transcript ? (
-                  <p className="text-center text-lg font-medium text-[#2E1065] bg-white/50 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/60 shadow-sm">{transcript}</p>
+                  <AnimatedVoiceTranscript 
+                    text={transcript} 
+                    isProcessing={isProcessing} 
+                    isListening={isListening} 
+                  />
                 ) : (
                   <div className="flex flex-col items-center text-slate-500 gap-1.5 text-center">
                     <span className="font-bold text-sm text-[#2E1065]">
                       {t('voice.speakHint', 'พูดชื่อรายการ ยอดเงิน และกระเป๋าเงิน')}
                     </span>
                     <div className="flex flex-col gap-1 text-xs opacity-75 mt-1">
-                      <span>{t('voice.example1', 'เช่น "กินข้าว 150 บาท ด้วยเงินสด"')}</span>
-                      <span>{t('voice.example2', 'หรือ "โอนเงิน 500 ผ่านบัญชีกรุงไทย"')}</span>
-                      <span>{t('voice.example3', 'หรือ "ซื้อของ 1,200 รูดบัตรเครดิต"')}</span>
+                      <span>{t('voice.example', 'เช่น "กินข้าว 150 เงินสด"')}</span>
                     </div>
                   </div>
                 )}
@@ -337,8 +382,7 @@ export default function VoiceCommandModal() {
                       {t('add.wallet')}
                     </label>
                     {parsedData?.walletId && parsedData.walletId === walletId && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#8B5CF6]/15 text-[#8B5CF6] text-[11px] font-bold border border-[#8B5CF6]/20 shadow-sm animate-fade-in">
-                        <Sparkles className="w-3 h-3 text-[#8B5CF6]" />
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#8B5CF6]/15 text-[#8B5CF6] text-[11px] font-bold border border-[#8B5CF6]/20 shadow-sm animate-fade-in">
                         <span>{t('voice.detectedWallet', 'ตรวจพบจากเสียง')}</span>
                       </span>
                     )}
