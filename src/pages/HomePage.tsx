@@ -15,6 +15,7 @@ import CreditCardDueAlert from '@/components/home/CreditCardDueAlert';
 import CreditCardPaymentModal from '@/components/ui/CreditCardPaymentModal';
 import TransactionDetailsModal from '@/components/ui/TransactionDetailsModal';
 import { calculateCreditCardStats } from '@/utils/creditCardUtils';
+import TodayExpenseWidget from '@/components/home/TodayExpenseWidget';
 export default function HomePage() {
   const transactions = useTransactionStore((s) => s.transactions);
   const appName = useAppStore(s => s.appName);
@@ -52,20 +53,42 @@ export default function HomePage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const deleteWallet = useWalletStore(s => s.deleteWallet);
 
+  const scrollToWalletIndex = (index: number, behavior: ScrollBehavior = 'smooth') => {
+    if (!scrollContainerRef.current) return;
+    const container = scrollContainerRef.current;
+    const child = container.children[index] as HTMLElement;
+    if (child) {
+      const targetLeft = child.offsetLeft - (container.clientWidth - child.offsetWidth) / 2;
+      container.scrollTo({
+        left: targetLeft,
+        behavior
+      });
+    }
+  };
+
   const handleScroll = () => {
     if (!scrollContainerRef.current) return;
     const container = scrollContainerRef.current;
+    const containerCenter = container.scrollLeft + container.clientWidth / 2;
     
-    // Add small offset to ensure we capture the middle of the card correctly
-    const scrollPosition = container.scrollLeft;
-    const cardWidth = container.clientWidth;
-    const index = Math.round(scrollPosition / cardWidth);
+    let closestIdx = 0;
+    let minDistance = Infinity;
     
-    if (index >= 0 && index < wallets.length) {
-      if (activeWalletId !== wallets[index].id) {
-        setActiveWalletId(wallets[index].id);
+    const children = Array.from(container.children) as HTMLElement[];
+    children.forEach((child, idx) => {
+      const childCenter = child.offsetLeft + child.offsetWidth / 2;
+      const distance = Math.abs(containerCenter - childCenter);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestIdx = idx;
       }
-    } else if (index === wallets.length) {
+    });
+    
+    if (closestIdx >= 0 && closestIdx < wallets.length) {
+      if (activeWalletId !== wallets[closestIdx].id) {
+        setActiveWalletId(wallets[closestIdx].id);
+      }
+    } else if (closestIdx === wallets.length) {
       // It's the "Add New" card
       if (activeWalletId !== 'add') {
         setActiveWalletId('add');
@@ -84,15 +107,10 @@ export default function HomePage() {
   useEffect(() => {
     if (scrollContainerRef.current) {
       const activeIdx = wallets.findIndex(w => w.id === activeWalletId);
-      if (activeIdx > 0) { // If it's 0, it's already there
+      if (activeIdx >= 0) {
         setTimeout(() => {
-          if (scrollContainerRef.current) {
-            scrollContainerRef.current.scrollTo({
-              left: activeIdx * scrollContainerRef.current.clientWidth,
-              behavior: 'instant'
-            });
-          }
-        }, 50);
+          scrollToWalletIndex(activeIdx, 'instant');
+        }, 60);
       }
     }
   }, []);
@@ -156,9 +174,10 @@ export default function HomePage() {
           <div 
             ref={scrollContainerRef}
             onScroll={handleScroll}
-            className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth pb-8 pt-4 -mt-4 items-stretch"
+            className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth pb-8 pt-4 -mt-4 items-stretch gap-3 px-6"
           >
-            {wallets.map(wallet => {
+            {wallets.map((wallet, idx) => {
+              const isSelected = activeWalletId === wallet.id;
               const stats = getWalletStats(wallet.id);
               const WIcon = wallet.icon === 'CreditCard' ? Landmark : (wallet.icon === 'CreditCardIcon' ? CreditCardIcon : WalletIcon);
               
@@ -178,14 +197,21 @@ export default function HomePage() {
               const hasInstallment = installmentDebt > 0;
 
               return (
-                <div key={wallet.id} className="w-full shrink-0 snap-center px-6 h-full">
+                <div 
+                  key={wallet.id} 
+                  onClick={() => !isSelected && scrollToWalletIndex(idx)}
+                  className={`w-full shrink-0 snap-center h-full transition-all duration-300 ${
+                    isSelected ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-75 hover:opacity-90 cursor-pointer'
+                  }`}
+                >
                   <div className={`w-full h-full flex flex-col bg-white/40 backdrop-blur-xl rounded-[32px] p-6 text-[#2E1065] shadow-[0_8px_32px_rgba(31,38,135,0.1)] border border-white/50 relative transition-colors ${wallet.color}`}>
                     
                     {/* Inline Actions (Edit/Delete) */}
                     <div className="absolute top-4 right-4 z-20 flex flex-col gap-2">
                       {!isCreditCard && (
                         <button 
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             useAppStore.getState().setTransferModalOpen(true);
                           }}
                           className="w-8 h-8 rounded-full bg-white/60 backdrop-blur-md flex items-center justify-center shadow-sm border border-white/50 transition-all text-[#2E1065]/70 hover:text-[#8B5CF6] hover:bg-white"
@@ -194,7 +220,8 @@ export default function HomePage() {
                         </button>
                       )}
                       <button 
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setEditingWallet(wallet);
                           setIsFormOpen(true);
                         }}
@@ -204,7 +231,8 @@ export default function HomePage() {
                       </button>
                       {wallets.length > 1 && !wallet.isMain && (
                         <button 
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             useConfirmStore.getState().showConfirm({
                               title: t('home.confirmDeleteWallet') || 'Delete Wallet',
                               message: 'คุณแน่ใจหรือไม่ว่าต้องการลบกระเป๋าเงินนี้? ข้อมูลที่เกี่ยวข้องจะไม่สามารถกู้คืนได้',
@@ -216,12 +244,9 @@ export default function HomePage() {
                                 useToastStore.getState().addToast('ลบกระเป๋าเงินเรียบร้อยแล้ว', 'success');
                                 // Scroll back to main wallet
                                 const mainIdx = wallets.findIndex(w => w.isMain);
-                                if (scrollContainerRef.current) {
-                                  scrollContainerRef.current.scrollTo({
-                                    left: Math.max(0, mainIdx) * scrollContainerRef.current.clientWidth,
-                                    behavior: 'smooth'
-                                  });
-                                }
+                                setTimeout(() => {
+                                  scrollToWalletIndex(Math.max(0, mainIdx));
+                                }, 50);
                               }
                             });
                           }}
@@ -273,7 +298,13 @@ export default function HomePage() {
                               {outstandingBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                             </AutoShrinkText>
                           </div>
-                          <button onClick={() => handlePayClick(wallet.id)} className="px-3.5 h-[36px] bg-gradient-to-br from-[#2E1065] to-[#4c1d95] text-white flex flex-row items-center justify-center gap-1.5 shadow-md rounded-[18px] hover:scale-[0.96] active:scale-95 transition-transform group shrink-0">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePayClick(wallet.id);
+                            }} 
+                            className="px-3.5 h-[36px] bg-gradient-to-br from-[#2E1065] to-[#4c1d95] text-white flex flex-row items-center justify-center gap-1.5 shadow-md rounded-[18px] hover:scale-[0.96] active:scale-95 transition-transform group shrink-0"
+                          >
                             <span className="text-[11px] font-bold tracking-wide whitespace-nowrap">{t('home.pay')}</span>
                             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 text-white/90" />
                           </button>
@@ -420,72 +451,58 @@ export default function HomePage() {
             })}
 
             {/* Add New Wallet Empty Card */}
-            <div className="w-full shrink-0 snap-center px-6">
+            <div 
+              onClick={() => activeWalletId !== 'add' && scrollToWalletIndex(wallets.length)}
+              className={`w-full shrink-0 snap-center transition-all duration-300 ${
+                activeWalletId === 'add' ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-75 hover:opacity-90 cursor-pointer'
+              }`}
+            >
               <button 
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setEditingWallet(null);
                   setIsFormOpen(true);
                 }}
                 className="w-full h-full min-h-[220px] bg-white/20 backdrop-blur-md rounded-[32px] p-6 text-[#2E1065] border-2 border-dashed border-white/60 flex flex-col items-center justify-center gap-4 hover:bg-white/30 transition-colors active:scale-95 shadow-sm relative overflow-hidden"
               >
                 <div className="w-16 h-16 rounded-full bg-white/50 flex items-center justify-center shadow-sm relative z-10">
-                  <Plus className="w-8 h-8 text-[#8B5CF6]" strokeWidth={2.5} />
+                  <Plus className="w-8 h-8 text-[#2E1065]" strokeWidth={2.5} />
                 </div>
-                <span className="font-bold text-lg relative z-10 text-[#8B5CF6]">{t('home.addWalletBtn')}</span>
+                <span className="font-bold text-lg relative z-10 text-[#2E1065]">{t('home.addWalletBtn')}</span>
                 
-                <div className="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#8B5CF6] to-transparent pointer-events-none" />
+                <div className="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#2E1065] to-transparent pointer-events-none" />
               </button>
             </div>
           </div>
 
           {/* Pagination Dots */}
-          <div className="flex justify-center items-center gap-1.5 -mt-2 relative z-10">
-            {wallets.map((wallet) => (
-              <div 
+          <div className="flex justify-center items-center gap-2 -mt-2 relative z-10">
+            {wallets.map((wallet, idx) => (
+              <button
                 key={wallet.id}
+                onClick={() => scrollToWalletIndex(idx)}
+                aria-label={`Go to ${wallet.name}`}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
-                  activeWalletId === wallet.id ? 'w-5 bg-[#8B5CF6]' : 'w-1.5 bg-[#2E1065]/20'
+                  activeWalletId === wallet.id 
+                    ? 'w-6 bg-[#2E1065] dark:bg-purple-300 shadow-[0_2px_8px_rgba(46,16,101,0.35)]' 
+                    : 'w-1.5 bg-[#2E1065]/20 hover:bg-[#2E1065]/50'
                 }`}
               />
             ))}
-            <div 
+            <button
+              onClick={() => scrollToWalletIndex(wallets.length)}
+              aria-label="Go to add wallet"
               className={`h-1.5 rounded-full transition-all duration-300 ${
-                activeWalletId === 'add' ? 'w-5 bg-[#8B5CF6]' : 'w-1.5 bg-[#2E1065]/20'
+                activeWalletId === 'add' 
+                  ? 'w-6 bg-[#2E1065] dark:bg-purple-300 shadow-[0_2px_8px_rgba(46,16,101,0.35)]' 
+                  : 'w-1.5 bg-[#2E1065]/20 hover:bg-[#2E1065]/50'
               }`}
             />
           </div>
         </div>
 
-        {/* Today's Expense Card */}
-        {todayExpense > 0 && (
-          <div className="px-6 mb-6 shrink-0">
-            <div className="bg-gradient-to-br from-rose-500/10 to-rose-500/5 backdrop-blur-md rounded-[24px] p-4 border border-rose-500/20 shadow-[0_4px_20px_rgba(244,63,94,0.05)] flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-[14px] bg-white flex flex-col items-center shrink-0 shadow-[0_8px_16px_rgba(225,29,72,0.12)] border border-rose-100/50 overflow-hidden">
-                  <div className="w-full h-4 bg-gradient-to-r from-rose-500 to-pink-500 flex items-center justify-center">
-                    <span className="text-[9px] font-bold text-white uppercase tracking-wider shadow-sm">
-                      {new Intl.DateTimeFormat(language === 'en' ? 'en-US' : 'th-TH', { month: 'short' }).format(now)}
-                    </span>
-                  </div>
-                  <div className="flex-1 flex items-center justify-center bg-gradient-to-b from-white to-rose-50/50 w-full relative">
-                    <span className="text-[20px] font-black text-rose-600 tracking-tight leading-none">
-                      {now.getDate()}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[#2E1065] font-extrabold text-[15px]">ยอดใช้จ่ายวันนี้</span>
-                  <span className="text-[11px] font-medium text-[#2E1065]/60 mt-0.5 tracking-wide">
-                    รวมทุกรายการแล้ว
-                  </span>
-                </div>
-              </div>
-              <span className="text-[22px] font-black text-rose-600 tracking-tight">
-                -฿{todayExpense.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-              </span>
-            </div>
-          </div>
-        )}
+        {/* Today's Expense Widget */}
+        <TodayExpenseWidget />
 
         {/* Transactions List */}
         <div className="px-6 flex-1 flex flex-col">

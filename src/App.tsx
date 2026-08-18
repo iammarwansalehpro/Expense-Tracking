@@ -8,7 +8,9 @@ import { useThemeStore } from '@/store/useThemeStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { getUserFavorites, fetchCategories, getAppInfo } from '@/services/transactionService';
 import { getUserWallets, saveUserWallets } from '@/services/walletService';
+import { getUserSettings } from '@/services/settingsService';
 import { useWalletStore } from '@/store/useWalletStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 import HomePage from '@/pages/HomePage';
 import OverviewPage from '@/pages/OverviewPage';
 import AnalyticsPage from '@/pages/AnalyticsPage';
@@ -106,6 +108,9 @@ function App() {
       });
       fetchCategories().then(cats => {
         useAppStore.getState().setAppCategories(cats);
+      });
+      getUserSettings(user.uid).then(settings => {
+        useSettingsStore.getState().loadUserDailyBudget(user.uid, settings?.dailyBudget);
       });
     } else {
       useTransactionStore.getState().stopSync();

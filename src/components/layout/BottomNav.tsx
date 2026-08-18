@@ -63,7 +63,9 @@ export default function BottomNav() {
     { id: 'settings', icon: User, index: 4 },
   ];
 
-  const activeIndex = navItems.find(i => i.id === currentPage)?.index || 0;
+  const activeItem = navItems.find(i => i.id === currentPage);
+  const activeIndex = activeItem ? activeItem.index : -1;
+  const isNavActive = activeIndex !== -1 && currentPage !== 'add';
 
   const handleScanClick = () => {
     setAddMenuOpen(false);
@@ -244,7 +246,7 @@ export default function BottomNav() {
                   useAppStore.getState().setVoiceModalOpen(true);
                   setAddMenuOpen(false);
                 }}
-                className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_32px_rgba(168,85,247,0.3)] border bg-gradient-to-tr from-[#A855F7] to-[#6D28D9] border-white/30 text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
+                className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_32px_rgba(46,16,101,0.35)] border bg-gradient-to-tr from-[#2E1065] to-[#4C1D95] border-white/30 text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
               >
                 <Mic className="w-[22px] h-[22px] relative z-10" />
               </button>
@@ -252,16 +254,18 @@ export default function BottomNav() {
 
           </div>
 
-          {/* Floating Navigation Bar (Glassmorphism) */}
-          <div className="bg-white/40 dark:bg-[#1E1035]/80 backdrop-blur-[24px] saturate-[180%] h-16 shadow-[0_8px_32px_rgba(31,38,135,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-50 rounded-[2rem] border border-white/60 dark:border-white/10 px-2 transition-colors duration-500">
+          {/* Floating Navigation Bar (Glassmorphism Capsule) */}
+          <div className="bg-white/40 dark:bg-[#1E1035]/80 backdrop-blur-[24px] saturate-[180%] h-16 shadow-[0_8px_32px_rgba(31,38,135,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-50 rounded-full border border-white/60 dark:border-white/10 px-2 transition-colors duration-500">
             <div className="grid grid-cols-5 h-full relative items-center">
               
-              {/* Animated Active Pill */}
+              {/* Animated Active Capsule Pill (Ultra-Translucent Frosted Glass) */}
               <div 
-                className="absolute h-12 bg-white/60 dark:bg-white/15 rounded-full transition-all duration-300 ease-out z-0 shadow-sm border border-white/60 dark:border-white/10"
+                className={`absolute h-[50px] bg-gradient-to-b from-white/55 via-white/35 to-white/20 dark:from-white/20 dark:via-white/10 dark:to-white/5 rounded-full transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-0 shadow-[0_4px_16px_rgba(46,16,101,0.08),inset_0_1.5px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(255,255,255,0.25)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.4),inset_0_1.5px_1px_rgba(255,255,255,0.25)] border border-white/65 dark:border-white/20 backdrop-blur-xl saturate-[180%] ${
+                  isNavActive ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
+                }`}
                 style={{ 
-                  width: 'calc(20% - 10px)', 
-                  left: `calc(${activeIndex * 20}% + 5px)`,
+                  width: 'calc(20% - 6px)', 
+                  left: `calc(${Math.max(0, activeIndex) * 20}% + 3px)`,
                   top: '50%',
                   transform: 'translateY(-50%)'
                 }}
@@ -280,11 +284,11 @@ export default function BottomNav() {
                     key={item.id}
                     onClick={() => setCurrentPage(item.id as PageId)}
                     className={`w-full h-full flex flex-col items-center justify-center relative z-10 transition-colors duration-300 ${
-                      isActive ? 'text-[#2E1065] dark:text-purple-200' : 'text-[#2E1065]/40 dark:text-white/40 hover:text-[#2E1065]/70 dark:hover:text-white/70'
+                      isActive ? 'text-[#2E1065] dark:text-purple-200' : 'text-[#2E1065]/40 dark:text-white/40 hover:text-[#2E1065] dark:hover:text-white'
                     }`}
                   >
                     <Icon 
-                      className={`w-6 h-6 transition-transform duration-300 ${isActive ? 'scale-110' : 'scale-100'}`} 
+                      className={`w-6 h-6 transition-all duration-300 ${isActive ? 'scale-110 drop-shadow-[0_2px_8px_rgba(46,16,101,0.2)]' : 'scale-100'}`} 
                       strokeWidth={isActive ? 2.5 : 2} 
                     />
                   </button>
@@ -292,11 +296,11 @@ export default function BottomNav() {
               })}
             </div>
 
-            {/* Floating Action Button (FAB) - Glassmorphism */}
+            {/* Floating Action Button (FAB) - Navy Theme */}
             <button
               onClick={() => setAddMenuOpen(!isAddMenuOpen)}
-              className={`absolute left-1/2 -translate-x-1/2 -top-6 w-16 h-16 rounded-full flex items-center justify-center text-white shadow-[0_8px_32px_rgba(139,92,246,0.3)] z-50 transition-all duration-300 ease-out border border-white/40 backdrop-blur-md ${
-                isAddMenuOpen ? 'rotate-[135deg] bg-gradient-to-tr from-pink-400 to-rose-400' : 'bg-gradient-to-tr from-[#A855F7] to-[#8B5CF6] hover:scale-105'
+              className={`absolute left-1/2 -translate-x-1/2 -top-6 w-16 h-16 rounded-full flex items-center justify-center text-white shadow-[0_8px_32px_rgba(46,16,101,0.4)] z-50 transition-all duration-300 ease-out border border-white/40 backdrop-blur-md ${
+                isAddMenuOpen ? 'rotate-[135deg] bg-gradient-to-tr from-pink-400 to-rose-400' : 'bg-gradient-to-tr from-[#2E1065] via-[#3B1278] to-[#581C87] hover:scale-105'
               }`}
             >
               <Plus className="w-7 h-7" strokeWidth={2.5} />
