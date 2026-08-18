@@ -162,8 +162,9 @@ export default function TodayExpenseWidget() {
                 <span className={`text-[23px] font-black tracking-tight ${
                   stats.todayExpense > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-[#2E1065]/70 dark:text-white/70'
                 }`}>
-                  {stats.todayExpense > 0 ? `-${stats.todayExpense.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '฿0.00'}
-                  {stats.todayExpense > 0 && <span className="text-[14px] font-bold ml-1 opacity-80">฿</span>}
+                  {stats.todayExpense > 0 
+                    ? `-฿${stats.todayExpense.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
+                    : '฿0.00'}
                 </span>
               </div>
             </div>
