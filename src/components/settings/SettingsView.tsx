@@ -27,6 +27,7 @@ import { APP_VERSION } from '@/lib/constants';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useTranslation } from '@/hooks/useTranslation';
+import PremiumThemeSwitch from '@/components/ui/PremiumThemeSwitch';
 import { EditProfileModal, FontSelectModal, AboutModal, PrivacyPolicyModal, ExportImportModal, AdminAppInfoModal, AdminCategoryModal, AdminAiModal, AdminUsersModal } from './SettingsModals';
 
 type ModalType = 'none' | 'profile' | 'font' | 'about' | 'privacy' | 'export' | 'adminApp' | 'adminCategory' | 'adminAi' | 'adminUsers';
@@ -276,37 +277,11 @@ export default function SettingsView() {
                 </div>
 
                 {item.action === 'toggle-theme' ? (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleTheme();
-                    }}
-                    className="relative w-12 h-7 rounded-full transition-colors duration-300"
-                    style={{
-                      background:
-                        theme === 'dark'
-                          ? 'var(--color-primary)'
-                          : 'var(--skeleton-base)',
-                    }}
-                  >
-                    <div
-                      className="absolute top-0.5 w-6 h-6 rounded-full flex items-center justify-center transition-transform duration-300"
-                      style={{
-                        background: 'white',
-                        transform:
-                          theme === 'dark'
-                            ? 'translateX(22px)'
-                            : 'translateX(2px)',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
-                      }}
-                    >
-                      {theme === 'dark' ? (
-                        <Moon size={12} color="#0d9488" />
-                      ) : (
-                        <Sun size={12} color="#f59e0b" />
-                      )}
-                    </div>
-                  </button>
+                  <PremiumThemeSwitch
+                    checked={theme === 'dark'}
+                    onChange={toggleTheme}
+                    size="md"
+                  />
                 ) : (
                   <ChevronRight
                     size={18}
