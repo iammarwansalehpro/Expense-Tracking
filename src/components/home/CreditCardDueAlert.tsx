@@ -130,12 +130,12 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
             : (absDays === 1 ? 'เลยกำหนดชำระ 1 วัน' : `เลยกำหนดชำระแล้ว ${absDays} วัน`),
           icon: ShieldAlert,
           iconAnimation: 'animate-float-subtle',
-          cardBg: 'bg-rose-50/95 dark:bg-[#2A0C16]/90',
-          cardBorder: 'border-rose-200/90 dark:border-rose-800/60 shadow-[0_4px_20px_rgba(225,29,72,0.09)]',
-          glowGradient: 'from-rose-500/20 via-rose-500/5 to-transparent',
-          accentText: 'text-rose-600 dark:text-rose-400',
-          iconContainerBg: 'bg-gradient-to-br from-rose-500/20 via-rose-500/10 to-red-500/20 border-rose-300/70 dark:border-rose-700/60 text-rose-600 dark:text-rose-400',
-          buttonBg: 'bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white shadow-rose-500/25',
+          cardBg: 'bg-gradient-to-r from-rose-100/90 via-rose-50/80 to-pink-50/90 dark:from-rose-950/70 dark:via-rose-900/40 dark:to-pink-950/50',
+          cardBorder: 'border-rose-300/80 dark:border-rose-700/60 shadow-[0_4px_24px_rgba(225,29,72,0.12)]',
+          glowGradient: 'from-rose-500/25 via-rose-500/10 to-transparent',
+          accentText: 'text-rose-700 dark:text-rose-300',
+          iconContainerBg: 'bg-gradient-to-br from-rose-500/25 via-rose-500/15 to-red-500/25 border-rose-300/80 dark:border-rose-600/70 text-rose-600 dark:text-rose-400',
+          buttonBg: 'bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white shadow-rose-500/30',
           hasRadar: true
         };
       }
@@ -144,12 +144,12 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
           title: language === 'en' ? 'Due today!' : 'ครบกำหนดชำระวันนี้!',
           icon: Flame,
           iconAnimation: 'animate-pulse-slow',
-          cardBg: 'bg-orange-50/95 dark:bg-[#2A1408]/90',
-          cardBorder: 'border-orange-200/90 dark:border-orange-800/60 shadow-[0_4px_20px_rgba(234,88,12,0.09)]',
-          glowGradient: 'from-orange-500/20 via-amber-500/5 to-transparent',
-          accentText: 'text-orange-600 dark:text-orange-400',
-          iconContainerBg: 'bg-gradient-to-br from-orange-500/20 via-amber-500/10 to-yellow-500/20 border-orange-300/70 dark:border-orange-700/60 text-orange-600 dark:text-orange-400',
-          buttonBg: 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-orange-500/25',
+          cardBg: 'bg-gradient-to-r from-orange-100/90 via-amber-50/80 to-orange-50/90 dark:from-orange-950/70 dark:via-orange-900/40 dark:to-amber-950/50',
+          cardBorder: 'border-orange-300/80 dark:border-orange-700/60 shadow-[0_4px_24px_rgba(234,88,12,0.12)]',
+          glowGradient: 'from-orange-500/25 via-amber-500/10 to-transparent',
+          accentText: 'text-orange-700 dark:text-orange-300',
+          iconContainerBg: 'bg-gradient-to-br from-orange-500/25 via-amber-500/15 to-yellow-500/25 border-orange-300/80 dark:border-orange-600/70 text-orange-600 dark:text-orange-400',
+          buttonBg: 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-orange-500/30',
           hasRadar: true
         };
       case 'urgent':
@@ -159,12 +159,12 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
             : (language === 'en' ? `Due in ${alert.daysUntilDue} days` : `จะครบกำหนดในอีก ${alert.daysUntilDue} วัน`),
           icon: Clock,
           iconAnimation: 'animate-float-subtle',
-          cardBg: 'bg-amber-50/90 dark:bg-[#261B06]/90',
-          cardBorder: 'border-amber-200/90 dark:border-amber-800/60 shadow-[0_4px_20px_rgba(217,119,6,0.08)]',
-          glowGradient: 'from-amber-500/18 via-yellow-500/5 to-transparent',
-          accentText: 'text-amber-700 dark:text-amber-400',
-          iconContainerBg: 'bg-gradient-to-br from-amber-500/20 via-yellow-500/10 to-amber-500/20 border-amber-300/70 dark:border-amber-700/60 text-amber-600 dark:text-amber-400',
-          buttonBg: 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-amber-500/25',
+          cardBg: 'bg-gradient-to-r from-amber-100/85 via-yellow-50/75 to-amber-50/85 dark:from-amber-950/60 dark:via-yellow-900/35 dark:to-amber-950/45',
+          cardBorder: 'border-amber-300/80 dark:border-amber-700/60 shadow-[0_4px_24px_rgba(217,119,6,0.1)]',
+          glowGradient: 'from-amber-500/22 via-yellow-500/10 to-transparent',
+          accentText: 'text-amber-800 dark:text-amber-300',
+          iconContainerBg: 'bg-gradient-to-br from-amber-500/25 via-yellow-500/15 to-amber-500/25 border-amber-300/80 dark:border-amber-600/70 text-amber-600 dark:text-amber-400',
+          buttonBg: 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-amber-500/30',
           hasRadar: false
         };
       case 'warning':
@@ -173,12 +173,12 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
           title: language === 'en' ? `Due in ${alert.daysUntilDue} days` : `จะครบกำหนดในอีก ${alert.daysUntilDue} วัน`,
           icon: BellRing,
           iconAnimation: 'animate-bell-ring',
-          cardBg: 'bg-purple-50/90 dark:bg-[#1E1035]/90',
-          cardBorder: 'border-purple-200/80 dark:border-purple-900/60 shadow-[0_4px_20px_rgba(139,92,246,0.08)]',
-          glowGradient: 'from-purple-500/18 via-indigo-500/5 to-transparent',
-          accentText: 'text-purple-700 dark:text-purple-300',
-          iconContainerBg: 'bg-gradient-to-br from-purple-500/20 via-violet-500/10 to-indigo-500/20 border-purple-300/70 dark:border-purple-700/60 text-purple-600 dark:text-purple-400',
-          buttonBg: 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-purple-500/25',
+          cardBg: 'bg-gradient-to-r from-purple-100/85 via-violet-50/75 to-indigo-50/85 dark:from-purple-950/60 dark:via-violet-900/35 dark:to-indigo-950/45',
+          cardBorder: 'border-purple-300/80 dark:border-purple-700/60 shadow-[0_4px_24px_rgba(139,92,246,0.1)]',
+          glowGradient: 'from-purple-500/22 via-indigo-500/10 to-transparent',
+          accentText: 'text-purple-800 dark:text-purple-300',
+          iconContainerBg: 'bg-gradient-to-br from-purple-500/25 via-violet-500/10 to-indigo-500/20 border-purple-300/80 dark:border-purple-700/60 text-purple-600 dark:text-purple-400',
+          buttonBg: 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-purple-500/30',
           hasRadar: false
         };
     }
