@@ -1,8 +1,9 @@
-import { Grid, Bell, ChevronDown, ChevronUp, ArrowDown, ArrowUp, Eye, Landmark, Wallet as WalletIcon, ChevronRight, Edit2, Trash2, Plus, ArrowLeftRight, CreditCard as CreditCardIcon, ArrowRight, Activity } from 'lucide-react';
+import { Grid, Bell, ChevronDown, ChevronUp, ArrowDown, ArrowUp, Eye, Landmark, Wallet as WalletIcon, ChevronRight, Edit2, Trash2, Plus, ArrowLeftRight, CreditCard as CreditCardIcon, ArrowRight, Activity, Sun, Sunset, Moon, Sparkles, Wifi } from 'lucide-react';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useWalletStore } from '@/store/useWalletStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getIconComponent, getCategoryStyle } from '@/utils/categoryStyles';
 import WalletFormModal from '@/components/ui/WalletFormModal';
@@ -10,12 +11,14 @@ import AppHeader from '@/components/layout/AppHeader';
 import { useConfirmStore } from '@/store/useConfirmStore';
 import { useToastStore } from '@/store/useToastStore';
 import AutoShrinkText from '@/components/ui/AutoShrinkText';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import CreditCardDueAlert from '@/components/home/CreditCardDueAlert';
 import CreditCardPaymentModal from '@/components/ui/CreditCardPaymentModal';
 import TransactionDetailsModal from '@/components/ui/TransactionDetailsModal';
 import { calculateCreditCardStats } from '@/utils/creditCardUtils';
 import TodayExpenseWidget from '@/components/home/TodayExpenseWidget';
+import EMVChip3D from '@/components/ui/EMVChip3D';
+
 export default function HomePage() {
   const transactions = useTransactionStore((s) => s.transactions);
   const appName = useAppStore(s => s.appName);
@@ -23,6 +26,8 @@ export default function HomePage() {
   const appIconName = useAppStore(s => s.appIcon);
   const appCategories = useAppStore(s => s.appCategories);
   const setCurrentPage = useAppStore(s => s.setCurrentPage);
+  const user = useAuthStore(s => s.user);
+  const dailyBudget = useSettingsStore(s => s.dailyBudget);
   
   const { t, language } = useTranslation();
   const setLanguage = useSettingsStore(s => s.setLanguage);
@@ -155,6 +160,53 @@ export default function HomePage() {
 
   const activeWalletStats = getWalletStats(activeWallet?.id || '');
 
+  // Dynamic Greeting & Smart Financial Pulse calculation
+  const greetingConfig = useMemo(() => {
+    const hour = now.getHours();
+    let text = t('home.greetingMorning');
+    let Icon = Sun;
+    let iconColor = 'text-amber-500';
+
+    if (hour >= 5 && hour < 12) {
+      text = t('home.greetingMorning');
+      Icon = Sun;
+      iconColor = 'text-amber-500';
+    } else if (hour >= 12 && hour < 17) {
+      text = t('home.greetingAfternoon');
+      Icon = Sun;
+      iconColor = 'text-orange-500';
+    } else if (hour >= 17 && hour < 21) {
+      text = t('home.greetingEvening');
+      Icon = Sunset;
+      iconColor = 'text-rose-500';
+    } else {
+      text = t('home.greetingNight');
+      Icon = Moon;
+      iconColor = 'text-indigo-400';
+    }
+
+    const userName = user?.displayName ? user.displayName.split(' ')[0] : '';
+    
+    // Smart Daily Pulse calculation (without emojis)
+    let pulseText = t('home.pulseGreat');
+    let pulseDotColor = 'bg-emerald-500';
+    const target = dailyBudget > 0 ? dailyBudget : 500;
+    const remaining = target - todayExpense;
+
+    if (todayExpense === 0) {
+      pulseText = t('home.pulseGreat');
+      pulseDotColor = 'bg-emerald-500';
+    } else if (remaining >= 0) {
+      pulseText = t('home.pulseUnderBudget').replace('{amount}', remaining.toLocaleString('en-US', { maximumFractionDigits: 0 }));
+      pulseDotColor = 'bg-emerald-500';
+    } else {
+      pulseText = t('home.pulseOverBudget').replace('{amount}', Math.abs(remaining).toLocaleString('en-US', { maximumFractionDigits: 0 }));
+      pulseDotColor = 'bg-rose-500';
+    }
+
+    return { text, userName, Icon, iconColor, pulseText, pulseDotColor };
+  }, [user, language, dailyBudget, todayExpense]);
+
   // Take only first 4 items for home screen
   // Filter out the destination side of transfers for global display to avoid duplicates
   const displayTransactions = transactions.filter(t => t.type !== 'transfer' || t.walletId === t.fromWalletId);
@@ -165,16 +217,57 @@ export default function HomePage() {
       <AppHeader />
 
       {/* Main Scrollable Area */}
-      <div className="flex-1 flex flex-col pt-2 pb-32 no-scrollbar">
+      <div className="flex-1 flex flex-col pt-1 pb-32 no-scrollbar">
         
+        {/* 🌟 Compact 1-Row Header with Wide Smooth Ultra-Clear Glass Ticker Badge */}
+        <div className="px-6 mb-4 sm:mb-5 flex items-center justify-between gap-2.5 sm:gap-3 animate-fade-in">
+          {/* Left: Compact Greeting + User Name */}
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-white/25 dark:bg-white/[0.07] backdrop-blur-2xl flex items-center justify-center shrink-0 shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.8)] dark:shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.15)] border border-white/70 dark:border-white/20">
+              <greetingConfig.Icon className={`w-4 h-4 ${greetingConfig.iconColor}`} />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-none">
+                {greetingConfig.text}
+              </span>
+              <span className="text-[13px] font-black text-[#2E1065] dark:text-white leading-tight mt-0.5 max-w-[80px] sm:max-w-[110px] truncate">
+                {greetingConfig.userName || appName}
+              </span>
+            </div>
+          </div>
+
+          {/* Right: Ultra-Clear Crystal Glass Ticker Badge (ใสและ Glassmorphic ระดับสูง) */}
+          <div className="flex-1 min-w-0 relative flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white/15 dark:bg-white/[0.05] backdrop-blur-2xl border border-white/70 dark:border-white/20 shadow-[0_4px_20px_rgba(31,38,135,0.06),inset_0_1px_1.5px_rgba(255,255,255,0.85)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3),inset_0_1px_1.5px_rgba(255,255,255,0.15)] overflow-hidden group/ticker transition-all duration-300">
+            {/* Top Specular Glass Reflection Sheen */}
+            <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/90 dark:via-white/40 to-transparent pointer-events-none" />
+
+            <span className={`w-2 h-2 rounded-full ${greetingConfig.pulseDotColor} shrink-0 ring-2 ring-white/50 dark:ring-white/10`} />
+            <div 
+              className="relative overflow-hidden w-full whitespace-nowrap text-xs font-bold text-[#2E1065] dark:text-purple-100 select-none"
+              style={{
+                maskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)'
+              }}
+            >
+              <div className="inline-block animate-ticker-scroll group-hover/ticker:[animation-play-state:paused] group-active/ticker:[animation-play-state:paused]">
+                <span className="inline-block px-3">{greetingConfig.pulseText}</span>
+                <span className="inline-block text-[#2E1065]/30 dark:text-white/30 font-normal">•</span>
+                <span className="inline-block px-3">{greetingConfig.pulseText}</span>
+                <span className="inline-block text-[#2E1065]/30 dark:text-white/30 font-normal">•</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 💎 3D Credit Card Due Alert Component */}
         <CreditCardDueAlert onPayClick={handlePayClick} />
 
         {/* Wallet Carousel */}
-        <div className="w-full mb-8 relative">
+        <div className="w-full mb-6 sm:mb-8 relative">
           <div 
             ref={scrollContainerRef}
             onScroll={handleScroll}
-            className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth pb-8 pt-4 -mt-4 items-stretch gap-3 px-6"
+            className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth pb-6 pt-1 items-stretch gap-3.5 px-6"
           >
             {wallets.map((wallet, idx) => {
               const isSelected = activeWalletId === wallet.id;
@@ -204,8 +297,11 @@ export default function HomePage() {
                     isSelected ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-75 hover:opacity-90 cursor-pointer'
                   }`}
                 >
-                  <div className={`w-full h-full flex flex-col bg-white/40 backdrop-blur-xl rounded-[32px] p-6 text-[#2E1065] shadow-[0_8px_32px_rgba(31,38,135,0.1)] border border-white/50 relative transition-colors ${wallet.color}`}>
+                  <div className={`w-full h-full flex flex-col bg-white/40 backdrop-blur-xl rounded-[32px] p-6 text-[#2E1065] shadow-[0_8px_32px_rgba(31,38,135,0.1)] border border-white/50 relative overflow-hidden transition-colors ${wallet.color}`}>
                     
+                    {/* Top Specular Glass Reflection Sheen */}
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/80 dark:via-white/40 to-transparent pointer-events-none" />
+
                     {/* Inline Actions (Edit/Delete) */}
                     <div className="absolute top-4 right-4 z-20 flex flex-col gap-2">
                       {!isCreditCard && (
@@ -214,7 +310,7 @@ export default function HomePage() {
                             e.stopPropagation();
                             useAppStore.getState().setTransferModalOpen(true);
                           }}
-                          className="w-8 h-8 rounded-full bg-white/60 backdrop-blur-md flex items-center justify-center shadow-sm border border-white/50 transition-all text-[#2E1065]/70 hover:text-[#8B5CF6] hover:bg-white"
+                          className="w-8 h-8 rounded-full bg-white/60 backdrop-blur-md flex items-center justify-center shadow-sm border border-white/50 transition-all text-[#2E1065]/70 hover:text-[#8B5CF6] hover:bg-white active:scale-90"
                         >
                           <ArrowLeftRight className="w-4 h-4" />
                         </button>
@@ -225,7 +321,7 @@ export default function HomePage() {
                           setEditingWallet(wallet);
                           setIsFormOpen(true);
                         }}
-                        className="w-8 h-8 rounded-full bg-white/60 backdrop-blur-md flex items-center justify-center shadow-sm border border-white/50 transition-all text-[#2E1065]/70 hover:text-[#8B5CF6] hover:bg-white"
+                        className="w-8 h-8 rounded-full bg-white/60 backdrop-blur-md flex items-center justify-center shadow-sm border border-white/50 transition-all text-[#2E1065]/70 hover:text-[#8B5CF6] hover:bg-white active:scale-90"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
@@ -255,14 +351,14 @@ export default function HomePage() {
                               }
                             });
                           }}
-                          className="w-8 h-8 rounded-full bg-white/60 backdrop-blur-md flex items-center justify-center shadow-sm border border-white/50 transition-all text-[#2E1065]/70 hover:text-red-500 hover:bg-white"
+                          className="w-8 h-8 rounded-full bg-white/60 backdrop-blur-md flex items-center justify-center shadow-sm border border-white/50 transition-all text-[#2E1065]/70 hover:text-red-500 hover:bg-white active:scale-90"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       )}
                     </div>
 
-                    {/* Top Row */}
+                    {/* Top Row: Name + Badges + 3D EMV Chip */}
                     <div className="flex items-center justify-between mb-2 relative z-10 pr-10">
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-white/50 backdrop-blur-sm rounded-full shadow-sm max-w-[150px] border-white/40">
@@ -281,6 +377,14 @@ export default function HomePage() {
                           </span>
                         )}
                       </div>
+
+                      {/* 💳 3D Metallic EMV Chip for Credit Cards / Bank Wallets */}
+                      {isCreditCard && (
+                        <div className="hidden sm:flex items-center gap-2">
+                          <Wifi className="w-4 h-4 text-[#2E1065]/40 rotate-90" />
+                          <EMVChip3D variant="gold" />
+                        </div>
+                      )}
                     </div>
 
                     {/* Balance */}

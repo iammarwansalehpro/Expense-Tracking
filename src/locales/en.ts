@@ -52,7 +52,16 @@ export const en: Translations = {
     equalYesterday: 'Equal to yesterday',
     spentToday: 'Spent today',
     setBudgetSuccess: 'Daily budget set successfully',
-    invalidAmount: 'Please enter a valid amount'
+    invalidAmount: 'Please enter a valid amount',
+    greetingMorning: 'Good morning',
+    greetingAfternoon: 'Good afternoon',
+    greetingEvening: 'Good evening',
+    greetingNight: 'Good night',
+    pulseGreat: 'Zero expenses recorded today. Great job',
+    pulseUnderBudget: 'On track! ฿{amount} remaining in budget',
+    pulseOverBudget: 'Over budget by ฿{amount} today',
+    totalNetWorth: 'Total Net Worth',
+    availableCash: 'Available Cash'
   },
   nav: {
     home: 'Home',

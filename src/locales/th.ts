@@ -50,7 +50,16 @@ export const th = {
     equalYesterday: 'เท่ากับเมื่อวาน',
     spentToday: 'วันนี้ใช้ไป',
     setBudgetSuccess: 'ตั้งเป้าหมายรายวันเรียบร้อยแล้ว',
-    invalidAmount: 'กรุณาระบุจำนวนเงินที่ถูกต้อง'
+    invalidAmount: 'กรุณาระบุจำนวนเงินที่ถูกต้อง',
+    greetingMorning: 'สวัสดีตอนเช้า',
+    greetingAfternoon: 'สวัสดีตอนบ่าย',
+    greetingEvening: 'สวัสดีตอนเย็น',
+    greetingNight: 'สวัสดีตอนค่ำ',
+    pulseGreat: 'คุมงบได้ดีเยี่ยม วันนี้ยังไม่มีรายจ่าย',
+    pulseUnderBudget: 'วันนี้คุมงบได้ดีเยี่ยม เหลืออีก ฿{amount}',
+    pulseOverBudget: 'วันนี้ใช้เกินงบไป ฿{amount} ระวังด้วยนะ',
+    totalNetWorth: 'ยอดเงินสุทธิรวม',
+    availableCash: 'เงินสดพร้อมใช้'
   },
   nav: {
     home: 'หน้าหลัก',

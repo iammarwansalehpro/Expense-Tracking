@@ -20,6 +20,45 @@
   --animate-bell-ring: bell-ring 3s cubic-bezier(0.25, 1, 0.5, 1) infinite;
   --animate-float-subtle: float-subtle 3s ease-in-out infinite;
   --animate-radar: radar 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  --animate-shield-tilt: shield-tilt 4s ease-in-out infinite;
+  --animate-flame-flicker: flame-flicker 2.2s ease-in-out infinite;
+  --animate-chrono-tick: chrono-tick 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  --animate-bell-chime: bell-chime 3.8s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+  --animate-ticker-scroll: ticker-scroll 20s linear infinite;
+
+  @keyframes ticker-scroll {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-50%); }
+  }
+
+  @keyframes shield-tilt {
+    0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+    25% { transform: translateY(-2px) rotate(-3deg) scale(1.03); }
+    75% { transform: translateY(1px) rotate(3deg) scale(0.98); }
+  }
+
+  @keyframes flame-flicker {
+    0%, 100% { transform: scale(1) translateY(0); filter: drop-shadow(0 4px 10px rgba(249,115,22,0.35)); }
+    50% { transform: scale(1.06) translateY(-2.5px); filter: drop-shadow(0 8px 16px rgba(249,115,22,0.55)); }
+  }
+
+  @keyframes chrono-tick {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    8% { transform: rotate(7deg) scale(1.03); }
+    16% { transform: rotate(-5deg) scale(1); }
+    24% { transform: rotate(3deg); }
+    32% { transform: rotate(0deg); }
+  }
+
+  @keyframes bell-chime {
+    0%, 100% { transform: rotate(0deg); transform-origin: top center; }
+    5% { transform: rotate(14deg); }
+    10% { transform: rotate(-12deg); }
+    15% { transform: rotate(8deg); }
+    20% { transform: rotate(-5deg); }
+    25% { transform: rotate(2deg); }
+    30% { transform: rotate(0deg); }
+  }
 
   @keyframes bell-ring {
     0%, 100% { transform: rotate(0deg); }
@@ -27,7 +66,7 @@
     8%, 16% { transform: rotate(-12deg); }
     20% { transform: rotate(6deg); }
     24% { transform: rotate(-4deg); }
-    28% { transform: rotate(0deg); }
+    30% { transform: rotate(0deg); }
   }
 
   @keyframes float-subtle {
