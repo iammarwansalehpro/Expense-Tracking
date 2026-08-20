@@ -17,6 +17,28 @@
   --animate-typing: typing-smooth 1.5s cubic-bezier(0.4, 0, 0.2, 1);
   --animate-blink: blink 1s step-end infinite;
   --animate-pulse-slow: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-bell-ring: bell-ring 3s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+  --animate-float-subtle: float-subtle 3s ease-in-out infinite;
+  --animate-radar: radar 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+
+  @keyframes bell-ring {
+    0%, 100% { transform: rotate(0deg); }
+    4%, 12% { transform: rotate(12deg); }
+    8%, 16% { transform: rotate(-12deg); }
+    20% { transform: rotate(6deg); }
+    24% { transform: rotate(-4deg); }
+    28% { transform: rotate(0deg); }
+  }
+
+  @keyframes float-subtle {
+    0%, 100% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(-2px) scale(1.05); }
+  }
+
+  @keyframes radar {
+    0% { transform: scale(0.95); opacity: 0.75; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
 
   @keyframes fade-in {
     from { opacity: 0; }
