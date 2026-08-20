@@ -16,6 +16,7 @@ import CreditCardDueAlert from '@/components/home/CreditCardDueAlert';
 import CreditCardPaymentModal from '@/components/ui/CreditCardPaymentModal';
 import TransactionDetailsModal from '@/components/ui/TransactionDetailsModal';
 import { calculateCreditCardStats } from '@/utils/creditCardUtils';
+import { generateSmartInsights } from '@/utils/smartFinancialAdvisor';
 import TodayExpenseWidget from '@/components/home/TodayExpenseWidget';
 import EMVChip3D from '@/components/ui/EMVChip3D';
 
@@ -160,7 +161,7 @@ export default function HomePage() {
 
   const activeWalletStats = getWalletStats(activeWallet?.id || '');
 
-  // Dynamic Greeting & Smart Financial Pulse calculation
+  // Dynamic Greeting & Smart Financial Advisor Companion
   const greetingConfig = useMemo(() => {
     const hour = now.getHours();
     let text = t('home.greetingMorning');
@@ -187,25 +188,26 @@ export default function HomePage() {
 
     const userName = user?.displayName ? user.displayName.split(' ')[0] : '';
     
-    // Smart Daily Pulse calculation (without emojis)
-    let pulseText = t('home.pulseGreat');
-    let pulseDotColor = 'bg-emerald-500';
-    const target = dailyBudget > 0 ? dailyBudget : 500;
-    const remaining = target - todayExpense;
+    // Generate Smart, Personal, Empathic Financial Advisor Insights
+    const advisor = generateSmartInsights({
+      transactions,
+      wallets,
+      dailyBudget,
+      user,
+      language: (language as 'th' | 'en') || 'th',
+      now
+    });
 
-    if (todayExpense === 0) {
-      pulseText = t('home.pulseGreat');
-      pulseDotColor = 'bg-emerald-500';
-    } else if (remaining >= 0) {
-      pulseText = t('home.pulseUnderBudget').replace('{amount}', remaining.toLocaleString('en-US', { maximumFractionDigits: 0 }));
-      pulseDotColor = 'bg-emerald-500';
-    } else {
-      pulseText = t('home.pulseOverBudget').replace('{amount}', Math.abs(remaining).toLocaleString('en-US', { maximumFractionDigits: 0 }));
-      pulseDotColor = 'bg-rose-500';
-    }
-
-    return { text, userName, Icon, iconColor, pulseText, pulseDotColor };
-  }, [user, language, dailyBudget, todayExpense]);
+    return { 
+      text, 
+      userName, 
+      Icon, 
+      iconColor, 
+      pulseDotColor: advisor.primaryDotColor, 
+      pulseGlowColor: advisor.primaryGlowColor,
+      insights: advisor.insights 
+    };
+  }, [user, language, dailyBudget, transactions, wallets]);
 
   // Take only first 4 items for home screen
   // Filter out the destination side of transfers for global display to avoid duplicates
@@ -219,10 +221,10 @@ export default function HomePage() {
       {/* Main Scrollable Area */}
       <div className="flex-1 flex flex-col pt-1 pb-32 no-scrollbar">
         
-        {/* 🌟 Compact 1-Row Header with Wide Smooth Ultra-Clear Glass Ticker Badge */}
-        <div className="px-6 mb-4 sm:mb-5 flex items-center justify-between gap-2.5 sm:gap-3 animate-fade-in">
+        {/* 🌟 Compact 1-Row Header with Clean Seamless Status */}
+        <div className="px-6 mb-4 sm:mb-5 flex items-center justify-between gap-3.5 sm:gap-4 animate-fade-in">
           {/* Left: Compact Greeting + User Name */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0">
             <div className="w-8 h-8 rounded-xl bg-white/25 dark:bg-white/[0.07] backdrop-blur-2xl flex items-center justify-center shrink-0 shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.8)] dark:shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.15)] border border-white/70 dark:border-white/20">
               <greetingConfig.Icon className={`w-4 h-4 ${greetingConfig.iconColor}`} />
             </div>
@@ -230,30 +232,38 @@ export default function HomePage() {
               <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-none">
                 {greetingConfig.text}
               </span>
-              <span className="text-[13px] font-black text-[#2E1065] dark:text-white leading-tight mt-0.5 max-w-[80px] sm:max-w-[110px] truncate">
+              <span className="text-[13px] font-black text-[#2E1065] dark:text-white leading-tight mt-0.5 max-w-[85px] sm:max-w-[120px] truncate">
                 {greetingConfig.userName || appName}
               </span>
             </div>
           </div>
 
-          {/* Right: Ultra-Clear Crystal Glass Ticker Badge (ใสและ Glassmorphic ระดับสูง) */}
-          <div className="flex-1 min-w-0 relative flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white/15 dark:bg-white/[0.05] backdrop-blur-2xl border border-white/70 dark:border-white/20 shadow-[0_4px_20px_rgba(31,38,135,0.06),inset_0_1px_1.5px_rgba(255,255,255,0.85)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3),inset_0_1px_1.5px_rgba(255,255,255,0.15)] overflow-hidden group/ticker transition-all duration-300">
-            {/* Top Specular Glass Reflection Sheen */}
-            <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/90 dark:via-white/40 to-transparent pointer-events-none" />
+          {/* Right: Clean Seamless Status Ticker with Smart Companion Insights & Silky Edge Fade */}
+          <div className="flex-1 min-w-0 relative flex items-center justify-end gap-2.5 py-1 overflow-hidden group/ticker">
+            <span className={`w-2 h-2 rounded-full ${greetingConfig.pulseDotColor} ${greetingConfig.pulseGlowColor} shrink-0 animate-pulse`} />
 
-            <span className={`w-2 h-2 rounded-full ${greetingConfig.pulseDotColor} shrink-0 ring-2 ring-white/50 dark:ring-white/10`} />
+            {/* Silky Fade Viewport (ซ่อนเข้า-ออกขอบแบบละมุน ไม่แหว่ง ไม่สะดุด) */}
             <div 
-              className="relative overflow-hidden w-full whitespace-nowrap text-xs font-bold text-[#2E1065] dark:text-purple-100 select-none"
+              className="relative overflow-hidden w-full whitespace-nowrap text-xs font-semibold text-[#2E1065]/90 dark:text-purple-100 select-none"
               style={{
-                maskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)',
-                WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)'
+                maskImage: 'linear-gradient(to right, transparent 0px, black 14px, black calc(100% - 14px), transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to right, transparent 0px, black 14px, black calc(100% - 14px), transparent 100%)'
               }}
             >
               <div className="inline-block animate-ticker-scroll group-hover/ticker:[animation-play-state:paused] group-active/ticker:[animation-play-state:paused]">
-                <span className="inline-block px-3">{greetingConfig.pulseText}</span>
-                <span className="inline-block text-[#2E1065]/30 dark:text-white/30 font-normal">•</span>
-                <span className="inline-block px-3">{greetingConfig.pulseText}</span>
-                <span className="inline-block text-[#2E1065]/30 dark:text-white/30 font-normal">•</span>
+                {greetingConfig.insights.map((insight, idx) => (
+                  <span key={`primary-${idx}`} className="inline-flex items-center">
+                    <span className="inline-block px-3.5">{insight}</span>
+                    <span className="inline-block text-[#2E1065]/30 dark:text-white/30 font-normal select-none">•</span>
+                  </span>
+                ))}
+                {/* Seamless Marquee Duplication Loop */}
+                {greetingConfig.insights.map((insight, idx) => (
+                  <span key={`dup-${idx}`} className="inline-flex items-center">
+                    <span className="inline-block px-3.5">{insight}</span>
+                    <span className="inline-block text-[#2E1065]/30 dark:text-white/30 font-normal select-none">•</span>
+                  </span>
+                ))}
               </div>
             </div>
           </div>

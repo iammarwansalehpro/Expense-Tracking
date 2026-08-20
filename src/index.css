@@ -24,7 +24,7 @@
   --animate-flame-flicker: flame-flicker 2.2s ease-in-out infinite;
   --animate-chrono-tick: chrono-tick 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   --animate-bell-chime: bell-chime 3.8s cubic-bezier(0.25, 1, 0.5, 1) infinite;
-  --animate-ticker-scroll: ticker-scroll 20s linear infinite;
+  --animate-ticker-scroll: ticker-scroll 26s linear infinite;
 
   @keyframes ticker-scroll {
     0% { transform: translateX(0%); }
