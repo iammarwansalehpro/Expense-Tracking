@@ -1,6 +1,7 @@
 import { useAppStore } from '@/store/useAppStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { getIconComponent } from '@/utils/categoryStyles';
+import PremiumLanguageSwitch from '@/components/ui/PremiumLanguageSwitch';
 
 interface AppHeaderProps {
   pageTitle?: string;
@@ -51,15 +52,8 @@ export default function AppHeader({ pageTitle }: AppHeaderProps) {
           </div>
         </div>
         
-        {/* TH-EN Toggle */}
-        <button 
-          onClick={() => setLanguage(language === 'th' ? 'en' : 'th')}
-          className="relative px-3 py-2 bg-white/40 dark:bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/50 dark:border-white/20 active:scale-95 transition-transform shadow-sm gap-1 shrink-0"
-        >
-          <span className={`text-[10px] font-bold ${language === 'th' ? 'text-[#2E1065] dark:text-white' : 'text-[#2E1065]/40 dark:text-white/40'}`}>TH</span>
-          <div className="w-px h-3 bg-[#2E1065]/20 dark:bg-white/20 mx-0.5" />
-          <span className={`text-[10px] font-bold ${language === 'en' ? 'text-[#2E1065] dark:text-white' : 'text-[#2E1065]/40 dark:text-white/40'}`}>EN</span>
-        </button>
+        {/* Premium TH-EN Switch */}
+        <PremiumLanguageSwitch size="sm" />
       </div>
     </div>
   );

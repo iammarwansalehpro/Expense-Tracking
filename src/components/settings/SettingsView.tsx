@@ -17,17 +17,20 @@ import {
   Plus,
   Trash2,
   Crown,
-  Users
+  Users,
+  Globe
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useThemeStore } from '@/store/useThemeStore';
 import { useAppStore } from '@/store/useAppStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 import { getApiKeys, setApiKeys as saveApiKeysToDb } from '@/services/transactionService';
 import { APP_VERSION } from '@/lib/constants';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useTranslation } from '@/hooks/useTranslation';
 import PremiumThemeSwitch from '@/components/ui/PremiumThemeSwitch';
+import PremiumLanguageSwitch from '@/components/ui/PremiumLanguageSwitch';
 import { EditProfileModal, FontSelectModal, AboutModal, PrivacyPolicyModal, ExportImportModal, AdminAppInfoModal, AdminCategoryModal, AdminAiModal, AdminUsersModal } from './SettingsModals';
 
 type ModalType = 'none' | 'profile' | 'font' | 'about' | 'privacy' | 'export' | 'adminApp' | 'adminCategory' | 'adminAi' | 'adminUsers';
@@ -36,7 +39,7 @@ interface SettingItem {
   icon: typeof User;
   label: string;
   sublabel?: string;
-  action?: 'toggle-theme' | 'navigate' | ModalType;
+  action?: 'toggle-theme' | 'toggle-language' | 'navigate' | ModalType;
   iconColor: string;
   iconBg: string;
 }
@@ -48,6 +51,7 @@ interface SettingGroup {
 
 export default function SettingsView() {
   const { theme, toggleTheme } = useThemeStore();
+  const { language, setLanguage } = useSettingsStore();
   const { t } = useTranslation();
   const user = auth.currentUser;
 
@@ -76,6 +80,14 @@ export default function SettingsView() {
           action: 'toggle-theme',
           iconColor: '#8b5cf6',
           iconBg: '#8b5cf618',
+        },
+        {
+          icon: Globe,
+          label: t('settings.language', 'ภาษา'),
+          sublabel: language === 'th' ? 'ภาษาไทย (TH)' : 'English (EN)',
+          action: 'toggle-language',
+          iconColor: '#3b82f6',
+          iconBg: '#3b82f618',
         },
       ],
     },
@@ -248,6 +260,7 @@ export default function SettingsView() {
                 className="flex items-center gap-4 px-4 py-3 border-b border-black/5 dark:border-white/5 last:border-0 hover:bg-white/20 dark:hover:bg-white/5 active:bg-white/30 transition-colors cursor-pointer"
                 onClick={() => {
                   if (item.action === 'toggle-theme') toggleTheme();
+                  else if (item.action === 'toggle-language') setLanguage(language === 'th' ? 'en' : 'th');
                   else if (item.action && item.action !== 'navigate') {
                     setActiveModal(item.action as ModalType);
                   }
@@ -280,6 +293,10 @@ export default function SettingsView() {
                   <PremiumThemeSwitch
                     checked={theme === 'dark'}
                     onChange={toggleTheme}
+                    size="md"
+                  />
+                ) : item.action === 'toggle-language' ? (
+                  <PremiumLanguageSwitch
                     size="md"
                   />
                 ) : (
