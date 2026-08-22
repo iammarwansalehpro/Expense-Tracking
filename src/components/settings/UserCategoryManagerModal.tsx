@@ -64,6 +64,7 @@ export default function UserCategoryManagerModal({
   const [mainTab, setMainTab] = useState<MainTab>('categories');
   const [filterTab, setFilterTab] = useState<FilterTab>(initialType === 'income' ? 'income' : 'expense');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isManageMode, setIsManageMode] = useState(false);
   
   // Category Form State
   const [isEditingCategory, setIsEditingCategory] = useState(false);
@@ -909,31 +910,48 @@ export default function UserCategoryManagerModal({
                 )}
               </div>
 
-              {/* Segmented Filter Pills */}
-              <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
-                {[
-                  { id: 'expense', label: 'รายจ่าย', count: stats.expenseCount },
-                  { id: 'income', label: 'รายรับ', count: stats.incomeCount },
-                  { id: 'custom', label: 'กำหนดเอง', count: stats.customCount },
-                  { id: 'all', label: 'ทั้งหมด', count: stats.total },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setFilterTab(tab.id as FilterTab)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
-                      filterTab === tab.id
-                        ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md shadow-purple-500/25'
-                        : 'bg-purple-50/70 dark:bg-white/10 text-[#2E1065]/70 dark:text-white/70 hover:bg-purple-100/70 dark:hover:bg-white/20'
-                    }`}
-                  >
-                    <span>{tab.label}</span>
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${
-                      filterTab === tab.id ? 'bg-white/25 text-white' : 'bg-purple-200/60 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200'
-                    }`}>
-                      {tab.count}
-                    </span>
-                  </button>
-                ))}
+              {/* Segmented Filter Pills & Delete Mode Button */}
+              <div className="flex items-center justify-between gap-1.5 pb-1">
+                <div className="flex gap-1.5 overflow-x-auto no-scrollbar flex-1">
+                  {[
+                    { id: 'expense', label: 'รายจ่าย', count: stats.expenseCount },
+                    { id: 'income', label: 'รายรับ', count: stats.incomeCount },
+                    { id: 'custom', label: 'กำหนดเอง', count: stats.customCount },
+                    { id: 'all', label: 'ทั้งหมด', count: stats.total },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setFilterTab(tab.id as FilterTab)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                        filterTab === tab.id
+                          ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md shadow-purple-500/25'
+                          : 'bg-purple-50/70 dark:bg-white/10 text-[#2E1065]/70 dark:text-white/70 hover:bg-purple-100/70 dark:hover:bg-white/20'
+                      }`}
+                    >
+                      <span>{tab.label}</span>
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${
+                        filterTab === tab.id ? 'bg-white/25 text-white' : 'bg-purple-200/60 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200'
+                      }`}>
+                        {tab.count}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Quick Delete Mode Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setIsManageMode(!isManageMode)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1 shrink-0 border shadow-sm ${
+                    isManageMode
+                      ? 'bg-rose-500 text-white border-rose-600 shadow-md shadow-rose-500/30'
+                      : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800/60 hover:bg-rose-100'
+                  }`}
+                  title="เปิด/ปิด โหมดลบหมวดหมู่ด่วน"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{isManageMode ? 'เสร็จสิ้น' : 'โหมดลบ'}</span>
+                </button>
               </div>
             </div>
 
@@ -1005,10 +1023,14 @@ export default function UserCategoryManagerModal({
                                     e.stopPropagation();
                                     handleDeleteCategory(catName);
                                   }}
-                                  className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-white dark:bg-slate-800 shadow border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                  className={`absolute -top-1.5 -left-1.5 rounded-full flex items-center justify-center transition-all z-20 shadow-md ${
+                                    isManageMode
+                                      ? 'w-6 h-6 bg-rose-500 text-white border-2 border-white dark:border-slate-900 scale-110 opacity-100 animate-pulse cursor-pointer'
+                                      : 'w-5 h-5 bg-white dark:bg-slate-800 text-rose-500 border border-slate-200 dark:border-slate-700 opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-rose-500 hover:text-white'
+                                  }`}
                                   title={isCustom ? "ลบหมวดหมู่นี้" : "ซ่อนหมวดหมู่นี้"}
                                 >
-                                  <Trash2 className="w-2.5 h-2.5" />
+                                  <Trash2 className="w-3 h-3" />
                                 </button>
                               </div>
 

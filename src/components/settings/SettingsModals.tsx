@@ -1103,6 +1103,7 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
   const [mainTab, setMainTab] = useState<'categories' | 'groups'>('categories');
   const [filterTab, setFilterTab] = useState<CategoryTab | 'all' | 'expense'>('expense');
   const [groupType, setGroupType] = useState<'expense' | 'income'>('expense');
+  const [isManageMode, setIsManageMode] = useState(false);
 
   // Category Form state
   const [isAdding, setIsAdding] = useState(false);
@@ -1562,6 +1563,19 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
               </div>
               
               <div className="flex gap-2 pt-2">
+                {editingKey && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleDelete(editingKey);
+                      setIsAdding(false);
+                    }}
+                    className="px-4 py-2.5 rounded-2xl font-bold bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60 transition-colors text-xs flex items-center justify-center gap-1 shrink-0 shadow-sm"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>ลบหมวดหมู่</span>
+                  </button>
+                )}
                 <button onClick={() => setIsAdding(false)} className="flex-1 py-2.5 rounded-2xl font-bold bg-purple-100/80 text-purple-800 hover:bg-purple-200 transition-colors text-xs">ยกเลิก</button>
                 <button onClick={handleAdd} disabled={!newName.trim()} className="flex-[2] py-2.5 rounded-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/25 disabled:opacity-50 hover:brightness-105 transition-all text-xs">
                   {editingKey ? 'บันทึกการแก้ไข' : 'ยืนยันการเพิ่ม'}
@@ -1571,25 +1585,42 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
           ) : mainTab === 'categories' ? (
             /* Categories Tab (Admin) */
             <div className="space-y-4">
-              {/* Category Type Filter */}
-              <div className="flex gap-2">
-                {[
-                  { id: 'expense', label: 'รายจ่าย' },
-                  { id: 'income', label: 'รายรับ' },
-                  { id: 'all', label: 'ทั้งหมด' }
-                ].map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => setFilterTab(t.id as any)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      filterTab === t.id 
-                        ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md' 
-                        : 'bg-purple-50/70 dark:bg-white/10 text-[#2E1065]/70 dark:text-white/70'
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                ))}
+              {/* Category Type Filter & Delete Mode Toggle */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex gap-2">
+                  {[
+                    { id: 'expense', label: 'รายจ่าย' },
+                    { id: 'income', label: 'รายรับ' },
+                    { id: 'all', label: 'ทั้งหมด' }
+                  ].map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => setFilterTab(t.id as any)}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                        filterTab === t.id 
+                          ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md' 
+                          : 'bg-purple-50/70 dark:bg-white/10 text-[#2E1065]/70 dark:text-white/70'
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Quick Delete Mode Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setIsManageMode(!isManageMode)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1 shrink-0 border shadow-sm ${
+                    isManageMode
+                      ? 'bg-rose-500 text-white border-rose-600 shadow-md shadow-rose-500/30'
+                      : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800/60 hover:bg-rose-100'
+                  }`}
+                  title="เปิด/ปิด โหมดลบหมวดหมู่ด่วน"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{isManageMode ? 'เสร็จสิ้น' : 'โหมดลบ'}</span>
+                </button>
               </div>
 
               {/* Grouped Category Cards */}
@@ -1619,9 +1650,14 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
                                     e.stopPropagation();
                                     handleDelete(cat);
                                   }}
-                                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white dark:bg-slate-800 text-rose-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm border border-slate-200 z-10 hover:bg-rose-500 hover:text-white"
+                                  className={`absolute -top-1.5 -right-1.5 rounded-full flex items-center justify-center transition-all z-20 shadow-md ${
+                                    isManageMode
+                                      ? 'w-6 h-6 bg-rose-500 text-white border-2 border-white dark:border-slate-900 scale-110 opacity-100 animate-pulse cursor-pointer'
+                                      : 'w-5 h-5 bg-white dark:bg-slate-800 text-rose-500 border border-slate-200 opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-rose-500 hover:text-white'
+                                  }`}
+                                  title="ลบหมวดหมู่นี้"
                                 >
-                                  <Trash2 className="w-2.5 h-2.5" />
+                                  <Trash2 className="w-3 h-3" />
                                 </button>
                                 <Icon className="w-6 h-6" strokeWidth={2.2} />
                               </div>
