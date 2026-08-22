@@ -1612,21 +1612,22 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
           ) : mainTab === 'categories' ? (
             /* Categories Tab (Admin) */
             <div className="space-y-4">
-              {/* Category Type Filter & Delete Mode Toggle */}
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex gap-2">
+              {/* Category Type Filter & Delete Mode Toggle (Unclipped Soft Shadows) */}
+              <div className="flex items-center justify-between gap-2 py-0.5">
+                <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1 px-1 -mx-1 flex-1 items-center">
                   {[
+                    { id: 'all', label: 'ทั้งหมด' },
                     { id: 'expense', label: 'รายจ่าย' },
-                    { id: 'income', label: 'รายรับ' },
-                    { id: 'all', label: 'ทั้งหมด' }
+                    { id: 'income', label: 'รายรับ' }
                   ].map(t => (
                     <button
                       key={t.id}
+                      type="button"
                       onClick={() => setFilterTab(t.id as any)}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all active:scale-95 ${
                         filterTab === t.id 
-                          ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md' 
-                          : 'bg-purple-50/70 dark:bg-white/10 text-[#2E1065]/70 dark:text-white/70'
+                          ? 'bg-gradient-to-r from-[#6D28D9] via-[#7C3AED] to-[#8B5CF6] text-white shadow-md shadow-purple-500/30 scale-[1.02]' 
+                          : 'bg-purple-50/80 dark:bg-white/5 text-[#2E1065]/70 dark:text-purple-200/70 hover:bg-purple-100/80 dark:hover:bg-white/10 hover:text-purple-900 dark:hover:text-white border border-purple-100/60 dark:border-white/5'
                       }`}
                     >
                       {t.label}
@@ -1638,10 +1639,10 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
                 <button
                   type="button"
                   onClick={() => setIsManageMode(!isManageMode)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1 shrink-0 border shadow-sm ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1 shrink-0 border active:scale-95 ${
                     isManageMode
-                      ? 'bg-rose-500 text-white border-rose-600 shadow-md shadow-rose-500/30'
-                      : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800/60 hover:bg-rose-100'
+                      ? 'bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/30 ring-1 ring-rose-400/40'
+                      : 'bg-rose-50/80 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-200/80 dark:border-rose-800/40 hover:bg-rose-100/80 hover:text-rose-700'
                   }`}
                   title="เปิด/ปิด โหมดลบหมวดหมู่ด่วน"
                 >

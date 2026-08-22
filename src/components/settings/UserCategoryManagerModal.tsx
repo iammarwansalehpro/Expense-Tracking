@@ -156,9 +156,13 @@ export default function UserCategoryManagerModal({
   // Grouped filtered categories according to user group order
   const groupedCategories = useMemo(() => {
     const catNames = filteredCategories.map(([name]) => name);
-    const customOrder = formType === 'income' ? currentIncomeGroups : currentExpenseGroups;
+    const customOrder = filterTab === 'income' 
+      ? currentIncomeGroups 
+      : filterTab === 'expense'
+      ? currentExpenseGroups
+      : [...currentExpenseGroups, ...currentIncomeGroups];
     return getAllCategoriesGrouped(catNames, categoriesMap, customOrder);
-  }, [filteredCategories, categoriesMap, formType, currentExpenseGroups, currentIncomeGroups]);
+  }, [filteredCategories, categoriesMap, filterTab, currentExpenseGroups, currentIncomeGroups]);
 
   // Category counts per group
   const groupCategoryCounts = useMemo(() => {
@@ -919,27 +923,30 @@ export default function UserCategoryManagerModal({
                 )}
               </div>
 
-              {/* Segmented Filter Pills & Delete Mode Button */}
-              <div className="flex items-center justify-between gap-1.5 pb-1">
-                <div className="flex gap-1.5 overflow-x-auto no-scrollbar flex-1">
+              {/* Segmented Filter Pills & Delete Mode Button (Unclipped Soft Shadows) */}
+              <div className="flex items-center justify-between gap-2 py-0.5">
+                <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1 px-1 -mx-1 flex-1 items-center">
                   {[
+                    { id: 'all', label: 'ทั้งหมด', count: stats.total },
                     { id: 'expense', label: 'รายจ่าย', count: stats.expenseCount },
                     { id: 'income', label: 'รายรับ', count: stats.incomeCount },
                     { id: 'custom', label: 'กำหนดเอง', count: stats.customCount },
-                    { id: 'all', label: 'ทั้งหมด', count: stats.total },
                   ].map((tab) => (
                     <button
                       key={tab.id}
+                      type="button"
                       onClick={() => setFilterTab(tab.id as FilterTab)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 active:scale-95 ${
                         filterTab === tab.id
-                          ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md shadow-purple-500/25'
-                          : 'bg-purple-50/70 dark:bg-white/10 text-[#2E1065]/70 dark:text-white/70 hover:bg-purple-100/70 dark:hover:bg-white/20'
+                          ? 'bg-gradient-to-r from-[#6D28D9] via-[#7C3AED] to-[#8B5CF6] text-white shadow-md shadow-purple-500/30 scale-[1.02]'
+                          : 'bg-purple-50/80 dark:bg-white/5 text-[#2E1065]/70 dark:text-purple-200/70 hover:bg-purple-100/80 dark:hover:bg-white/10 hover:text-purple-900 dark:hover:text-white border border-purple-100/60 dark:border-white/5'
                       }`}
                     >
                       <span>{tab.label}</span>
-                      <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${
-                        filterTab === tab.id ? 'bg-white/25 text-white' : 'bg-purple-200/60 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200'
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-semibold transition-colors ${
+                        filterTab === tab.id 
+                          ? 'bg-white/20 text-white shadow-inner' 
+                          : 'bg-purple-200/60 dark:bg-purple-900/60 text-purple-800 dark:text-purple-300'
                       }`}>
                         {tab.count}
                       </span>
@@ -951,10 +958,10 @@ export default function UserCategoryManagerModal({
                 <button
                   type="button"
                   onClick={() => setIsManageMode(!isManageMode)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1 shrink-0 border shadow-sm ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1 shrink-0 border active:scale-95 ${
                     isManageMode
-                      ? 'bg-rose-500 text-white border-rose-600 shadow-md shadow-rose-500/30'
-                      : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800/60 hover:bg-rose-100'
+                      ? 'bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/30 ring-1 ring-rose-400/40'
+                      : 'bg-rose-50/80 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-200/80 dark:border-rose-800/40 hover:bg-rose-100/80 hover:text-rose-700'
                   }`}
                   title="เปิด/ปิด โหมดลบหมวดหมู่ด่วน"
                 >
