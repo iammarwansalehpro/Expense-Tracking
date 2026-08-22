@@ -135,15 +135,15 @@ export default function BottomNav() {
       />
 
       <div 
-        className={`fixed bottom-0 left-0 right-0 z-50 px-6 pt-4 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)] pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+        className={`fixed bottom-0 left-0 right-0 z-50 px-3.5 sm:px-6 pt-2 pb-[max(0.625rem,env(safe-area-inset-bottom,0.625rem))] pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
           isSettingsModalOpen ? 'translate-y-[200%] opacity-0' : 'translate-y-0 opacity-100'
         }`}
       >
         <div className="max-w-md mx-auto relative pointer-events-auto">
 
           {/* Speed Dial Menu (Smart-Delivery Style) */}
-          <div className={`absolute left-1/2 -translate-x-1/2 flex flex-col-reverse items-center gap-4 z-50 pointer-events-auto transition-all duration-300 ${
-            isAddMenuOpen ? 'bottom-[120px]' : 'bottom-[80px] pointer-events-none'
+          <div className={`absolute left-1/2 -translate-x-1/2 flex flex-col-reverse items-center gap-3.5 z-50 pointer-events-auto transition-all duration-300 ${
+            isAddMenuOpen ? 'bottom-[96px]' : 'bottom-[64px] pointer-events-none'
           }`}>
             
             {/* Option 1: Scan Slip (Icon: ScanLine) */}
@@ -255,12 +255,12 @@ export default function BottomNav() {
           </div>
 
           {/* Floating Navigation Bar (Glassmorphism Capsule) */}
-          <div className="bg-white/40 dark:bg-[#1E1035]/80 backdrop-blur-[24px] saturate-[180%] h-16 shadow-[0_8px_32px_rgba(31,38,135,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-50 rounded-full border border-white/60 dark:border-white/10 px-2 transition-colors duration-500">
+          <div className="bg-white/50 dark:bg-[#1E1035]/85 backdrop-blur-[24px] saturate-[180%] h-16 shadow-[0_8px_32px_rgba(31,38,135,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-50 rounded-full border border-white/60 dark:border-white/10 px-2 transition-colors duration-500">
             <div className="grid grid-cols-5 h-full relative items-center">
               
               {/* Animated Active Capsule Pill (Ultra-Translucent Frosted Glass) */}
               <div 
-                className={`absolute h-[50px] bg-gradient-to-b from-white/55 via-white/35 to-white/20 dark:from-white/20 dark:via-white/10 dark:to-white/5 rounded-full transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-0 shadow-[0_4px_16px_rgba(46,16,101,0.08),inset_0_1.5px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(255,255,255,0.25)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.4),inset_0_1.5px_1px_rgba(255,255,255,0.25)] border border-white/65 dark:border-white/20 backdrop-blur-xl saturate-[180%] ${
+                className={`absolute h-[50px] bg-gradient-to-b from-white/65 via-white/40 to-white/20 dark:from-white/20 dark:via-white/10 dark:to-white/5 rounded-full transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-0 shadow-[0_4px_16px_rgba(46,16,101,0.08),inset_0_1.5px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(255,255,255,0.25)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.4),inset_0_1.5px_1px_rgba(255,255,255,0.25)] border border-white/70 dark:border-white/20 backdrop-blur-xl saturate-[180%] ${
                   isNavActive ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
                 }`}
                 style={{ 
@@ -283,12 +283,12 @@ export default function BottomNav() {
                   <button
                     key={item.id}
                     onClick={() => setCurrentPage(item.id as PageId)}
-                    className={`w-full h-full flex flex-col items-center justify-center relative z-10 transition-colors duration-300 ${
-                      isActive ? 'text-[#2E1065] dark:text-purple-200' : 'text-[#2E1065]/40 dark:text-white/40 hover:text-[#2E1065] dark:hover:text-white'
+                    className={`w-full h-full flex flex-col items-center justify-center relative z-10 transition-all duration-300 active:scale-90 ${
+                      isActive ? 'text-[#2E1065] dark:text-purple-200' : 'text-[#2E1065]/45 dark:text-white/45 hover:text-[#2E1065] dark:hover:text-white'
                     }`}
                   >
                     <Icon 
-                      className={`w-6 h-6 transition-all duration-300 ${isActive ? 'scale-110 drop-shadow-[0_2px_8px_rgba(46,16,101,0.2)]' : 'scale-100'}`} 
+                      className={`w-6 h-6 transition-all duration-300 ${isActive ? 'scale-110 drop-shadow-[0_2px_8px_rgba(46,16,101,0.25)]' : 'scale-100'}`} 
                       strokeWidth={isActive ? 2.5 : 2} 
                     />
                   </button>
@@ -299,7 +299,7 @@ export default function BottomNav() {
             {/* Floating Action Button (FAB) - Navy Theme */}
             <button
               onClick={() => setAddMenuOpen(!isAddMenuOpen)}
-              className={`absolute left-1/2 -translate-x-1/2 -top-6 w-16 h-16 rounded-full flex items-center justify-center text-white shadow-[0_8px_32px_rgba(46,16,101,0.4)] z-50 transition-all duration-300 ease-out border border-white/40 backdrop-blur-md ${
+              className={`absolute left-1/2 -translate-x-1/2 -top-6 w-16 h-16 rounded-full flex items-center justify-center text-white shadow-[0_8px_32px_rgba(46,16,101,0.4)] z-50 transition-all duration-300 ease-out border border-white/40 backdrop-blur-md active:scale-90 ${
                 isAddMenuOpen ? 'rotate-[135deg] bg-gradient-to-tr from-pink-400 to-rose-400' : 'bg-gradient-to-tr from-[#2E1065] via-[#3B1278] to-[#581C87] hover:scale-105'
               }`}
             >
