@@ -9,10 +9,16 @@ import {
   remove, 
   serverTimestamp,
   get,
-  child
+  child,
+  update
 } from 'firebase/database';
 import { db } from '@/lib/firebase';
-import { CATEGORY_SEED, type DBCategory } from '@/utils/categoryStyles';
+import { 
+  CATEGORY_SEED, 
+  DEFAULT_EXPENSE_GROUPS, 
+  DEFAULT_INCOME_GROUPS, 
+  type DBCategory 
+} from '@/utils/categoryStyles';
 import type { Transaction } from '@/types';
 
 const TRANSACTIONS_PATH = 'transactions';
@@ -187,7 +193,7 @@ export const subscribeToTransactions = (
   });
 };
 
-// Fetch categories from RTDB
+// Fetch global categories from RTDB (with seed fallback)
 export const fetchCategories = async (): Promise<Record<string, DBCategory>> => {
   try {
     const snapshot = await get(child(ref(db), 'app_categories'));
@@ -201,6 +207,293 @@ export const fetchCategories = async (): Promise<Record<string, DBCategory>> => 
   } catch (error) {
     console.error("Error fetching categories:", error);
     return CATEGORY_SEED; // fallback
+  }
+};
+
+// Fetch User-Scoped Categories (System Defaults + User Custom Overrides)
+export const fetchUserCategories = async (userId: string): Promise<Record<string, DBCategory>> => {
+  try {
+    // 1. Fetch system baseline defaults
+    const systemCategories = await fetchCategories();
+    const result: Record<string, DBCategory> = {};
+
+    // Mark default categories
+    Object.keys(systemCategories).forEach(key => {
+      result[key] = {
+        ...systemCategories[key],
+        isDefault: true
+      };
+    });
+
+    if (!userId) return result;
+
+    // 2. Fetch user custom categories & overrides
+    const userSnap = await get(ref(db, `users/${userId}/categories`));
+    if (userSnap.exists()) {
+      const userCats = userSnap.val() as Record<string, DBCategory>;
+      Object.keys(userCats).forEach(key => {
+        const isOriginalDefault = !!systemCategories[key];
+        result[key] = {
+          ...userCats[key],
+          isDefault: isOriginalDefault,
+          isCustom: !isOriginalDefault
+        };
+      });
+    }
+
+    // 3. Fetch hidden categories if any
+    const hiddenSnap = await get(ref(db, `users/${userId}/hidden_categories`));
+    if (hiddenSnap.exists()) {
+      const hiddenCats = hiddenSnap.val() as Record<string, boolean>;
+      Object.keys(hiddenCats).forEach(key => {
+        if (hiddenCats[key] && result[key]) {
+          result[key] = {
+            ...result[key],
+            hidden: true
+          };
+        }
+      });
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error fetching user categories:", error);
+    return CATEGORY_SEED;
+  }
+};
+
+// Save or Update a User Category
+export const saveUserCategory = async (
+  userId: string, 
+  categoryName: string, 
+  categoryData: DBCategory
+): Promise<void> => {
+  try {
+    const cleanName = categoryName.trim();
+    if (!cleanName) throw new Error("Category name cannot be empty");
+
+    const payload = {
+      ...categoryData,
+      updatedAt: Date.now()
+    };
+
+    // Save under user's category tree
+    await set(ref(db, `users/${userId}/categories/${cleanName}`), payload);
+
+    // Unhide if it was previously hidden
+    await remove(ref(db, `users/${userId}/hidden_categories/${cleanName}`)).catch(() => {});
+  } catch (error) {
+    console.error("Error saving user category:", error);
+    throw error;
+  }
+};
+
+// Delete a User Category (or Hide if it is a system default)
+export const deleteUserCategory = async (
+  userId: string, 
+  categoryName: string,
+  isDefault: boolean = false
+): Promise<void> => {
+  try {
+    const cleanName = categoryName.trim();
+    if (!cleanName) return;
+
+    // Remove user override if exists
+    await remove(ref(db, `users/${userId}/categories/${cleanName}`));
+
+    if (isDefault) {
+      // Mark system category as hidden for this user
+      await set(ref(db, `users/${userId}/hidden_categories/${cleanName}`), true);
+    }
+  } catch (error) {
+    console.error("Error deleting user category:", error);
+    throw error;
+  }
+};
+
+// Fetch System Default Groups (for Admin and baseline fallback)
+export const fetchAdminDefaultGroups = async (): Promise<{ expense: string[], income: string[] }> => {
+  const fallback = {
+    expense: [...DEFAULT_EXPENSE_GROUPS],
+    income: [...DEFAULT_INCOME_GROUPS]
+  };
+  try {
+    const snapshot = await get(ref(db, 'app_default_groups'));
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      return {
+        expense: Array.isArray(data.expense) && data.expense.length > 0 ? data.expense : fallback.expense,
+        income: Array.isArray(data.income) && data.income.length > 0 ? data.income : fallback.income
+      };
+    }
+    return fallback;
+  } catch (e) {
+    console.error("Error fetching admin default groups:", e);
+    return fallback;
+  }
+};
+
+// Save System Default Groups (Admin)
+export const saveAdminDefaultGroups = async (groups: { expense: string[], income: string[] }): Promise<void> => {
+  try {
+    await set(ref(db, 'app_default_groups'), groups);
+  } catch (error) {
+    console.error("Error saving admin default groups:", error);
+    throw error;
+  }
+};
+
+// Fetch User-Scoped Groups for Expense and Income
+export const fetchUserGroups = async (userId: string): Promise<{ expense: string[], income: string[] }> => {
+  const defaultGroups = await fetchAdminDefaultGroups();
+
+  if (!userId) return defaultGroups;
+
+  try {
+    const snapshot = await get(ref(db, `users/${userId}/groups`));
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      return {
+        expense: Array.isArray(data.expense) && data.expense.length > 0 ? data.expense : defaultGroups.expense,
+        income: Array.isArray(data.income) && data.income.length > 0 ? data.income : defaultGroups.income
+      };
+    }
+    return defaultGroups;
+  } catch (error) {
+    console.error("Error fetching user groups:", error);
+    return defaultGroups;
+  }
+};
+
+// Save User Groups
+export const saveUserGroups = async (
+  userId: string, 
+  groups: { expense: string[], income: string[] }
+): Promise<void> => {
+  try {
+    await set(ref(db, `users/${userId}/groups`), groups);
+  } catch (error) {
+    console.error("Error saving user groups:", error);
+    throw error;
+  }
+};
+
+// Rename a Group and update all categories belonging to it
+export const renameUserGroup = async (
+  userId: string,
+  type: 'expense' | 'income',
+  oldName: string,
+  newName: string,
+  currentCategories: Record<string, DBCategory>
+): Promise<{ updatedGroups: { expense: string[], income: string[] }, updatedCategories: Record<string, DBCategory> }> => {
+  try {
+    const currentGroups = await fetchUserGroups(userId);
+    const list = [...(currentGroups[type] || [])];
+    const index = list.indexOf(oldName);
+    if (index >= 0) {
+      list[index] = newName.trim();
+    } else {
+      list.push(newName.trim());
+    }
+
+    const updatedGroups = {
+      ...currentGroups,
+      [type]: Array.from(new Set(list))
+    };
+
+    // Save updated group list
+    await saveUserGroups(userId, updatedGroups);
+
+    // Update categories that used this group
+    const updatedCategories: Record<string, DBCategory> = { ...currentCategories };
+    const updates: Record<string, any> = {};
+
+    Object.keys(currentCategories).forEach(catName => {
+      const cat = currentCategories[catName];
+      if (cat.group === oldName) {
+        const newCat = { ...cat, group: newName.trim(), updatedAt: Date.now() };
+        updatedCategories[catName] = newCat;
+        updates[`users/${userId}/categories/${catName}`] = newCat;
+      }
+    });
+
+    if (Object.keys(updates).length > 0) {
+      await update(ref(db), updates);
+    }
+
+    return { updatedGroups, updatedCategories };
+  } catch (error) {
+    console.error("Error renaming group:", error);
+    throw error;
+  }
+};
+
+// Delete a Group and migrate its categories to 'อื่นๆ'
+export const deleteUserGroup = async (
+  userId: string,
+  type: 'expense' | 'income',
+  groupNameToDelete: string,
+  currentCategories: Record<string, DBCategory>
+): Promise<{ updatedGroups: { expense: string[], income: string[] }, updatedCategories: Record<string, DBCategory> }> => {
+  try {
+    const currentGroups = await fetchUserGroups(userId);
+    const list = (currentGroups[type] || []).filter(g => g !== groupNameToDelete);
+    
+    // Ensure 'อื่นๆ' is present
+    if (!list.includes('อื่นๆ')) {
+      list.push('อื่นๆ');
+    }
+
+    const updatedGroups = {
+      ...currentGroups,
+      [type]: list
+    };
+
+    await saveUserGroups(userId, updatedGroups);
+
+    // Move orphaned categories to 'อื่นๆ'
+    const updatedCategories: Record<string, DBCategory> = { ...currentCategories };
+    const updates: Record<string, any> = {};
+
+    Object.keys(currentCategories).forEach(catName => {
+      const cat = currentCategories[catName];
+      if (cat.group === groupNameToDelete) {
+        const newCat = { ...cat, group: 'อื่นๆ', updatedAt: Date.now() };
+        updatedCategories[catName] = newCat;
+        updates[`users/${userId}/categories/${catName}`] = newCat;
+      }
+    });
+
+    if (Object.keys(updates).length > 0) {
+      await update(ref(db), updates);
+    }
+
+    return { updatedGroups, updatedCategories };
+  } catch (error) {
+    console.error("Error deleting group:", error);
+    throw error;
+  }
+};
+
+// Reset User Categories and Groups to clean system defaults
+export const resetUserCategoriesAndGroups = async (
+  userId: string
+): Promise<{ categories: Record<string, DBCategory>, groups: { expense: string[], income: string[] } }> => {
+  try {
+    await remove(ref(db, `users/${userId}/categories`));
+    await remove(ref(db, `users/${userId}/hidden_categories`));
+    await remove(ref(db, `users/${userId}/groups`));
+
+    const defaultCategories = await fetchCategories();
+    const defaultGroups = await fetchAdminDefaultGroups();
+
+    return {
+      categories: defaultCategories,
+      groups: defaultGroups
+    };
+  } catch (error) {
+    console.error("Error resetting user categories and groups:", error);
+    throw error;
   }
 };
 

@@ -3,7 +3,7 @@ import {
   X, CheckCircle2, Upload, Download, Type, User, Tag, Plus, Trash2, 
   ArrowUpRight, ArrowDownRight, ShieldCheck, Lock, EyeOff, Database, 
   UserCheck, FileSpreadsheet, FileJson, AlertTriangle, Calendar, 
-  Loader2, ChevronRight, FileCheck 
+  Loader2, ChevronRight, FileCheck, FolderTree, Edit2
 } from 'lucide-react';
 import { updateProfile } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
@@ -14,7 +14,13 @@ import { useWalletStore } from '@/store/useWalletStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useThemeStore, type AppFont } from '@/store/useThemeStore';
 import { useTranslation } from '@/hooks/useTranslation';
-import { fetchCategories, getApiKeys, setApiKeys as saveApiKeysToDb } from '@/services/transactionService';
+import { 
+  fetchCategories, 
+  getApiKeys, 
+  setApiKeys as saveApiKeysToDb,
+  fetchAdminDefaultGroups,
+  saveAdminDefaultGroups
+} from '@/services/transactionService';
 import { 
   exportTransactionsToCSV, 
   exportFullBackupJSON, 
@@ -26,7 +32,18 @@ import { Settings as SettingsIcon, Info, Users } from 'lucide-react';
 import { APP_VERSION } from '@/lib/constants';
 import { useConfirmStore } from '@/store/useConfirmStore';
 import { useToastStore } from '@/store/useToastStore';
-import { getCategoryStyle, getAllCategoriesGrouped, AVAILABLE_ICONS, AVAILABLE_COLORS, getIconComponent, CATEGORY_SEED, type DBCategory, type CategoryTab } from '@/utils/categoryStyles';
+import { 
+  getCategoryStyle, 
+  getAllCategoriesGrouped, 
+  AVAILABLE_ICONS, 
+  AVAILABLE_COLORS, 
+  getIconComponent, 
+  CATEGORY_SEED, 
+  DEFAULT_EXPENSE_GROUPS,
+  DEFAULT_INCOME_GROUPS,
+  type DBCategory, 
+  type CategoryTab 
+} from '@/utils/categoryStyles';
 import CustomSelect from '@/components/ui/CustomSelect';
 import AutoShrinkText from '@/components/ui/AutoShrinkText';
 
@@ -1072,35 +1089,50 @@ export function AdminAppInfoModal({ isOpen, onClose }: ModalProps) {
   );
 }
 
-// 6. Admin Category Modal
+// 6. Admin Category & Group Modal (Full System Default CRUD)
 export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
   const appCategories = useAppStore(s => s.appCategories);
   const [categories, setCategories] = useState<Record<string, DBCategory>>({});
+  const [groups, setGroups] = useState<{ expense: string[], income: string[] }>({
+    expense: [...DEFAULT_EXPENSE_GROUPS],
+    income: [...DEFAULT_INCOME_GROUPS]
+  });
   const [saving, setSaving] = useState(false);
   
-  // Add state
+  // Navigation & Filter state
+  const [mainTab, setMainTab] = useState<'categories' | 'groups'>('categories');
+  const [filterTab, setFilterTab] = useState<CategoryTab | 'all' | 'expense'>('expense');
+  const [groupType, setGroupType] = useState<'expense' | 'income'>('expense');
+
+  // Category Form state
   const [isAdding, setIsAdding] = useState(false);
   const [editingKey, setEditingKey] = useState<string | null>(null);
-  const [filterTab, setFilterTab] = useState<CategoryTab | 'all' | 'expense'>('expense');
   const [newName, setNewName] = useState('');
   const [newTab, setNewTab] = useState<CategoryTab>('lifestyle');
   const [newGroup, setNewGroup] = useState('ไลฟ์สไตล์');
   const [newIcon, setNewIcon] = useState('Tag');
   const [newColorIdx, setNewColorIdx] = useState(0);
 
-  const getGroupOptions = (tab: string) => {
-    if (tab === 'income') return ['รายรับ', 'โบนัส', 'ดอกเบี้ย', 'เงินลงทุน', 'อื่นๆ'];
-    return ['ไลฟ์สไตล์', 'ค่าใช้จ่ายประจำ', 'สุขภาพ', 'การเดินทาง', 'บิลต่างๆ', 'บ้าน', 'รถ', 'อื่นๆ'];
-  };
+  // Group Form state
+  const [newGroupName, setNewGroupName] = useState('');
+  const [editingGroup, setEditingGroup] = useState<{
+    isOpen: boolean;
+    oldName: string;
+    newName: string;
+    type: 'expense' | 'income';
+  }>({
+    isOpen: false,
+    oldName: '',
+    newName: '',
+    type: 'expense'
+  });
 
-  // Update group when tab changes
-  useEffect(() => {
-    const opts = getGroupOptions(newTab);
-    if (!opts.includes(newGroup)) {
-      setNewGroup(opts[0]);
-    }
-  }, [newTab]);
+  // Current active groups for selected category form tab
+  const currentFormGroups = useMemo(() => {
+    return newTab === 'income' ? groups.income : groups.expense;
+  }, [newTab, groups]);
 
+  // Load initial data
   useEffect(() => {
     if (isOpen) {
       if (appCategories && Object.keys(appCategories).length > 0) {
@@ -1108,9 +1140,23 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
       } else {
         setCategories({ ...CATEGORY_SEED });
       }
+
+      fetchAdminDefaultGroups().then(adminGroups => {
+        if (adminGroups) {
+          setGroups(adminGroups);
+        }
+      });
     }
   }, [isOpen, appCategories]);
 
+  // Update group when category tab changes
+  useEffect(() => {
+    if (!currentFormGroups.includes(newGroup)) {
+      setNewGroup(currentFormGroups[0] || 'อื่นๆ');
+    }
+  }, [newTab, currentFormGroups, newGroup]);
+
+  // Filtered categories
   const filteredCategories = useMemo(() => {
     if (filterTab === 'all') return categories;
     const filtered: Record<string, DBCategory> = {};
@@ -1126,42 +1172,58 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
   }, [categories, filterTab]);
 
   const groupedAll = useMemo(() => {
-    return getAllCategoriesGrouped(Object.keys(filteredCategories), filteredCategories);
-  }, [filteredCategories]);
+    const customOrder = filterTab === 'income' ? groups.income : groups.expense;
+    return getAllCategoriesGrouped(Object.keys(filteredCategories), filteredCategories, customOrder);
+  }, [filteredCategories, filterTab, groups]);
+
+  // Group category counts
+  const groupCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    Object.values(categories).forEach(cat => {
+      counts[cat.group] = (counts[cat.group] || 0) + 1;
+    });
+    return counts;
+  }, [categories]);
 
   if (!isOpen) return null;
 
+  // Save All System Defaults (Categories + Groups)
   const handleSave = async () => {
     setSaving(true);
     try {
       await set(ref(db, 'app_categories'), categories);
+      await saveAdminDefaultGroups(groups);
       useAppStore.getState().setAppCategories(categories);
-      useToastStore.getState().addToast('บันทึกหมวดหมู่สำเร็จ', 'success');
+      useToastStore.getState().addToast('บันทึกหมวดหมู่และกลุ่มเริ่มต้นของระบบสำเร็จ', 'success');
       onClose();
     } catch (e) {
-      useToastStore.getState().addToast('เกิดข้อผิดพลาดในการบันทึกหมวดหมู่', 'error');
+      useToastStore.getState().addToast('เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
     } finally {
       setSaving(false);
     }
   };
 
+  // Add / Update Category
   const handleAdd = () => {
-    if (!newName.trim()) return;
-    const colorObj = AVAILABLE_COLORS[newColorIdx];
+    const cleanName = newName.trim();
+    if (!cleanName) return;
+    const colorObj = AVAILABLE_COLORS[newColorIdx] || AVAILABLE_COLORS[0];
     const newCatObj: DBCategory = {
       iconName: newIcon,
       color: colorObj.color + ' border-white/50',
       textColor: colorObj.textColor,
       tab: newTab,
-      group: newGroup
+      group: newGroup || 'อื่นๆ',
+      isDefault: true,
+      updatedAt: Date.now()
     };
     
     setCategories(prev => {
       const next = { ...prev };
-      if (editingKey && editingKey !== newName.trim()) {
+      if (editingKey && editingKey !== cleanName) {
         delete next[editingKey];
       }
-      next[newName.trim()] = newCatObj;
+      next[cleanName] = newCatObj;
       return next;
     });
     
@@ -1174,8 +1236,10 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
   const openAdd = () => {
     setEditingKey(null);
     setNewName('');
-    setNewTab(filterTab as any);
-    setNewGroup('ไลฟ์สไตล์');
+    const targetTab: CategoryTab = filterTab === 'income' ? 'income' : 'lifestyle';
+    setNewTab(targetTab);
+    const grps = targetTab === 'income' ? groups.income : groups.expense;
+    setNewGroup(grps[0] || 'อื่นๆ');
     setNewIcon('Tag');
     setNewColorIdx(0);
     setIsAdding(true);
@@ -1196,8 +1260,8 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
 
   const handleDelete = (catName: string) => {
     useConfirmStore.getState().showConfirm({
-      title: 'ลบหมวดหมู่',
-      message: `คุณแน่ใจหรือไม่ว่าต้องการลบหมวดหมู่ "${catName}"?`,
+      title: 'ลบหมวดหมู่ระบบ',
+      message: `คุณแน่ใจหรือไม่ว่าต้องการลบหมวดหมู่เริ่มต้น "${catName}"?`,
       confirmText: 'ลบหมวดหมู่',
       cancelText: 'ยกเลิก',
       isDestructive: true,
@@ -1212,182 +1276,559 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
     });
   };
 
+  // Group Actions (Admin)
+  const handleAddGroup = () => {
+    const clean = newGroupName.trim();
+    if (!clean) return;
+    const list = groupType === 'income' ? groups.income : groups.expense;
+    if (list.includes(clean)) {
+      useToastStore.getState().addToast('มีกลุ่มนี้อยู่แล้ว', 'error');
+      return;
+    }
+
+    setGroups(prev => ({
+      ...prev,
+      [groupType]: [...prev[groupType], clean]
+    }));
+    setNewGroupName('');
+    useToastStore.getState().addToast(`เพิ่มกลุ่ม "${clean}" สำเร็จ`, 'success');
+  };
+
+  const handleSaveRenameGroup = () => {
+    const cleanNew = editingGroup.newName.trim();
+    if (!cleanNew) return;
+    if (cleanNew === editingGroup.oldName) {
+      setEditingGroup(prev => ({ ...prev, isOpen: false }));
+      return;
+    }
+
+    const list = editingGroup.type === 'income' ? groups.income : groups.expense;
+    if (list.includes(cleanNew)) {
+      useToastStore.getState().addToast('มีกลุ่มชื่อนี้อยู่แล้ว', 'error');
+      return;
+    }
+
+    // Rename in group list
+    setGroups(prev => ({
+      ...prev,
+      [editingGroup.type]: prev[editingGroup.type].map(g => g === editingGroup.oldName ? cleanNew : g)
+    }));
+
+    // Cascade rename in categories
+    setCategories(prev => {
+      const next: Record<string, DBCategory> = {};
+      Object.keys(prev).forEach(k => {
+        const cat = prev[k];
+        if (cat.group === editingGroup.oldName) {
+          next[k] = { ...cat, group: cleanNew };
+        } else {
+          next[k] = cat;
+        }
+      });
+      return next;
+    });
+
+    setEditingGroup(prev => ({ ...prev, isOpen: false }));
+    useToastStore.getState().addToast(`เปลี่ยนชื่อกลุ่มเป็น "${cleanNew}" สำเร็จ`, 'success');
+  };
+
+  const handleDeleteGroup = (groupName: string) => {
+    if (groupName === 'อื่นๆ') {
+      useToastStore.getState().addToast('ไม่สามารถลบกลุ่ม "อื่นๆ" ได้', 'error');
+      return;
+    }
+
+    useConfirmStore.getState().showConfirm({
+      title: 'ลบกลุ่มเริ่มต้นของระบบ',
+      message: `คุณต้องการลบกลุ่ม "${groupName}" หรือไม่? หมวดหมู่ในกลุ่มนี้จะถูกย้ายไปยังกลุ่ม "อื่นๆ"`,
+      confirmText: 'ลบกลุ่ม',
+      cancelText: 'ยกเลิก',
+      isDestructive: true,
+      onConfirm: () => {
+        // Remove from groups
+        setGroups(prev => ({
+          ...prev,
+          [groupType]: prev[groupType].filter(g => g !== groupName)
+        }));
+
+        // Migrate categories to 'อื่นๆ'
+        setCategories(prev => {
+          const next: Record<string, DBCategory> = {};
+          Object.keys(prev).forEach(k => {
+            const cat = prev[k];
+            if (cat.group === groupName) {
+              next[k] = { ...cat, group: 'อื่นๆ' };
+            } else {
+              next[k] = cat;
+            }
+          });
+          return next;
+        });
+
+        useToastStore.getState().addToast(`ลบกลุ่ม "${groupName}" สำเร็จ`, 'success');
+      }
+    });
+  };
+
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col justify-end p-4 sm:p-6 animate-fade-in">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 z-[100] flex flex-col justify-end p-2 sm:p-4 md:p-6 animate-fade-in">
+      <div className="absolute inset-0 bg-[#0F0720]/70 backdrop-blur-md" onClick={onClose} />
       
-      <div className="relative bg-[#F8FAFC] dark:bg-slate-900 rounded-[2.5rem] shadow-2xl w-full max-w-md mx-auto max-h-[90vh] flex flex-col animate-slide-up border border-white/50 overflow-hidden">
+      <div className="relative bg-white dark:bg-[#120B24] rounded-[28px] sm:rounded-[36px] shadow-2xl w-full max-w-lg mx-auto max-h-[90vh] flex flex-col animate-slide-up border border-purple-100 dark:border-purple-900/40 overflow-hidden">
         
         {/* Header */}
-        <div className="px-6 pt-6 pb-4 flex items-center justify-between shrink-0 bg-white dark:bg-slate-800 rounded-t-[2.5rem] shadow-sm z-10">
+        <div className="px-6 pt-5 pb-4 flex items-center justify-between shrink-0 bg-gradient-to-r from-purple-50/90 via-pink-50/40 to-indigo-50/90 dark:from-purple-950/40 dark:via-[#1A0F33]/60 dark:to-indigo-950/40 border-b border-purple-100/60 dark:border-purple-900/30 z-10">
           <div className="flex items-center gap-3">
-            {isAdding && (
+            {isAdding ? (
               <button 
                 onClick={() => setIsAdding(false)} 
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 transition-colors"
+                className="w-10 h-10 flex items-center justify-center rounded-2xl bg-purple-100/80 hover:bg-purple-200 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 transition-colors"
               >
-                <X className="w-5 h-5 text-slate-500" />
+                <X className="w-4 h-4" />
               </button>
+            ) : (
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-purple-500/25">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
             )}
             <div>
-              <h3 className="text-xl font-black bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">จัดการหมวดหมู่</h3>
-              <p className="text-xs font-bold text-slate-400">Admin Mode</p>
+              <h3 className="text-base sm:text-lg font-black text-[#2E1065] dark:text-white tracking-tight">
+                {isAdding ? (editingKey ? 'แก้ไขหมวดหมู่ระบบ' : 'เพิ่มหมวดหมู่ระบบ') : 'จัดการหมวดหมู่และกลุ่ม (Admin)'}
+              </h3>
+              <p className="text-[11px] font-bold text-purple-600/70 dark:text-purple-300/70">
+                กำหนดค่าเริ่มต้นของระบบสำหรับผู้ใช้ทุกคน
+              </p>
             </div>
           </div>
-          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 transition-colors">
-            <X className="w-5 h-5 text-slate-500" />
+          <button onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-2xl bg-purple-100/60 hover:bg-purple-200 dark:bg-white/10 text-purple-700 dark:text-purple-300 transition-colors">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Tab Filter */}
+        {/* Top Segmented Tab Switcher (Categories vs Groups) */}
         {!isAdding && (
-          <div className="px-6 pb-2 bg-white dark:bg-slate-800 shrink-0 z-10 border-b border-slate-100 dark:border-slate-700/50">
-            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-              {[
-                { id: 'income', label: 'รายรับ' },
-                { id: 'expense', label: 'รายจ่าย' }
-              ].map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => setFilterTab(t.id as any)}
-                  className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
-                    filterTab === t.id 
-                      ? 'bg-orange-500 text-white shadow-md' 
-                      : 'bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
+          <div className="px-6 pt-3 pb-2 bg-white dark:bg-[#120B24] shrink-0 border-b border-purple-100/60 dark:border-purple-900/30">
+            <div className="grid grid-cols-2 p-1.5 bg-purple-50/80 dark:bg-purple-950/30 rounded-2xl border border-purple-100/60 dark:border-purple-900/30">
+              <button
+                onClick={() => setMainTab('categories')}
+                className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                  mainTab === 'categories'
+                    ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md shadow-purple-500/25'
+                    : 'text-[#2E1065]/70 dark:text-white/70 hover:text-purple-700 dark:hover:text-white'
+                }`}
+              >
+                <Tag className="w-3.5 h-3.5" />
+                หมวดหมู่เริ่มต้น ({Object.keys(categories).length})
+              </button>
+              <button
+                onClick={() => setMainTab('groups')}
+                className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                  mainTab === 'groups'
+                    ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md shadow-purple-500/25'
+                    : 'text-[#2E1065]/70 dark:text-white/70 hover:text-purple-700 dark:hover:text-white'
+                }`}
+              >
+                <FolderTree className="w-3.5 h-3.5" />
+                กลุ่มเริ่มต้น ({groups.expense.length + groups.income.length})
+              </button>
             </div>
           </div>
         )}
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto no-scrollbar p-6 bg-[#F8FAFC] dark:bg-slate-900 relative">
+        {/* Content Body */}
+        <div className="flex-1 overflow-y-auto no-scrollbar p-5 bg-white dark:bg-[#120B24] relative">
           
           {isAdding ? (
-            <div className="bg-white dark:bg-slate-800 p-5 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 animate-fade-in mb-6">
-              <h4 className="font-bold text-slate-700 dark:text-slate-200 mb-4 text-center">
-                {editingKey ? 'แก้ไขหมวดหมู่' : 'เพิ่มหมวดหมู่ใหม่'}
+            /* Category Form (Admin) */
+            <div className="bg-gradient-to-br from-[#FAF5FF] to-[#EDE9FE] dark:from-[#1A0F33] dark:to-[#251542] p-5 rounded-3xl shadow-sm border border-purple-200 dark:border-purple-800 animate-fade-in space-y-4">
+              <h4 className="font-black text-sm text-[#2E1065] dark:text-white text-center">
+                {editingKey ? 'แก้ไขหมวดหมู่ระบบ' : 'เพิ่มหมวดหมู่ระบบใหม่'}
               </h4>
               
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-500 ml-1 mb-1 block">ชื่อหมวดหมู่</label>
-                  <input type="text" value={newName} onChange={e => setNewName(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 rounded-xl px-4 py-3 text-sm font-bold border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-orange-500/50" placeholder="เช่น ค่าซ่อมรถ" />
-                </div>
-                
-                <div className="flex flex-col gap-4">
-                  <CustomSelect
-                    label={`กลุ่ม (Group) - ของ${newTab === 'income' ? 'รายรับ' : 'รายจ่าย'}`}
-                    value={newGroup}
-                    onChange={setNewGroup}
-                    options={getGroupOptions(newTab).map(g => ({ label: g, value: g }))}
-                  />
-                </div>
+              <div>
+                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1 block">ชื่อหมวดหมู่</label>
+                <input 
+                  type="text" 
+                  value={newName} 
+                  onChange={e => setNewName(e.target.value)} 
+                  className="w-full bg-[#FFF9F2] dark:bg-white/5 rounded-2xl px-4 py-2.5 text-xs font-bold border border-purple-100 dark:border-white/10 outline-none focus:ring-2 focus:ring-purple-400/40 text-[#2E1065] dark:text-white" 
+                  placeholder="เช่น ค่าเดินทาง, เงินเดือน" 
+                />
+              </div>
 
-                <div>
-                  <label className="text-xs font-bold text-slate-500 ml-1 mb-2 block">เลือกสี</label>
-                  <div className="flex flex-wrap gap-2">
-                    {AVAILABLE_COLORS.map((c: any, idx: number) => (
-                      <button 
-                        key={idx} 
-                        onClick={() => setNewColorIdx(idx)}
-                        className={`w-8 h-8 rounded-full ${c.solidColor} flex items-center justify-center transition-all ${newColorIdx === idx ? 'scale-125 shadow-lg border-2 border-white dark:border-slate-900 ring-2 ring-slate-200 dark:ring-slate-700 z-10' : 'opacity-50 hover:opacity-100'}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-500 ml-1 mb-2 block">เลือกไอคอน</label>
-                  <div className="grid grid-cols-6 gap-2 max-h-[120px] overflow-y-auto no-scrollbar p-2 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
-                    {AVAILABLE_ICONS.map(iconName => {
-                      const IconComp = getIconComponent(iconName);
-                      return (
-                        <button 
-                          key={iconName}
-                          onClick={() => setNewIcon(iconName)}
-                          className={`aspect-square rounded-xl flex items-center justify-center transition-all ${newIcon === iconName ? 'bg-orange-500 text-white shadow-md' : 'bg-white dark:bg-slate-800 text-slate-500 hover:bg-orange-100'}`}
-                        >
-                          <IconComp size={18} />
-                        </button>
-                      );
-                    })}
-                  </div>
+              <div>
+                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1 block">ประเภทรายการ</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewTab('lifestyle');
+                      if (!groups.expense.includes(newGroup)) {
+                        setNewGroup(groups.expense[0] || 'อื่นๆ');
+                      }
+                    }}
+                    className={`py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border transition-all ${
+                      newTab !== 'income'
+                        ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md'
+                        : 'bg-white dark:bg-white/5 text-rose-700 border-rose-200'
+                    }`}
+                  >
+                    <ArrowDownRight className="w-3.5 h-3.5" />
+                    รายจ่าย
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewTab('income');
+                      if (!groups.income.includes(newGroup)) {
+                        setNewGroup(groups.income[0] || 'อื่นๆ');
+                      }
+                    }}
+                    className={`py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border transition-all ${
+                      newTab === 'income'
+                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md'
+                        : 'bg-white dark:bg-white/5 text-emerald-700 border-emerald-200'
+                    }`}
+                  >
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                    รายรับ
+                  </button>
                 </div>
               </div>
               
-              <div className="flex gap-2 mt-5">
-                <button onClick={() => setIsAdding(false)} className="flex-1 py-3 rounded-xl font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors">ยกเลิก</button>
-                <button onClick={handleAdd} disabled={!newName.trim()} className="flex-[2] py-3 rounded-xl font-bold bg-orange-500 text-white shadow-lg shadow-orange-500/30 disabled:opacity-50 hover:bg-orange-600 transition-colors">
+              <div>
+                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1 block">
+                  กลุ่มที่สังกัด
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-[100px] overflow-y-auto no-scrollbar p-2 bg-white/80 dark:bg-white/5 rounded-2xl border border-purple-100 dark:border-white/10">
+                  {currentFormGroups.map(g => (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setNewGroup(g)}
+                      className={`py-1.5 px-2 rounded-xl text-xs font-bold transition-all text-left truncate ${
+                        newGroup === g
+                          ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm'
+                          : 'bg-purple-50/60 dark:bg-white/5 text-[#2E1065]/70 dark:text-white/70'
+                      }`}
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1.5 block">เลือกสี</label>
+                <div className="grid grid-cols-8 gap-2 p-2.5 bg-white/80 dark:bg-white/5 rounded-2xl border border-purple-100 dark:border-white/10">
+                  {AVAILABLE_COLORS.map((c: any, idx: number) => {
+                    const isSel = newColorIdx === idx;
+                    return (
+                      <button 
+                        key={idx} 
+                        onClick={() => setNewColorIdx(idx)}
+                        className={`aspect-square rounded-full ${c.solidColor} flex items-center justify-center transition-all ${
+                          isSel ? 'scale-115 shadow-md ring-4 ring-purple-400/50 ring-offset-2 ring-offset-white dark:ring-offset-[#120B24]' : 'opacity-70 hover:opacity-100'
+                        }`}
+                      >
+                        {isSel && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1.5 block">เลือกไอคอน</label>
+                <div className="grid grid-cols-7 gap-1.5 max-h-[120px] overflow-y-auto no-scrollbar p-2 bg-white/80 dark:bg-white/5 rounded-2xl border border-purple-100 dark:border-white/10">
+                  {AVAILABLE_ICONS.map(iconName => {
+                    const IconComp = getIconComponent(iconName);
+                    const isSel = newIcon === iconName;
+                    return (
+                      <button 
+                        key={iconName}
+                        onClick={() => setNewIcon(iconName)}
+                        className={`aspect-square rounded-xl flex items-center justify-center transition-all ${
+                          isSel 
+                            ? 'bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-md' 
+                            : 'bg-white dark:bg-white/5 text-purple-900 dark:text-white hover:bg-purple-100'
+                        }`}
+                      >
+                        <IconComp className="w-4 h-4" />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              
+              <div className="flex gap-2 pt-2">
+                <button onClick={() => setIsAdding(false)} className="flex-1 py-2.5 rounded-2xl font-bold bg-purple-100/80 text-purple-800 hover:bg-purple-200 transition-colors text-xs">ยกเลิก</button>
+                <button onClick={handleAdd} disabled={!newName.trim()} className="flex-[2] py-2.5 rounded-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/25 disabled:opacity-50 hover:brightness-105 transition-all text-xs">
                   {editingKey ? 'บันทึกการแก้ไข' : 'ยืนยันการเพิ่ม'}
                 </button>
               </div>
             </div>
-          ) : (
-            <>
-              {Object.entries(groupedAll).map(([group, cats]) => {
-                if (cats.length === 0) return null;
-                return (
-                  <div key={group} className="mb-6">
-                    <h3 className="text-sm font-bold text-slate-500 mb-3 ml-2">{group}</h3>
-                    <div className="grid grid-cols-4 gap-y-6 gap-x-2">
-                      {cats.map((cat) => {
-                        const { icon: Icon, color, textColor } = getCategoryStyle(cat, categories);
-                        return (
-                          <div key={cat} className="flex flex-col items-center gap-2 group relative">
-                            <div 
-                              onClick={() => openEdit(cat)}
-                              className={`w-14 h-14 rounded-[20px] flex items-center justify-center shadow-sm border relative ${color} ${textColor} cursor-pointer hover:shadow-md hover:scale-105 transition-all`}
-                            >
-                              <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDelete(cat);
-                                }}
-                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-100 text-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm border border-white z-10 hover:bg-red-500 hover:text-white"
+          ) : mainTab === 'categories' ? (
+            /* Categories Tab (Admin) */
+            <div className="space-y-4">
+              {/* Category Type Filter */}
+              <div className="flex gap-2">
+                {[
+                  { id: 'expense', label: 'รายจ่าย' },
+                  { id: 'income', label: 'รายรับ' },
+                  { id: 'all', label: 'ทั้งหมด' }
+                ].map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => setFilterTab(t.id as any)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                      filterTab === t.id 
+                        ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md' 
+                        : 'bg-purple-50/70 dark:bg-white/10 text-[#2E1065]/70 dark:text-white/70'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Grouped Category Cards */}
+              <div className="space-y-4">
+                {Object.entries(groupedAll).map(([group, cats]) => {
+                  if (cats.length === 0) return null;
+                  return (
+                    <div key={group} className="space-y-2">
+                      <div className="flex items-center gap-2 px-1">
+                        <span className="w-2 h-2 rounded-full bg-purple-500" />
+                        <h3 className="text-xs font-black text-[#2E1065] dark:text-purple-200 uppercase">{group}</h3>
+                        <span className="text-[10px] font-bold text-purple-700 bg-purple-100 dark:bg-purple-950 px-1.5 py-0.2 rounded-md">
+                          {cats.length}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-y-4 gap-x-2">
+                        {cats.map((cat) => {
+                          const { icon: Icon, color, textColor } = getCategoryStyle(cat, categories);
+                          return (
+                            <div key={cat} className="flex flex-col items-center gap-1 group relative">
+                              <div 
+                                onClick={() => openEdit(cat)}
+                                className={`w-14 h-14 rounded-[22px] flex items-center justify-center shadow-sm border relative ${color} ${textColor} cursor-pointer hover:scale-105 active:scale-95 transition-all`}
                               >
-                                <X size={12} strokeWidth={3} />
-                              </button>
-                              <Icon className="w-6 h-6" strokeWidth={2.5} />
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(cat);
+                                  }}
+                                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white dark:bg-slate-800 text-rose-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm border border-slate-200 z-10 hover:bg-rose-500 hover:text-white"
+                                >
+                                  <Trash2 className="w-2.5 h-2.5" />
+                                </button>
+                                <Icon className="w-6 h-6" strokeWidth={2.2} />
+                              </div>
+                              <div className="w-full text-center px-0.5 mt-0.5">
+                                <AutoShrinkText 
+                                  origin="center" 
+                                  className="text-[11px] font-bold text-[#2E1065]/80 dark:text-white/80" 
+                                  text={cat} 
+                                />
+                              </div>
                             </div>
-                            <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 text-center break-words max-w-full px-1">
-                              {cat}
-                            </span>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            /* Groups Tab (Admin) */
+            <div className="space-y-4">
+              {/* Group Type Switcher */}
+              <div className="grid grid-cols-2 p-1.5 bg-purple-50/80 dark:bg-purple-950/30 rounded-2xl border border-purple-100/60 dark:border-purple-900/30">
+                <button
+                  type="button"
+                  onClick={() => setGroupType('expense')}
+                  className={`py-2 rounded-xl text-xs font-bold transition-all ${
+                    groupType === 'expense'
+                      ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md'
+                      : 'text-[#2E1065]/70 dark:text-white/70'
+                  }`}
+                >
+                  กลุ่มรายจ่ายเริ่มต้น ({groups.expense.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGroupType('income')}
+                  className={`py-2 rounded-xl text-xs font-bold transition-all ${
+                    groupType === 'income'
+                      ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md'
+                      : 'text-[#2E1065]/70 dark:text-white/70'
+                  }`}
+                >
+                  กลุ่มรายรับเริ่มต้น ({groups.income.length})
+                </button>
+              </div>
+
+              {/* Add New Default Group Input */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddGroup()}
+                  placeholder={`ระบุชื่อกลุ่มเริ่มต้น${groupType === 'income' ? 'รายรับ' : 'รายจ่าย'}ใหม่...`}
+                  className="flex-1 bg-[#FFF9F2] dark:bg-white/5 border border-purple-100 dark:border-white/10 rounded-2xl px-4 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-purple-400/40 text-[#2E1065] dark:text-white"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddGroup}
+                  disabled={!newGroupName.trim()}
+                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl text-xs font-bold disabled:opacity-50 shadow-md shadow-purple-500/20 flex items-center gap-1 shrink-0"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  เพิ่มกลุ่ม
+                </button>
+              </div>
+
+              {/* Groups List */}
+              <div className="space-y-2.5">
+                {(groupType === 'income' ? groups.income : groups.expense).map(g => {
+                  const count = groupCounts[g] || 0;
+                  const isProtected = g === 'อื่นๆ';
+
+                  return (
+                    <div 
+                      key={g}
+                      className="p-3.5 rounded-2xl bg-purple-50/60 dark:bg-white/5 border border-purple-100/80 dark:border-purple-900/40 flex items-center justify-between shadow-sm"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0">
+                          <FolderTree className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <AutoShrinkText origin="left" className="text-xs font-bold text-[#2E1065] dark:text-white" text={g} />
+                          <span className="text-[10px] font-bold text-purple-600/70 dark:text-purple-300/70 block">
+                            {count} หมวดหมู่
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {!isProtected && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => setEditingGroup({ isOpen: true, oldName: g, newName: g, type: groupType })}
+                              className="w-8 h-8 rounded-xl bg-white dark:bg-white/10 text-purple-700 hover:text-purple-900 border border-purple-100 flex items-center justify-center shadow-sm"
+                              title="แก้ไขชื่อกลุ่ม"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteGroup(g)}
+                              className="w-8 h-8 rounded-xl bg-white dark:bg-white/10 text-rose-500 hover:text-rose-700 border border-rose-100 flex items-center justify-center shadow-sm"
+                              title="ลบกลุ่ม"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           )}
 
         </div>
         
-        {/* Actions */}
-        <div className="p-5 bg-white dark:bg-slate-800 shrink-0 border-t border-slate-100 dark:border-slate-700 flex gap-3 z-10">
+        {/* Actions Bar */}
+        <div className="p-4 bg-white dark:bg-[#120B24] shrink-0 border-t border-purple-100/60 dark:border-purple-900/30 flex gap-2.5 z-10">
           {!isAdding && (
             <button 
               onClick={openAdd} 
-              className="w-14 h-14 shrink-0 rounded-2xl bg-orange-100 dark:bg-orange-900/30 text-orange-500 flex items-center justify-center hover:bg-orange-200 transition-colors"
+              className="w-12 h-12 shrink-0 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center hover:bg-purple-200 transition-colors shadow-sm"
+              title="เพิ่มหมวดหมู่ใหม่"
             >
-              <Plus size={24} strokeWidth={3} />
+              <Plus className="w-6 h-6" />
             </button>
           )}
           <button 
             onClick={handleSave} 
             disabled={saving || isAdding} 
-            className="flex-1 py-4 rounded-2xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/30 disabled:opacity-50 transition-transform active:scale-95 text-lg"
+            className="flex-1 py-3 rounded-2xl font-black bg-gradient-to-r from-[#6D28D9] via-[#7C3AED] to-[#8B5CF6] hover:brightness-105 text-white shadow-lg shadow-purple-500/30 disabled:opacity-50 transition-all active:scale-98 text-sm flex items-center justify-center gap-2"
           >
-            {saving ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}
+            {saving ? 'กำลังบันทึกข้อมูลระบบ...' : 'บันทึกข้อมูลระบบ (Admin)'}
           </button>
         </div>
 
       </div>
+
+      {/* Admin Rename Group Sub-Modal */}
+      {editingGroup.isOpen && (
+        <div className="fixed inset-0 z-[140] flex items-center justify-center p-4 animate-fade-in">
+          <div 
+            className="absolute inset-0 bg-[#0F0720]/75 backdrop-blur-md"
+            onClick={() => setEditingGroup(prev => ({ ...prev, isOpen: false }))}
+          />
+          <div className="relative bg-white dark:bg-[#120B24] rounded-[32px] shadow-2xl w-full max-w-sm border border-purple-100 dark:border-purple-900/40 p-6 z-10 space-y-4 animate-slide-up">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white">
+                  <FolderTree className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-[#2E1065] dark:text-white">แก้ไขชื่อกลุ่มระบบ</h3>
+                  <p className="text-[11px] font-bold text-purple-600/70">กลุ่ม{editingGroup.type === 'income' ? 'รายรับ' : 'รายจ่าย'}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setEditingGroup(prev => ({ ...prev, isOpen: false }))}
+                className="w-8 h-8 rounded-xl bg-purple-100/60 text-purple-700 flex items-center justify-center"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1.5 block">
+                ชื่อกลุ่มเดิม: <span className="text-purple-700 dark:text-purple-300 font-black">{editingGroup.oldName}</span>
+              </label>
+              <input
+                type="text"
+                autoFocus
+                value={editingGroup.newName}
+                onChange={(e) => setEditingGroup(prev => ({ ...prev, newName: e.target.value }))}
+                onKeyDown={(e) => e.key === 'Enter' && handleSaveRenameGroup()}
+                placeholder="ระบุชื่อกลุ่มใหม่..."
+                className="w-full bg-[#FFF9F2] dark:bg-white/5 rounded-2xl px-4 py-2.5 text-xs font-bold border border-purple-100 dark:border-white/10 outline-none focus:ring-2 focus:ring-purple-400/40 text-[#2E1065] dark:text-white"
+              />
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setEditingGroup(prev => ({ ...prev, isOpen: false }))}
+                className="flex-1 py-2.5 rounded-2xl font-bold text-xs bg-purple-100/70 text-purple-800"
+              >
+                ยกเลิก
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveRenameGroup}
+                disabled={!editingGroup.newName.trim()}
+                className="flex-[2] py-2.5 rounded-2xl font-bold text-xs bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md disabled:opacity-50"
+              >
+                บันทึกการแก้ไข
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

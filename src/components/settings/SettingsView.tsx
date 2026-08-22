@@ -32,8 +32,9 @@ import { useTranslation } from '@/hooks/useTranslation';
 import PremiumThemeSwitch from '@/components/ui/PremiumThemeSwitch';
 import PremiumLanguageSwitch from '@/components/ui/PremiumLanguageSwitch';
 import { EditProfileModal, FontSelectModal, AboutModal, PrivacyPolicyModal, ExportImportModal, AdminAppInfoModal, AdminCategoryModal, AdminAiModal, AdminUsersModal } from './SettingsModals';
+import UserCategoryManagerModal from './UserCategoryManagerModal';
 
-type ModalType = 'none' | 'profile' | 'font' | 'about' | 'privacy' | 'export' | 'adminApp' | 'adminCategory' | 'adminAi' | 'adminUsers';
+type ModalType = 'none' | 'profile' | 'font' | 'about' | 'privacy' | 'export' | 'categories' | 'adminApp' | 'adminCategory' | 'adminAi' | 'adminUsers';
 
 interface SettingItem {
   icon: typeof User;
@@ -73,6 +74,14 @@ export default function SettingsView() {
     {
       title: t('settings.customize', 'ปรับแต่ง'),
       items: [
+        {
+          icon: Tag,
+          label: t('settings.manageCategories', 'จัดการหมวดหมู่และกลุ่ม'),
+          sublabel: 'กำหนดหมวดหมู่รายรับ-รายจ่ายของคุณ',
+          action: 'categories',
+          iconColor: '#ec4899',
+          iconBg: '#ec489918',
+        },
         {
           icon: Palette,
           label: t('settings.theme', 'ธีม'),
@@ -449,6 +458,7 @@ export default function SettingsView() {
       <AboutModal isOpen={activeModal === 'about'} onClose={() => setActiveModal('none')} />
       <PrivacyPolicyModal isOpen={activeModal === 'privacy'} onClose={() => setActiveModal('none')} />
       <ExportImportModal isOpen={activeModal === 'export'} onClose={() => setActiveModal('none')} />
+      <UserCategoryManagerModal isOpen={activeModal === 'categories'} onClose={() => setActiveModal('none')} />
       <AdminAppInfoModal isOpen={activeModal === 'adminApp'} onClose={() => setActiveModal('none')} />
       <AdminCategoryModal isOpen={activeModal === 'adminCategory'} onClose={() => setActiveModal('none')} />
       <AdminAiModal isOpen={activeModal === 'adminAi'} onClose={() => setActiveModal('none')} />

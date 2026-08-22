@@ -6,7 +6,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useThemeStore } from '@/store/useThemeStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
-import { getUserFavorites, fetchCategories, getAppInfo } from '@/services/transactionService';
+import { getUserFavorites, fetchUserCategories, fetchUserGroups, getAppInfo } from '@/services/transactionService';
 import { getUserWallets, saveUserWallets } from '@/services/walletService';
 import { getUserSettings } from '@/services/settingsService';
 import { useWalletStore } from '@/store/useWalletStore';
@@ -106,8 +106,11 @@ function App() {
       getUserFavorites(user.uid).then(favs => {
         useAppStore.getState().setFavoriteCategories(favs);
       });
-      fetchCategories().then(cats => {
+      fetchUserCategories(user.uid).then(cats => {
         useAppStore.getState().setAppCategories(cats);
+      });
+      fetchUserGroups(user.uid).then(groups => {
+        useAppStore.getState().setUserGroups(groups);
       });
       getUserSettings(user.uid).then(settings => {
         useSettingsStore.getState().loadUserDailyBudget(user.uid, settings?.dailyBudget);
