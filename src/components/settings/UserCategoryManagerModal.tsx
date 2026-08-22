@@ -841,6 +841,20 @@ export default function UserCategoryManagerModal({
 
             {/* Step 7: Form Action Buttons */}
             <div className="pt-2 pb-3 flex gap-2.5">
+              {editingCatKey && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleDeleteCategory(editingCatKey);
+                    setIsEditingCategory(false);
+                  }}
+                  className="px-4 py-3 rounded-2xl font-bold text-xs bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60 transition-colors flex items-center justify-center gap-1.5 shrink-0 shadow-sm"
+                  title={isOriginalDefault ? "ซ่อนหมวดหมู่นี้" : "ลบหมวดหมู่นี้"}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>{isOriginalDefault ? 'ซ่อนหมวดหมู่' : 'ลบหมวดหมู่'}</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setIsEditingCategory(false)}
