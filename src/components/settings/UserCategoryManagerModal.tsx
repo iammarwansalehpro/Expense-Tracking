@@ -844,44 +844,49 @@ export default function UserCategoryManagerModal({
               </div>
             </div>
 
-            {/* Step 7: Form Action Buttons */}
-            <div className="pt-2 pb-3 flex gap-2.5">
-              {editingCatKey && (
+            {/* Step 7: Form Action Buttons (Standard: Cancel Left, Save Right, Isolated Destructive Action) */}
+            <div className="space-y-2.5 pt-2 pb-2">
+              <div className="flex gap-2.5">
                 <button
                   type="button"
-                  onClick={() => {
-                    handleDeleteCategory(editingCatKey);
-                    setIsEditingCategory(false);
-                  }}
-                  className="px-4 py-3 rounded-2xl font-bold text-xs bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60 transition-colors flex items-center justify-center gap-1.5 shrink-0 shadow-sm"
-                  title={isOriginalDefault ? "ซ่อนหมวดหมู่นี้" : "ลบหมวดหมู่นี้"}
+                  onClick={() => setIsEditingCategory(false)}
+                  className="flex-1 py-3 rounded-2xl font-bold text-xs bg-purple-100/70 hover:bg-purple-200 dark:bg-white/10 dark:hover:bg-white/20 text-purple-800 dark:text-purple-200 transition-colors"
                 >
-                  <Trash2 className="w-4 h-4" />
-                  <span>{isOriginalDefault ? 'ซ่อนหมวดหมู่' : 'ลบหมวดหมู่'}</span>
+                  ยกเลิก
                 </button>
+                <button
+                  type="button"
+                  onClick={handleSaveCategory}
+                  disabled={savingCategory || !formName.trim()}
+                  className="flex-[2] py-3 rounded-2xl font-bold text-xs bg-gradient-to-r from-[#6D28D9] via-[#7C3AED] to-[#8B5CF6] hover:brightness-105 text-white disabled:opacity-50 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-purple-500/30 active:scale-98"
+                >
+                  {savingCategory ? (
+                    <>กำลังบันทึก...</>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" strokeWidth={2.5} />
+                      {editingCatKey ? 'บันทึกการแก้ไข' : 'ยืนยันการเพิ่ม'}
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Isolated Destructive Button (Prevents accidental clicks) */}
+              {editingCatKey && (
+                <div className="pt-2 border-t border-purple-200/60 dark:border-purple-800/60">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleDeleteCategory(editingCatKey);
+                      setIsEditingCategory(false);
+                    }}
+                    className="w-full py-2.5 rounded-2xl font-bold text-xs bg-rose-50/70 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 border border-rose-200/70 dark:border-rose-900/40 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>{isOriginalDefault ? 'ซ่อนหมวดหมู่นี้' : 'ลบหมวดหมู่นี้'}</span>
+                  </button>
+                </div>
               )}
-              <button
-                type="button"
-                onClick={() => setIsEditingCategory(false)}
-                className="flex-1 py-3 rounded-2xl font-bold text-xs bg-purple-100/70 hover:bg-purple-200 dark:bg-white/10 dark:hover:bg-white/20 text-purple-800 dark:text-purple-200 transition-colors"
-              >
-                ยกเลิก
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveCategory}
-                disabled={savingCategory || !formName.trim()}
-                className="flex-[2] py-3 rounded-2xl font-bold text-xs bg-gradient-to-r from-[#6D28D9] via-[#7C3AED] to-[#8B5CF6] hover:brightness-105 text-white disabled:opacity-50 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-purple-500/30 active:scale-98"
-              >
-                {savingCategory ? (
-                  <>กำลังบันทึก...</>
-                ) : (
-                  <>
-                    <Check className="w-4 h-4" strokeWidth={2.5} />
-                    {editingCatKey ? 'บันทึกการแก้ไข' : 'ยืนยันการเพิ่ม'}
-                  </>
-                )}
-              </button>
             </div>
 
           </div>

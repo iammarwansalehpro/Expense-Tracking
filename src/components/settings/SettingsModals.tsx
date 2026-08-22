@@ -1571,24 +1571,42 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
                 </div>
               </div>
               
-              <div className="flex gap-2 pt-2">
-                {editingKey && (
-                  <button
+              {/* Action Buttons (Standard Left: Cancel, Right: Confirm, Isolated Destructive Action) */}
+              <div className="space-y-2.5 pt-2">
+                <div className="flex gap-2.5">
+                  <button 
                     type="button"
-                    onClick={() => {
-                      handleDelete(editingKey);
-                      setIsAdding(false);
-                    }}
-                    className="px-4 py-2.5 rounded-2xl font-bold bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60 transition-colors text-xs flex items-center justify-center gap-1 shrink-0 shadow-sm"
+                    onClick={() => setIsAdding(false)} 
+                    className="flex-1 py-2.5 rounded-2xl font-bold bg-purple-100/80 text-purple-800 hover:bg-purple-200 dark:bg-white/10 dark:text-purple-200 transition-colors text-xs"
                   >
-                    <Trash2 className="w-4 h-4" />
-                    <span>ลบหมวดหมู่</span>
+                    ยกเลิก
                   </button>
+                  <button 
+                    type="button"
+                    onClick={handleAdd} 
+                    disabled={!newName.trim()} 
+                    className="flex-[2] py-2.5 rounded-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/25 disabled:opacity-50 hover:brightness-105 transition-all text-xs flex items-center justify-center gap-1.5"
+                  >
+                    {editingKey ? 'บันทึกการแก้ไข' : 'ยืนยันการเพิ่ม'}
+                  </button>
+                </div>
+
+                {/* Isolated Destructive Row */}
+                {editingKey && (
+                  <div className="pt-2 border-t border-purple-200/60 dark:border-purple-800/60">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleDelete(editingKey);
+                        setIsAdding(false);
+                      }}
+                      className="w-full py-2.5 rounded-2xl font-bold text-xs bg-rose-50/70 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 border border-rose-200/70 dark:border-rose-900/40 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>ลบหมวดหมู่เริ่มต้นนี้</span>
+                    </button>
+                  </div>
                 )}
-                <button onClick={() => setIsAdding(false)} className="flex-1 py-2.5 rounded-2xl font-bold bg-purple-100/80 text-purple-800 hover:bg-purple-200 transition-colors text-xs">ยกเลิก</button>
-                <button onClick={handleAdd} disabled={!newName.trim()} className="flex-[2] py-2.5 rounded-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/25 disabled:opacity-50 hover:brightness-105 transition-all text-xs">
-                  {editingKey ? 'บันทึกการแก้ไข' : 'ยืนยันการเพิ่ม'}
-                </button>
               </div>
             </div>
           ) : mainTab === 'categories' ? (
@@ -1790,21 +1808,22 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
 
         </div>
         
-        {/* Actions Bar */}
-        <div className="p-4 bg-white dark:bg-[#120B24] shrink-0 border-t border-purple-100/60 dark:border-purple-900/30 flex gap-2.5 z-10">
+        {/* Actions Bar (Standardized UX) */}
+        <div className="p-4 bg-white dark:bg-[#120B24] shrink-0 border-t border-purple-100/60 dark:border-purple-900/30 flex items-center gap-2.5 z-10">
           {!isAdding && (
             <button 
               onClick={openAdd} 
-              className="w-12 h-12 shrink-0 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center hover:bg-purple-200 transition-colors shadow-sm"
+              className="px-4 py-3 rounded-2xl bg-purple-100/80 hover:bg-purple-200 text-purple-800 dark:bg-white/10 dark:text-purple-200 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-sm shrink-0"
               title="เพิ่มหมวดหมู่ใหม่"
             >
-              <Plus className="w-6 h-6" />
+              <Plus className="w-4 h-4" strokeWidth={2.5} />
+              <span>เพิ่มหมวดหมู่</span>
             </button>
           )}
           <button 
             onClick={handleSave} 
             disabled={saving || isAdding} 
-            className="flex-1 py-3 rounded-2xl font-black bg-gradient-to-r from-[#6D28D9] via-[#7C3AED] to-[#8B5CF6] hover:brightness-105 text-white shadow-lg shadow-purple-500/30 disabled:opacity-50 transition-all active:scale-98 text-sm flex items-center justify-center gap-2"
+            className="flex-1 py-3 rounded-2xl font-black bg-gradient-to-r from-[#6D28D9] via-[#7C3AED] to-[#8B5CF6] hover:brightness-105 text-white shadow-lg shadow-purple-500/30 disabled:opacity-50 transition-all active:scale-98 text-xs sm:text-sm flex items-center justify-center gap-2"
           >
             {saving ? 'กำลังบันทึกข้อมูลระบบ...' : 'บันทึกข้อมูลระบบ (Admin)'}
           </button>
