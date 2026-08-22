@@ -3,7 +3,7 @@ import {
   X, CheckCircle2, Upload, Download, Type, User, Tag, Plus, Trash2, 
   ArrowUpRight, ArrowDownRight, ShieldCheck, Lock, EyeOff, Database, 
   UserCheck, FileSpreadsheet, FileJson, AlertTriangle, Calendar, 
-  Loader2, ChevronRight, FileCheck, FolderTree, Edit2
+  Loader2, ChevronRight, FileCheck, FolderTree, Edit2, ArrowLeft, ChevronLeft
 } from 'lucide-react';
 import { updateProfile } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
@@ -1383,9 +1383,10 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
             {isAdding ? (
               <button 
                 onClick={() => setIsAdding(false)} 
-                className="w-10 h-10 flex items-center justify-center rounded-2xl bg-purple-100/80 hover:bg-purple-200 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 transition-colors"
+                className="w-10 h-10 flex items-center justify-center rounded-2xl bg-purple-100/80 hover:bg-purple-200 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 transition-colors shadow-sm"
+                title="ย้อนกลับ"
               >
-                <X className="w-4 h-4" />
+                <ArrowLeft className="w-4 h-4" />
               </button>
             ) : (
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-purple-500/25">
@@ -1527,12 +1528,20 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
                     return (
                       <button 
                         key={idx} 
+                        type="button"
                         onClick={() => setNewColorIdx(idx)}
-                        className={`aspect-square rounded-full ${c.solidColor} flex items-center justify-center transition-all ${
-                          isSel ? 'scale-115 shadow-md ring-4 ring-purple-400/50 ring-offset-2 ring-offset-white dark:ring-offset-[#120B24]' : 'opacity-70 hover:opacity-100'
+                        title={c.name}
+                        className={`aspect-square rounded-full flex items-center justify-center p-0.5 transition-all ${
+                          isSel 
+                            ? 'border-2 border-purple-600 dark:border-purple-400 bg-white dark:bg-[#120B24] shadow-sm' 
+                            : 'border-2 border-transparent hover:scale-105'
                         }`}
                       >
-                        {isSel && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                        <span 
+                          className={`w-full h-full rounded-full ${c.solidColor} shadow-inner transition-transform duration-150 ${
+                            isSel ? 'scale-85' : 'scale-100 opacity-80 hover:opacity-100'
+                          }`} 
+                        />
                       </button>
                     );
                   })}

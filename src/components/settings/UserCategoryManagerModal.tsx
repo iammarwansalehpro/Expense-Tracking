@@ -743,12 +743,12 @@ export default function UserCategoryManagerModal({
               </div>
             </div>
 
-            {/* Step 5: Color Palette (Radiant Glow & Dual Ring Indicator - NO plain black) */}
+            {/* Step 5: Color Palette (Non-overlapping concentric indicator - No checkmark) */}
             <div>
               <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1.5 block">
                 เลือกสี
               </label>
-              <div className="grid grid-cols-8 gap-2.5 p-3 bg-purple-50/50 dark:bg-white/5 rounded-2xl border border-purple-100/60 dark:border-white/10">
+              <div className="grid grid-cols-8 gap-2 p-3 bg-purple-50/50 dark:bg-white/5 rounded-2xl border border-purple-100/60 dark:border-white/10">
                 {AVAILABLE_COLORS.map((c, idx) => {
                   const isSelected = formColorIdx === idx;
                   return (
@@ -757,13 +757,17 @@ export default function UserCategoryManagerModal({
                       type="button"
                       onClick={() => setFormColorIdx(idx)}
                       title={c.name}
-                      className={`aspect-square rounded-full ${c.solidColor} flex items-center justify-center transition-all duration-200 ${
+                      className={`aspect-square rounded-full flex items-center justify-center p-0.5 transition-all ${
                         isSelected 
-                          ? 'scale-115 shadow-lg ring-4 ring-purple-400/50 ring-offset-2 ring-offset-white dark:ring-offset-[#120B24]' 
-                          : 'opacity-70 hover:opacity-100 hover:scale-105'
+                          ? 'border-2 border-purple-600 dark:border-purple-400 bg-white dark:bg-[#120B24] shadow-sm' 
+                          : 'border-2 border-transparent hover:scale-105'
                       }`}
                     >
-                      {isSelected && <Check className="w-3.5 h-3.5 text-white stroke-[3] drop-shadow-sm" />}
+                      <span 
+                        className={`w-full h-full rounded-full ${c.solidColor} shadow-inner transition-transform duration-150 ${
+                          isSelected ? 'scale-85' : 'scale-100 opacity-80 hover:opacity-100'
+                        }`} 
+                      />
                     </button>
                   );
                 })}
