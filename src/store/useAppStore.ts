@@ -135,7 +135,9 @@ export const useAppStore = create<AppState>()(
         appName: state.appName,
         appSlogan: state.appSlogan,
         appIcon: state.appIcon,
-        userGroups: state.userGroups
+        userGroups: state.userGroups,
+        appCategories: state.appCategories,
+        favoriteCategories: state.favoriteCategories
       }),
     }
   )

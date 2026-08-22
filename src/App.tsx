@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { ref, set } from 'firebase/database';
+import { ref, set, onValue } from 'firebase/database';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useThemeStore } from '@/store/useThemeStore';
@@ -106,6 +106,8 @@ function App() {
       getUserFavorites(user.uid).then(favs => {
         useAppStore.getState().setFavoriteCategories(favs);
       });
+
+      // Initial Fetch
       fetchUserCategories(user.uid).then(cats => {
         useAppStore.getState().setAppCategories(cats);
       });
@@ -115,6 +117,39 @@ function App() {
       getUserSettings(user.uid).then(settings => {
         useSettingsStore.getState().loadUserDailyBudget(user.uid, settings?.dailyBudget);
       });
+
+      // Realtime Category Listeners
+      const userCatsRef = ref(db, `users/${user.uid}/categories`);
+      const userHiddenRef = ref(db, `users/${user.uid}/hidden_categories`);
+      const userGroupsRef = ref(db, `users/${user.uid}/groups`);
+      const appCatsRef = ref(db, 'app_categories');
+      const appGroupsRef = ref(db, 'app_default_groups');
+
+      const reloadCats = () => {
+        fetchUserCategories(user.uid).then(cats => {
+          useAppStore.getState().setAppCategories(cats);
+        });
+      };
+
+      const reloadGroups = () => {
+        fetchUserGroups(user.uid).then(groups => {
+          useAppStore.getState().setUserGroups(groups);
+        });
+      };
+
+      const unsubUserCats = onValue(userCatsRef, reloadCats);
+      const unsubUserHidden = onValue(userHiddenRef, reloadCats);
+      const unsubAppCats = onValue(appCatsRef, reloadCats);
+      const unsubUserGroups = onValue(userGroupsRef, reloadGroups);
+      const unsubAppGroups = onValue(appGroupsRef, reloadGroups);
+
+      return () => {
+        unsubUserCats();
+        unsubUserHidden();
+        unsubAppCats();
+        unsubUserGroups();
+        unsubAppGroups();
+      };
     } else {
       useTransactionStore.getState().stopSync();
     }

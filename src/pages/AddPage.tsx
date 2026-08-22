@@ -6,7 +6,7 @@ import CustomSelect from '@/components/ui/CustomSelect';
 import CustomDatePicker from '@/components/ui/CustomDatePicker';
 import CustomTimePicker from '@/components/ui/CustomTimePicker';
 import CategorySelectModal from '@/components/ui/CategorySelectModal';
-import { getCategoryStyle } from '@/utils/categoryStyles';
+import { getCategoryStyle, CATEGORY_SEED } from '@/utils/categoryStyles';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
@@ -66,13 +66,13 @@ export default function AddPage() {
   const { expenseCats, incomeCats } = useMemo(() => {
     const expenses: string[] = [];
     const incomes: string[] = [];
-    if (appCategories) {
-      Object.keys(appCategories).forEach(key => {
-        const cat = appCategories[key];
-        if (cat.tab === 'income') incomes.push(key);
-        else if (cat.tab === 'fixed' || cat.tab === 'lifestyle' || cat.tab === 'savings' || cat.tab === 'all') expenses.push(key);
-      });
-    }
+    const cats = appCategories && Object.keys(appCategories).length > 0 ? appCategories : CATEGORY_SEED;
+    Object.keys(cats).forEach(key => {
+      const cat = cats[key];
+      if (cat.hidden) return;
+      if (cat.tab === 'income') incomes.push(key);
+      else expenses.push(key);
+    });
     return { expenseCats: expenses, incomeCats: incomes };
   }, [appCategories]);
 

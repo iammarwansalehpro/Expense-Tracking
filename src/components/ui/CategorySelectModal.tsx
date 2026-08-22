@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Search, Heart, Plus, Settings2 } from 'lucide-react';
-import { getCategoryStyle, getAllCategoriesGrouped, getCategoriesByType } from '@/utils/categoryStyles';
+import { getCategoryStyle, getAllCategoriesGrouped, getCategoriesByType, CATEGORY_SEED } from '@/utils/categoryStyles';
 import type { TransactionCategory } from '@/types';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -36,19 +36,24 @@ export default function CategorySelectModal({ isOpen, onClose, onSelect, type, s
     onClose,
   });
 
-  const availableCategories = useMemo(() => {
-    if (appCategories && Object.keys(appCategories).length > 0) {
-      return Object.keys(appCategories).filter(key => {
-        const cat = appCategories[key];
-        if (cat.hidden) return false;
-        if (type === 'income') return cat.tab === 'income';
-        if (type === 'expense') return cat.tab === 'fixed' || cat.tab === 'lifestyle' || cat.tab === 'savings' || cat.tab === 'all';
-        if (type === 'savings') return cat.tab === 'savings';
-        return false;
-      });
+  // Reset tab to "ทั้งหมด" and clear search on open or type change
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(t('transactions.filterAll'));
+      setSearch('');
     }
-    // Fallback to local constants if not ready
-    return getCategoriesByType(type);
+  }, [isOpen, type, t]);
+
+  const availableCategories = useMemo(() => {
+    const cats = appCategories && Object.keys(appCategories).length > 0 ? appCategories : CATEGORY_SEED;
+    return Object.keys(cats).filter(key => {
+      const cat = cats[key];
+      if (cat.hidden) return false;
+      if (type === 'income') return cat.tab === 'income';
+      if (type === 'expense') return cat.tab !== 'income';
+      if (type === 'savings') return cat.tab === 'savings';
+      return true;
+    });
   }, [type, appCategories]);
 
   // Group all available categories for the current type
