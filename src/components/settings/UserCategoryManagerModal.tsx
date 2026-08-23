@@ -14,6 +14,10 @@ import {
   getIconComponent, 
   DEFAULT_EXPENSE_GROUPS,
   DEFAULT_INCOME_GROUPS,
+  getCategoryDisplayName,
+  getGroupDisplayName,
+  getIconCategoryLabel,
+  matchIconSearch,
   type DBCategory, 
   type CategoryTab 
 } from '@/utils/categoryStyles';
@@ -53,7 +57,7 @@ export default function UserCategoryManagerModal({
   onClose,
   initialType = 'expense'
 }: UserCategoryManagerModalProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const appCategories = useAppStore((s) => s.appCategories);
   const userGroups = useAppStore((s) => s.userGroups);
@@ -133,7 +137,7 @@ export default function UserCategoryManagerModal({
     return { total, customCount, expenseCount, incomeCount };
   }, [categoriesMap]);
 
-  // Filtered categories
+  // Filtered categories with multilingual search matching
   const filteredCategories = useMemo(() => {
     return Object.entries(categoriesMap).filter(([name, cat]) => {
       if (cat.hidden) return false;
@@ -144,14 +148,16 @@ export default function UserCategoryManagerModal({
 
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim();
-        const matchesName = name.toLowerCase().includes(query);
-        const matchesGroup = cat.group?.toLowerCase().includes(query);
+        const localizedName = getCategoryDisplayName(name, language).toLowerCase();
+        const matchesName = name.toLowerCase().includes(query) || localizedName.includes(query);
+        const localizedGroup = getGroupDisplayName(cat.group || '', language).toLowerCase();
+        const matchesGroup = (cat.group?.toLowerCase().includes(query)) || localizedGroup.includes(query);
         return matchesName || matchesGroup;
       }
 
       return true;
     });
-  }, [categoriesMap, filterTab, searchQuery]);
+  }, [categoriesMap, filterTab, searchQuery, language]);
 
   // Grouped filtered categories according to user group order
   const groupedCategories = useMemo(() => {
@@ -175,7 +181,7 @@ export default function UserCategoryManagerModal({
     return counts;
   }, [categoriesMap]);
 
-  // Filtered icons
+  // Filtered icons with intelligent bilingual semantic search
   const filteredIcons = useMemo(() => {
     let icons = AVAILABLE_ICONS;
     
@@ -187,8 +193,7 @@ export default function UserCategoryManagerModal({
     }
 
     if (iconSearch.trim()) {
-      const q = iconSearch.toLowerCase().trim();
-      icons = icons.filter(iconName => iconName.toLowerCase().includes(q));
+      icons = icons.filter(iconName => matchIconSearch(iconName, iconSearch));
     }
 
     return icons;
@@ -239,19 +244,19 @@ export default function UserCategoryManagerModal({
   const handleSaveCategory = async () => {
     const cleanName = formName.trim();
     if (!cleanName) {
-      useToastStore.getState().addToast('กรุณาระบุชื่อหมวดหมู่', 'error');
+      useToastStore.getState().addToast(t('categoryManager.toastNameRequired'), 'error');
       return;
     }
 
     if (!editingCatKey || editingCatKey !== cleanName) {
       if (categoriesMap[cleanName] && !categoriesMap[cleanName].hidden) {
-        useToastStore.getState().addToast('มีหมวดหมู่นี้อยู่แล้วในระบบ', 'error');
+        useToastStore.getState().addToast(t('categoryManager.toastCategoryExists'), 'error');
         return;
       }
     }
 
     if (!user) {
-      useToastStore.getState().addToast('กรุณาเข้าสู่ระบบก่อนดำเนินการ', 'error');
+      useToastStore.getState().addToast(t('categoryManager.toastLoginRequired'), 'error');
       return;
     }
 
@@ -287,13 +292,13 @@ export default function UserCategoryManagerModal({
       setAppCategories(updatedCategories);
 
       useToastStore.getState().addToast(
-        editingCatKey ? 'อัปเดตหมวดหมู่เรียบร้อยแล้ว' : 'เพิ่มหมวดหมู่ใหม่เรียบร้อยแล้ว', 
+        editingCatKey ? t('categoryManager.toastCategoryUpdated') : t('categoryManager.toastCategoryAdded'), 
         'success'
       );
       setIsEditingCategory(false);
     } catch (error) {
       console.error(error);
-      useToastStore.getState().addToast('เกิดข้อผิดพลาดในการบันทึกหมวดหมู่', 'error');
+      useToastStore.getState().addToast(t('categoryManager.toastSaveError'), 'error');
     } finally {
       setSavingCategory(false);
     }
@@ -305,14 +310,15 @@ export default function UserCategoryManagerModal({
     if (!cat || !user) return;
 
     const isDef = !!cat.isDefault;
+    const displayName = getCategoryDisplayName(catName, language);
 
     useConfirmStore.getState().showConfirm({
-      title: isDef ? 'ซ่อนหมวดหมู่มาตรฐาน' : 'ลบหมวดหมู่ส่วนตัว',
+      title: isDef ? t('categoryManager.confirmHideTitle') : t('categoryManager.confirmDeleteTitle'),
       message: isDef 
-        ? `คุณต้องการซ่อนหมวดหมู่ "${catName}" หรือไม่? (สามารถกู้คืนได้เสมอ)`
-        : `คุณแน่ใจหรือไม่ว่าต้องการลบหมวดหมู่ "${catName}"? รายการธุรกรรมที่มีอยู่แล้วจะไม่ได้รับผลกระทบ`,
-      confirmText: isDef ? 'ซ่อนหมวดหมู่' : 'ลบหมวดหมู่',
-      cancelText: 'ยกเลิก',
+        ? t('categoryManager.confirmHideMessage').replace('{name}', displayName)
+        : t('categoryManager.confirmDeleteMessage').replace('{name}', displayName),
+      confirmText: isDef ? t('categoryManager.confirmHideBtn') : t('categoryManager.confirmDeleteBtn'),
+      cancelText: t('categoryManager.cancel'),
       isDestructive: true,
       onConfirm: async () => {
         try {
@@ -323,11 +329,11 @@ export default function UserCategoryManagerModal({
           setAppCategories(next);
 
           useToastStore.getState().addToast(
-            isDef ? 'ซ่อนหมวดหมู่เรียบร้อยแล้ว' : 'ลบหมวดหมู่เรียบร้อยแล้ว', 
+            isDef ? t('categoryManager.toastCategoryHidden') : t('categoryManager.toastCategoryDeleted'), 
             'success'
           );
         } catch (error) {
-          useToastStore.getState().addToast('เกิดข้อผิดพลาดในการลบ', 'error');
+          useToastStore.getState().addToast(t('categoryManager.toastDeleteError'), 'error');
         }
       }
     });
@@ -357,9 +363,9 @@ export default function UserCategoryManagerModal({
       setFormGroup(cleanGroup);
       setShowInlineGroupAdd(false);
       setInlineGroupInput('');
-      useToastStore.getState().addToast(`เพิ่มกลุ่ม "${cleanGroup}" สำเร็จ`, 'success');
+      useToastStore.getState().addToast(t('categoryManager.toastGroupAdded').replace('{name}', cleanGroup), 'success');
     } catch (e) {
-      useToastStore.getState().addToast('ไม่สามารถสร้างกลุ่มใหม่ได้', 'error');
+      useToastStore.getState().addToast(t('categoryManager.toastGroupAddError'), 'error');
     }
   };
 
@@ -370,7 +376,7 @@ export default function UserCategoryManagerModal({
 
     const list = groupType === 'income' ? currentIncomeGroups : currentExpenseGroups;
     if (list.includes(clean)) {
-      useToastStore.getState().addToast('มีกลุ่มนี้อยู่แล้ว', 'error');
+      useToastStore.getState().addToast(t('categoryManager.toastGroupExists'), 'error');
       return;
     }
 
@@ -383,16 +389,16 @@ export default function UserCategoryManagerModal({
       await saveUserGroups(user.uid, updated);
       setUserGroups(updated);
       setNewGroupName('');
-      useToastStore.getState().addToast(`เพิ่มกลุ่ม "${clean}" เรียบร้อยแล้ว`, 'success');
+      useToastStore.getState().addToast(t('categoryManager.toastGroupAdded').replace('{name}', clean), 'success');
     } catch (e) {
-      useToastStore.getState().addToast('เกิดข้อผิดพลาดในการเพิ่มกลุ่ม', 'error');
+      useToastStore.getState().addToast(t('categoryManager.toastGroupAddError'), 'error');
     }
   };
 
   // Action: Open Edit Group Modal
   const handleOpenEditGroupModal = (groupName: string) => {
     if (groupName === 'อื่นๆ') {
-      useToastStore.getState().addToast('ไม่สามารถเปลี่ยนชื่อกลุ่มเริ่มต้น "อื่นๆ" ได้', 'error');
+      useToastStore.getState().addToast(t('categoryManager.toastCannotRenameOther'), 'error');
       return;
     }
 
@@ -409,7 +415,7 @@ export default function UserCategoryManagerModal({
   const handleSaveRenameGroup = async () => {
     const cleanNewName = editGroupModal.newName.trim();
     if (!cleanNewName) {
-      useToastStore.getState().addToast('กรุณาระบุชื่อกลุ่ม', 'error');
+      useToastStore.getState().addToast(t('categoryManager.toastNameRequired'), 'error');
       return;
     }
 
@@ -422,7 +428,7 @@ export default function UserCategoryManagerModal({
 
     const list = editGroupModal.type === 'income' ? currentIncomeGroups : currentExpenseGroups;
     if (list.includes(cleanNewName)) {
-      useToastStore.getState().addToast('มีกลุ่มชื่อนี้อยู่แล้วในระบบ', 'error');
+      useToastStore.getState().addToast(t('categoryManager.toastGroupExistsSystem'), 'error');
       return;
     }
 
@@ -437,10 +443,10 @@ export default function UserCategoryManagerModal({
       );
       setUserGroups(updatedGroups);
       setAppCategories(updatedCategories);
-      useToastStore.getState().addToast('เปลี่ยนชื่อกลุ่มเรียบร้อยแล้ว', 'success');
+      useToastStore.getState().addToast(t('categoryManager.toastGroupRenamed'), 'success');
       setEditGroupModal(prev => ({ ...prev, isOpen: false, saving: false }));
     } catch (e) {
-      useToastStore.getState().addToast('เกิดข้อผิดพลาดในการเปลี่ยนชื่อกลุ่ม', 'error');
+      useToastStore.getState().addToast(t('categoryManager.toastGroupRenameError'), 'error');
       setEditGroupModal(prev => ({ ...prev, saving: false }));
     }
   };
@@ -448,17 +454,19 @@ export default function UserCategoryManagerModal({
   // Action: Delete Group
   const handleDeleteGroup = (groupName: string) => {
     if (groupName === 'อื่นๆ') {
-      useToastStore.getState().addToast('ไม่สามารถลบกลุ่มเริ่มต้น "อื่นๆ" ได้', 'error');
+      useToastStore.getState().addToast(t('categoryManager.toastCannotDeleteOther'), 'error');
       return;
     }
 
     if (!user) return;
 
+    const displayName = getGroupDisplayName(groupName, language);
+
     useConfirmStore.getState().showConfirm({
-      title: 'ลบกลุ่มหมวดหมู่',
-      message: `คุณต้องการลบกลุ่ม "${groupName}" หรือไม่? หมวดหมู่ที่อยู่ในกลุ่มนี้จะถูกย้ายไปยังกลุ่ม "อื่นๆ" โดยอัตโนมัติ`,
-      confirmText: 'ลบกลุ่ม',
-      cancelText: 'ยกเลิก',
+      title: t('categoryManager.confirmDeleteGroupTitle'),
+      message: t('categoryManager.confirmDeleteGroupMessage').replace('{name}', displayName),
+      confirmText: t('categoryManager.confirmDeleteGroupBtn'),
+      cancelText: t('categoryManager.cancel'),
       isDestructive: true,
       onConfirm: async () => {
         try {
@@ -470,9 +478,9 @@ export default function UserCategoryManagerModal({
           );
           setUserGroups(updatedGroups);
           setAppCategories(updatedCategories);
-          useToastStore.getState().addToast('ลบกลุ่มเรียบร้อยแล้ว', 'success');
+          useToastStore.getState().addToast(t('categoryManager.toastGroupDeleted'), 'success');
         } catch (e) {
-          useToastStore.getState().addToast('เกิดข้อผิดพลาดในการลบกลุ่ม', 'error');
+          useToastStore.getState().addToast(t('categoryManager.toastGroupDeleteError'), 'error');
         }
       }
     });
@@ -483,19 +491,19 @@ export default function UserCategoryManagerModal({
     if (!user) return;
 
     useConfirmStore.getState().showConfirm({
-      title: 'รีเซ็ตเป็นค่าเริ่มต้นของระบบ',
-      message: 'ระบบจะคืนค่าหมวดหมู่และกลุ่มทั้งหมดกลับเป็นค่ามาตรฐานของระบบ คุณแน่ใจหรือไม่?',
-      confirmText: 'รีเซ็ตเป็นค่าเริ่มต้น',
-      cancelText: 'ยกเลิก',
+      title: t('categoryManager.confirmResetTitle'),
+      message: t('categoryManager.confirmResetMessage'),
+      confirmText: t('categoryManager.confirmResetBtn'),
+      cancelText: t('categoryManager.cancel'),
       isDestructive: true,
       onConfirm: async () => {
         try {
           const { categories, groups } = await resetUserCategoriesAndGroups(user.uid);
           setAppCategories(categories);
           setUserGroups(groups);
-          useToastStore.getState().addToast('รีเซ็ตเป็นค่าเริ่มต้นเรียบร้อยแล้ว', 'success');
+          useToastStore.getState().addToast(t('categoryManager.toastResetSuccess'), 'success');
         } catch (e) {
-          useToastStore.getState().addToast('เกิดข้อผิดพลาดในการรีเซ็ต', 'error');
+          useToastStore.getState().addToast(t('categoryManager.toastResetError'), 'error');
         }
       }
     });
@@ -524,7 +532,7 @@ export default function UserCategoryManagerModal({
               <button 
                 onClick={() => setIsEditingCategory(false)}
                 className="w-10 h-10 flex items-center justify-center rounded-2xl bg-purple-100/80 hover:bg-purple-200 dark:bg-purple-900/40 dark:hover:bg-purple-800/60 text-purple-700 dark:text-purple-300 transition-colors shadow-sm"
-                title="ย้อนกลับ"
+                title={t('categoryManager.backTooltip')}
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
@@ -537,13 +545,16 @@ export default function UserCategoryManagerModal({
             <div>
               <h3 className="text-base sm:text-lg font-black text-[#2E1065] dark:text-white tracking-tight">
                 {isEditingCategory 
-                  ? (editingCatKey ? 'แก้ไขหมวดหมู่' : 'สร้างหมวดหมู่ใหม่')
-                  : (mainTab === 'categories' ? 'จัดการหมวดหมู่' : 'จัดการกลุ่มหมวดหมู่')}
+                  ? (editingCatKey ? t('categoryManager.titleEdit') : t('categoryManager.titleCreate'))
+                  : (mainTab === 'categories' ? t('categoryManager.title') : t('categoryManager.titleGroups'))}
               </h3>
               <p className="text-[11px] font-bold text-purple-600/70 dark:text-purple-300/70">
                 {isEditingCategory 
-                  ? 'ปรับแต่งชื่อ สี และไอคอนตามสไตล์คุณ'
-                  : `${stats.total} หมวดหมู่ (${stats.customCount} กำหนดเอง) • ${currentExpenseGroups.length + currentIncomeGroups.length} กลุ่ม`}
+                  ? t('categoryManager.subtitleEdit')
+                  : t('categoryManager.subtitleStats')
+                      .replace('{total}', String(stats.total))
+                      .replace('{custom}', String(stats.customCount))
+                      .replace('{groups}', String(currentExpenseGroups.length + currentIncomeGroups.length))}
               </p>
             </div>
           </div>
@@ -569,7 +580,7 @@ export default function UserCategoryManagerModal({
                 }`}
               >
                 <Tag className="w-3.5 h-3.5" />
-                หมวดหมู่
+                {t('categoryManager.tabCategories')}
               </button>
               <button
                 onClick={() => setMainTab('groups')}
@@ -580,7 +591,7 @@ export default function UserCategoryManagerModal({
                 }`}
               >
                 <FolderTree className="w-3.5 h-3.5" />
-                กลุ่มหมวดหมู่
+                {t('categoryManager.tabGroups')}
               </button>
             </div>
           </div>
@@ -596,7 +607,7 @@ export default function UserCategoryManagerModal({
             {/* Step 1: Live Preview (Warm, Colorful & Friendly) */}
             <div className="p-5 rounded-3xl bg-gradient-to-br from-[#FAF5FF] via-[#F5F3FF] to-[#EDE9FE] dark:from-[#1A0F33] dark:via-[#20133E] dark:to-[#2A1752] border border-purple-200/70 dark:border-purple-800/40 flex flex-col items-center justify-center relative shadow-sm">
               <div className="absolute top-3 right-4 text-[10px] font-black text-purple-500/70 dark:text-purple-300/70 tracking-wider uppercase">
-                ตัวอย่างแสดงผล
+                {t('categoryManager.livePreview')}
               </div>
 
               <div className="flex items-center gap-4 my-1 w-full max-w-xs">
@@ -607,7 +618,7 @@ export default function UserCategoryManagerModal({
                   <AutoShrinkText 
                     origin="left"
                     className="text-base font-black text-[#2E1065] dark:text-white tracking-tight"
-                    text={formName.trim() || 'ชื่อหมวดหมู่'}
+                    text={getCategoryDisplayName(formName.trim(), language) || t('categoryManager.categoryNamePlaceholder')}
                   />
                   <div className="flex items-center gap-1.5 mt-1.5">
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border ${
@@ -615,10 +626,10 @@ export default function UserCategoryManagerModal({
                         ? 'bg-emerald-100/90 text-emerald-800 border-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-800' 
                         : 'bg-rose-100/90 text-rose-800 border-rose-200 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-800'
                     }`}>
-                      {formType === 'income' ? 'รายรับ' : 'รายจ่าย'}
+                      {formType === 'income' ? t('categoryManager.filterIncome') : t('categoryManager.filterExpense')}
                     </span>
                     <span className="text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200 px-2 py-0.5 rounded-lg border border-purple-200 dark:border-purple-800">
-                      {formGroup || 'ยังไม่ระบุกลุ่ม'}
+                      {getGroupDisplayName(formGroup, language) || t('categoryManager.unspecifiedGroup')}
                     </span>
                   </div>
                 </div>
@@ -628,7 +639,7 @@ export default function UserCategoryManagerModal({
             {/* Step 2: Transaction Type */}
             <div>
               <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1.5 block">
-                ประเภทรายการ
+                {t('categoryManager.transactionType')}
               </label>
               <div className="grid grid-cols-2 gap-2.5">
                 <button
@@ -646,7 +657,7 @@ export default function UserCategoryManagerModal({
                   }`}
                 >
                   <ArrowDownRight className="w-4 h-4" />
-                  รายจ่าย (Expense)
+                  {t('categoryManager.expenseType')}
                 </button>
                 <button
                   type="button"
@@ -663,7 +674,7 @@ export default function UserCategoryManagerModal({
                   }`}
                 >
                   <ArrowUpRight className="w-4 h-4" />
-                  รายรับ (Income)
+                  {t('categoryManager.incomeType')}
                 </button>
               </div>
             </div>
@@ -671,13 +682,13 @@ export default function UserCategoryManagerModal({
             {/* Step 3: Category Name */}
             <div>
               <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1.5 block">
-                ชื่อหมวดหมู่
+                {t('categoryManager.categoryName')}
               </label>
               <input 
                 type="text" 
                 value={formName} 
                 onChange={(e) => setFormName(e.target.value)}
-                placeholder="ระบุชื่อหมวดหมู่..."
+                placeholder={t('categoryManager.categoryNameInputPlaceholder')}
                 className="w-full bg-[#FFF9F2] dark:bg-white/5 rounded-2xl px-4 py-3 text-xs font-bold border border-purple-100 dark:border-white/10 outline-none focus:ring-2 focus:ring-purple-400/40 text-[#2E1065] dark:text-white placeholder:text-[#2E1065]/40 dark:placeholder:text-white/40 shadow-sm"
                 maxLength={30}
               />
@@ -687,7 +698,7 @@ export default function UserCategoryManagerModal({
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200">
-                  กลุ่มที่สังกัด
+                  {t('categoryManager.assignedGroup')}
                 </label>
                 <button
                   type="button"
@@ -695,7 +706,7 @@ export default function UserCategoryManagerModal({
                   className="text-xs font-bold text-purple-600 hover:text-purple-700 dark:text-purple-300 dark:hover:text-white flex items-center gap-1"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  สร้างกลุ่มใหม่
+                  {t('categoryManager.createNewGroup')}
                 </button>
               </div>
 
@@ -705,7 +716,7 @@ export default function UserCategoryManagerModal({
                     type="text"
                     value={inlineGroupInput}
                     onChange={(e) => setInlineGroupInput(e.target.value)}
-                    placeholder="พิมพ์ชื่อกลุ่มใหม่..."
+                    placeholder={t('categoryManager.newGroupInputPlaceholder')}
                     className="flex-1 bg-white dark:bg-[#120B24] rounded-xl px-3 py-1.5 text-xs font-bold border border-purple-100 dark:border-purple-800 outline-none text-[#2E1065] dark:text-white"
                   />
                   <button
@@ -714,14 +725,14 @@ export default function UserCategoryManagerModal({
                     disabled={!inlineGroupInput.trim()}
                     className="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl text-xs font-bold hover:opacity-90 disabled:opacity-50 shadow-sm"
                   >
-                    เพิ่ม
+                    {t('categoryManager.add')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowInlineGroupAdd(false)}
                     className="px-2 py-1.5 text-purple-400 hover:text-purple-600 text-xs font-bold"
                   >
-                    ยกเลิก
+                    {t('categoryManager.cancel')}
                   </button>
                 </div>
               )}
@@ -739,7 +750,7 @@ export default function UserCategoryManagerModal({
                     }`}
                   >
                     <div className="min-w-0 flex-1 pr-1">
-                      <AutoShrinkText origin="left" className="text-xs font-bold" text={g} />
+                      <AutoShrinkText origin="left" className="text-xs font-bold" text={getGroupDisplayName(g, language)} />
                     </div>
                     {formGroup === g && <Check className="w-3 h-3 shrink-0" strokeWidth={3} />}
                   </button>
@@ -750,7 +761,7 @@ export default function UserCategoryManagerModal({
             {/* Step 5: Color Palette (Non-overlapping concentric indicator - No checkmark) */}
             <div>
               <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1.5 block">
-                เลือกสี
+                {t('categoryManager.selectColor')}
               </label>
               <div className="grid grid-cols-8 gap-2 p-3 bg-purple-50/50 dark:bg-white/5 rounded-2xl border border-purple-100/60 dark:border-white/10">
                 {AVAILABLE_COLORS.map((c, idx) => {
@@ -782,7 +793,7 @@ export default function UserCategoryManagerModal({
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200">
-                  เลือกไอคอน
+                  {t('categoryManager.selectIcon')}
                 </label>
                 <div className="relative w-36">
                   <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-purple-400" />
@@ -790,7 +801,7 @@ export default function UserCategoryManagerModal({
                     type="text"
                     value={iconSearch}
                     onChange={(e) => setIconSearch(e.target.value)}
-                    placeholder="ค้นหาไอคอน..."
+                    placeholder={t('categoryManager.searchIconsPlaceholder')}
                     className="w-full bg-[#FFF9F2] dark:bg-white/5 rounded-xl pl-7 pr-2 py-1.5 text-[11px] font-bold outline-none border border-purple-100 dark:border-white/10 text-[#2E1065] dark:text-white"
                   />
                 </div>
@@ -807,7 +818,7 @@ export default function UserCategoryManagerModal({
                       : 'bg-purple-50 dark:bg-white/10 text-purple-700 dark:text-purple-300'
                   }`}
                 >
-                  ทั้งหมด
+                  {t('categoryManager.iconCategoryAll')}
                 </button>
                 {ICON_CATEGORIES.map((cat) => (
                   <button
@@ -820,31 +831,37 @@ export default function UserCategoryManagerModal({
                         : 'bg-purple-50 dark:bg-white/10 text-purple-700 dark:text-purple-300'
                     }`}
                   >
-                    {cat.label}
+                    {getIconCategoryLabel(cat, language)}
                   </button>
                 ))}
               </div>
 
               {/* Icon Grid */}
               <div className="grid grid-cols-7 sm:grid-cols-8 gap-1.5 max-h-[140px] overflow-y-auto no-scrollbar p-2.5 bg-purple-50/50 dark:bg-white/5 rounded-2xl border border-purple-100/60 dark:border-white/10">
-                {filteredIcons.map((iconName) => {
-                  const IconComp = getIconComponent(iconName);
-                  const isSelected = formIcon === iconName;
-                  return (
-                    <button
-                      key={iconName}
-                      type="button"
-                      onClick={() => setFormIcon(iconName)}
-                      className={`aspect-square rounded-xl flex items-center justify-center transition-all ${
-                        isSelected 
-                          ? 'bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/25 scale-105' 
-                          : 'bg-white/80 dark:bg-white/5 text-purple-900 dark:text-white/80 hover:bg-purple-100/80 hover:text-purple-700 border border-purple-100/60 dark:border-white/5'
-                      }`}
-                    >
-                      <IconComp className="w-4 h-4" strokeWidth={isSelected ? 2.8 : 2} />
-                    </button>
-                  );
-                })}
+                {filteredIcons.length === 0 ? (
+                  <div className="col-span-full py-6 text-center text-xs font-bold text-[#2E1065]/50 dark:text-white/50">
+                    {language === 'en' ? 'No icons found' : 'ไม่พบไอคอนที่ตรงกับคำค้นหา'}
+                  </div>
+                ) : (
+                  filteredIcons.map((iconName) => {
+                    const IconComp = getIconComponent(iconName);
+                    const isSelected = formIcon === iconName;
+                    return (
+                      <button
+                        key={iconName}
+                        type="button"
+                        onClick={() => setFormIcon(iconName)}
+                        className={`aspect-square rounded-xl flex items-center justify-center transition-all ${
+                          isSelected 
+                            ? 'bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/25 scale-105' 
+                            : 'bg-white/80 dark:bg-white/5 text-purple-900 dark:text-white/80 hover:bg-purple-100/80 hover:text-purple-700 border border-purple-100/60 dark:border-white/5'
+                        }`}
+                      >
+                        <IconComp className="w-4 h-4" strokeWidth={isSelected ? 2.8 : 2} />
+                      </button>
+                    );
+                  })
+                )}
               </div>
             </div>
 
@@ -856,7 +873,7 @@ export default function UserCategoryManagerModal({
                   onClick={() => setIsEditingCategory(false)}
                   className="flex-1 py-3 rounded-2xl font-bold text-xs bg-purple-100/70 hover:bg-purple-200 dark:bg-white/10 dark:hover:bg-white/20 text-purple-800 dark:text-purple-200 transition-colors"
                 >
-                  ยกเลิก
+                  {t('categoryManager.cancel')}
                 </button>
                 <button
                   type="button"
@@ -865,11 +882,11 @@ export default function UserCategoryManagerModal({
                   className="flex-[2] py-3 rounded-2xl font-bold text-xs bg-gradient-to-r from-[#6D28D9] via-[#7C3AED] to-[#8B5CF6] hover:brightness-105 text-white disabled:opacity-50 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-purple-500/30 active:scale-98"
                 >
                   {savingCategory ? (
-                    <>กำลังบันทึก...</>
+                    <>{t('categoryManager.saving')}</>
                   ) : (
                     <>
                       <Check className="w-4 h-4" strokeWidth={2.5} />
-                      {editingCatKey ? 'บันทึกการแก้ไข' : 'ยืนยันการเพิ่ม'}
+                      {editingCatKey ? t('categoryManager.saveChanges') : t('categoryManager.confirmAdd')}
                     </>
                   )}
                 </button>
@@ -887,7 +904,7 @@ export default function UserCategoryManagerModal({
                     className="w-full py-2.5 rounded-2xl font-bold text-xs bg-rose-50/70 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 border border-rose-200/70 dark:border-rose-900/40 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    <span>{isOriginalDefault ? 'ซ่อนหมวดหมู่นี้' : 'ลบหมวดหมู่นี้'}</span>
+                    <span>{isOriginalDefault ? t('categoryManager.hideCategory') : t('categoryManager.deleteCategory')}</span>
                   </button>
                 </div>
               )}
@@ -910,7 +927,7 @@ export default function UserCategoryManagerModal({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="ค้นหาหมวดหมู่ หรือกลุ่ม..."
+                  placeholder={t('categoryManager.searchPlaceholder')}
                   className="w-full bg-[#FFF9F2] dark:bg-white/5 border border-purple-100 dark:border-white/10 rounded-2xl py-2.5 pl-10 pr-9 text-xs font-bold outline-none focus:ring-2 focus:ring-purple-400/40 text-[#2E1065] dark:text-white placeholder:text-[#2E1065]/40 dark:placeholder:text-white/40 shadow-sm"
                 />
                 {searchQuery && (
@@ -927,10 +944,10 @@ export default function UserCategoryManagerModal({
               <div className="flex items-center justify-between gap-2 py-0.5">
                 <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1 px-1 -mx-1 flex-1 items-center">
                   {[
-                    { id: 'all', label: 'ทั้งหมด', count: stats.total },
-                    { id: 'expense', label: 'รายจ่าย', count: stats.expenseCount },
-                    { id: 'income', label: 'รายรับ', count: stats.incomeCount },
-                    { id: 'custom', label: 'กำหนดเอง', count: stats.customCount },
+                    { id: 'all', label: t('categoryManager.filterAll'), count: stats.total },
+                    { id: 'expense', label: t('categoryManager.filterExpense'), count: stats.expenseCount },
+                    { id: 'income', label: t('categoryManager.filterIncome'), count: stats.incomeCount },
+                    { id: 'custom', label: t('categoryManager.filterCustom'), count: stats.customCount },
                   ].map((tab) => (
                     <button
                       key={tab.id}
@@ -963,10 +980,10 @@ export default function UserCategoryManagerModal({
                       ? 'bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/30 ring-1 ring-rose-400/40'
                       : 'bg-rose-50/80 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-200/80 dark:border-rose-800/40 hover:bg-rose-100/80 hover:text-rose-700'
                   }`}
-                  title="เปิด/ปิด โหมดลบหมวดหมู่ด่วน"
+                  title={t('categoryManager.deleteModeTitle')}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
-                  <span>{isManageMode ? 'เสร็จสิ้น' : 'โหมดลบ'}</span>
+                  <span>{isManageMode ? t('categoryManager.done') : t('categoryManager.deleteMode')}</span>
                 </button>
               </div>
             </div>
@@ -979,20 +996,21 @@ export default function UserCategoryManagerModal({
                   <div className="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center mx-auto mb-2 text-purple-500">
                     <Search className="w-6 h-6" />
                   </div>
-                  <p className="font-bold text-[#2E1065] dark:text-white text-xs mb-3">ไม่พบหมวดหมู่ที่ตรงกับการค้นหา</p>
+                  <p className="font-bold text-[#2E1065] dark:text-white text-xs mb-3">{t('categoryManager.noCategoriesFound')}</p>
                   {searchQuery.trim() && (
                     <button
                       onClick={() => handleOpenAddCategory(searchQuery.trim())}
                       className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5 shadow-md shadow-purple-500/20"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      สร้างหมวดหมู่ "{searchQuery.trim()}"
+                      {t('categoryManager.createCategory').replace('{name}', searchQuery.trim())}
                     </button>
                   )}
                 </div>
               ) : (
                 Object.entries(groupedCategories).map(([groupName, cats]) => {
                   if (cats.length === 0) return null;
+                  const localizedGroupName = getGroupDisplayName(groupName, language);
                   return (
                     <div key={groupName} className="space-y-3">
                       {/* Group Header */}
@@ -1000,7 +1018,7 @@ export default function UserCategoryManagerModal({
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-purple-500" />
                           <h4 className="text-xs font-black text-[#2E1065] dark:text-purple-200 uppercase tracking-wide">
-                            {groupName}
+                            {localizedGroupName}
                           </h4>
                           <span className="text-[10px] font-bold text-purple-700 bg-purple-100 dark:bg-purple-950 dark:text-purple-300 px-1.5 py-0.2 rounded-md">
                             {cats.length}
@@ -1014,6 +1032,7 @@ export default function UserCategoryManagerModal({
                           const catObj = categoriesMap[catName];
                           const { icon: Icon, color, textColor } = getCategoryStyle(catName, categoriesMap);
                           const isCustom = !!catObj?.isCustom;
+                          const displayName = getCategoryDisplayName(catName, language);
 
                           return (
                             <div 
@@ -1029,7 +1048,7 @@ export default function UserCategoryManagerModal({
 
                                 {/* Custom Badge Dot */}
                                 {isCustom && (
-                                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-tr from-amber-400 to-orange-500 rounded-full border-2 border-white dark:border-slate-900 shadow-sm" title="หมวดหมู่ที่กำหนดเอง" />
+                                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-tr from-amber-400 to-orange-500 rounded-full border-2 border-white dark:border-slate-900 shadow-sm" title={t('categoryManager.customCategoryBadge')} />
                                 )}
 
                                 {/* Delete / Hide Button */}
@@ -1044,7 +1063,7 @@ export default function UserCategoryManagerModal({
                                       ? 'w-6 h-6 bg-rose-500 text-white border-2 border-white dark:border-slate-900 scale-110 opacity-100 animate-pulse cursor-pointer'
                                       : 'w-5 h-5 bg-white dark:bg-slate-800 text-rose-500 border border-slate-200 dark:border-slate-700 opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-rose-500 hover:text-white'
                                   }`}
-                                  title={isCustom ? "ลบหมวดหมู่นี้" : "ซ่อนหมวดหมู่นี้"}
+                                  title={isCustom ? t('categoryManager.deleteCategory') : t('categoryManager.hideCategory')}
                                 >
                                   <Trash2 className="w-3 h-3" />
                                 </button>
@@ -1055,7 +1074,7 @@ export default function UserCategoryManagerModal({
                                 <AutoShrinkText 
                                   origin="center" 
                                   className="text-[11px] font-bold text-[#2E1065]/80 dark:text-white/80"
-                                  text={catName} 
+                                  text={displayName} 
                                 />
                               </div>
                             </div>
@@ -1074,10 +1093,10 @@ export default function UserCategoryManagerModal({
                 type="button"
                 onClick={handleResetToDefaults}
                 className="px-3.5 py-3 rounded-2xl text-purple-700 hover:text-purple-900 dark:text-purple-300 dark:hover:text-white bg-purple-50 hover:bg-purple-100 dark:bg-white/10 dark:hover:bg-white/20 transition-colors flex items-center gap-1.5 text-xs font-bold"
-                title="รีเซ็ตเป็นค่าเริ่มต้นของระบบ"
+                title={t('categoryManager.confirmResetTitle')}
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">รีเซ็ตค่าเริ่มต้น</span>
+                <span className="hidden sm:inline">{t('categoryManager.resetDefaults')}</span>
               </button>
 
               <button
@@ -1086,7 +1105,7 @@ export default function UserCategoryManagerModal({
                 className="flex-1 py-3 rounded-2xl font-bold text-xs bg-gradient-to-r from-[#6D28D9] via-[#7C3AED] to-[#8B5CF6] hover:brightness-105 text-white active:scale-98 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-purple-500/25"
               >
                 <Plus className="w-4 h-4" strokeWidth={2.5} />
-                เพิ่มหมวดหมู่ใหม่
+                {t('categoryManager.addNewCategory')}
               </button>
             </div>
 
@@ -1109,7 +1128,7 @@ export default function UserCategoryManagerModal({
                       : 'text-[#2E1065]/70 dark:text-white/70'
                   }`}
                 >
-                  กลุ่มรายจ่าย ({currentExpenseGroups.length})
+                  {t('categoryManager.expenseGroups')} ({currentExpenseGroups.length})
                 </button>
                 <button
                   type="button"
@@ -1120,7 +1139,7 @@ export default function UserCategoryManagerModal({
                       : 'text-[#2E1065]/70 dark:text-white/70'
                   }`}
                 >
-                  กลุ่มรายรับ ({currentIncomeGroups.length})
+                  {t('categoryManager.incomeGroups')} ({currentIncomeGroups.length})
                 </button>
               </div>
 
@@ -1131,7 +1150,7 @@ export default function UserCategoryManagerModal({
                   value={newGroupName}
                   onChange={(e) => setNewGroupName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddGroup()}
-                  placeholder={`ระบุชื่อกลุ่ม${groupType === 'income' ? 'รายรับ' : 'รายจ่าย'}ใหม่...`}
+                  placeholder={groupType === 'income' ? t('categoryManager.newGroupPlaceholderIncome') : t('categoryManager.newGroupPlaceholderExpense')}
                   className="flex-1 bg-[#FFF9F2] dark:bg-white/5 border border-purple-100 dark:border-white/10 rounded-2xl px-4 py-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-purple-400/40 text-[#2E1065] dark:text-white"
                 />
                 <button
@@ -1141,7 +1160,7 @@ export default function UserCategoryManagerModal({
                   className="px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl text-xs font-bold disabled:opacity-50 transition-colors flex items-center gap-1 shrink-0 shadow-md shadow-purple-500/20"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  เพิ่มกลุ่ม
+                  {t('categoryManager.addGroup')}
                 </button>
               </div>
             </div>
@@ -1151,6 +1170,7 @@ export default function UserCategoryManagerModal({
               {(groupType === 'income' ? currentIncomeGroups : currentExpenseGroups).map((g) => {
                 const count = groupCategoryCounts[g] || 0;
                 const isDefaultProtected = g === 'อื่นๆ';
+                const localizedGroupName = getGroupDisplayName(g, language);
 
                 return (
                   <div 
@@ -1162,9 +1182,9 @@ export default function UserCategoryManagerModal({
                         <FolderTree className="w-4 h-4" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <AutoShrinkText origin="left" className="text-xs font-bold text-[#2E1065] dark:text-white" text={g} />
+                        <AutoShrinkText origin="left" className="text-xs font-bold text-[#2E1065] dark:text-white" text={localizedGroupName} />
                         <span className="text-[10px] font-bold text-purple-600/70 dark:text-purple-300/70 block">
-                          {count} หมวดหมู่
+                          {t('categoryManager.categoriesCount').replace('{count}', String(count))}
                         </span>
                       </div>
                     </div>
@@ -1176,7 +1196,7 @@ export default function UserCategoryManagerModal({
                             type="button"
                             onClick={() => handleOpenEditGroupModal(g)}
                             className="w-8 h-8 rounded-xl bg-white dark:bg-white/10 text-purple-700 hover:text-purple-900 dark:text-purple-300 dark:hover:text-white border border-purple-100 dark:border-white/10 flex items-center justify-center transition-colors shadow-sm"
-                            title="แก้ไขชื่อกลุ่ม"
+                            title={t('categoryManager.editGroupName')}
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
@@ -1184,7 +1204,7 @@ export default function UserCategoryManagerModal({
                             type="button"
                             onClick={() => handleDeleteGroup(g)}
                             className="w-8 h-8 rounded-xl bg-white dark:bg-white/10 text-rose-500 hover:text-rose-700 border border-rose-100 dark:border-white/10 flex items-center justify-center transition-colors shadow-sm"
-                            title="ลบกลุ่ม"
+                            title={t('categoryManager.confirmDeleteGroupBtn')}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -1204,7 +1224,7 @@ export default function UserCategoryManagerModal({
                 className="w-full py-3 rounded-2xl text-purple-700 hover:text-purple-900 dark:text-purple-300 dark:hover:text-white bg-purple-50/80 hover:bg-purple-100 dark:bg-white/10 dark:hover:bg-white/20 transition-colors flex items-center justify-center gap-1.5 text-xs font-bold"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                รีเซ็ตกลุ่มและหมวดหมู่กลับสู่ค่าเริ่มต้น
+                {t('categoryManager.resetAllDefaults')}
               </button>
             </div>
 
@@ -1233,10 +1253,10 @@ export default function UserCategoryManagerModal({
                 </div>
                 <div>
                   <h3 className="text-base font-black text-[#2E1065] dark:text-white tracking-tight">
-                    แก้ไขชื่อกลุ่ม
+                    {t('categoryManager.editGroupTitle')}
                   </h3>
                   <p className="text-[11px] font-bold text-purple-600/70 dark:text-purple-300/70">
-                    กลุ่ม{editGroupModal.type === 'income' ? 'รายรับ' : 'รายจ่าย'}
+                    {editGroupModal.type === 'income' ? t('categoryManager.editGroupSubtitleIncome') : t('categoryManager.editGroupSubtitleExpense')}
                   </p>
                 </div>
               </div>
@@ -1255,7 +1275,7 @@ export default function UserCategoryManagerModal({
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1.5 block">
-                  ชื่อกลุ่มเดิม: <span className="font-black text-purple-700 dark:text-purple-300">{editGroupModal.oldName}</span>
+                  {t('categoryManager.originalGroupName')} <span className="font-black text-purple-700 dark:text-purple-300">{getGroupDisplayName(editGroupModal.oldName, language)}</span>
                 </label>
                 <input
                   type="text"
@@ -1263,7 +1283,7 @@ export default function UserCategoryManagerModal({
                   value={editGroupModal.newName}
                   onChange={(e) => setEditGroupModal(prev => ({ ...prev, newName: e.target.value }))}
                   onKeyDown={(e) => e.key === 'Enter' && handleSaveRenameGroup()}
-                  placeholder="ระบุชื่อกลุ่มใหม่..."
+                  placeholder={t('categoryManager.enterNewGroupName')}
                   className="w-full bg-[#FFF9F2] dark:bg-white/5 rounded-2xl px-4 py-3 text-xs font-bold border border-purple-100 dark:border-white/10 outline-none focus:ring-2 focus:ring-purple-400/40 text-[#2E1065] dark:text-white"
                   maxLength={30}
                 />
@@ -1273,7 +1293,7 @@ export default function UserCategoryManagerModal({
               <div className="p-3.5 rounded-2xl bg-purple-50/80 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-900/30 flex items-start gap-2.5 text-[11px] text-purple-800 dark:text-purple-200">
                 <Info className="w-4 h-4 text-purple-500 shrink-0 mt-0.5" />
                 <span className="font-medium">
-                  หมวดหมู่ทั้งหมด {groupCategoryCounts[editGroupModal.oldName] || 0} รายการในกลุ่มนี้ จะถูกอัปเดตเป็นชื่อกลุ่มใหม่โดยอัตโนมัติ
+                  {t('categoryManager.groupUpdateNotice').replace('{count}', String(groupCategoryCounts[editGroupModal.oldName] || 0))}
                 </span>
               </div>
 
@@ -1285,7 +1305,7 @@ export default function UserCategoryManagerModal({
                   disabled={editGroupModal.saving}
                   className="flex-1 py-3 rounded-2xl font-bold text-xs bg-purple-100/70 hover:bg-purple-200 dark:bg-white/10 dark:hover:bg-white/20 text-purple-800 dark:text-purple-200 transition-colors"
                 >
-                  ยกเลิก
+                  {t('categoryManager.cancel')}
                 </button>
                 <button
                   type="button"
@@ -1294,11 +1314,11 @@ export default function UserCategoryManagerModal({
                   className="flex-[2] py-3 rounded-2xl font-bold text-xs bg-gradient-to-r from-[#6D28D9] via-[#7C3AED] to-[#8B5CF6] hover:brightness-105 text-white disabled:opacity-50 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-purple-500/25"
                 >
                   {editGroupModal.saving ? (
-                    <>กำลังบันทึก...</>
+                    <>{t('categoryManager.saving')}</>
                   ) : (
                     <>
                       <Check className="w-4 h-4" strokeWidth={2.5} />
-                      บันทึกการแก้ไข
+                      {t('categoryManager.saveChanges')}
                     </>
                   )}
                 </button>

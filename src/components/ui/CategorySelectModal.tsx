@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Search, Heart, Plus, Settings2 } from 'lucide-react';
-import { getCategoryStyle, getAllCategoriesGrouped, getCategoriesByType, CATEGORY_SEED } from '@/utils/categoryStyles';
+import { getCategoryStyle, getAllCategoriesGrouped, getCategoriesByType, CATEGORY_SEED, getCategoryDisplayName, getGroupDisplayName } from '@/utils/categoryStyles';
 import type { TransactionCategory } from '@/types';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -20,7 +20,7 @@ interface CategorySelectModalProps {
 }
 
 export default function CategorySelectModal({ isOpen, onClose, onSelect, type, selectedCategory }: CategorySelectModalProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<string>(t('transactions.filterAll'));
   const [isManagerModalOpen, setIsManagerModalOpen] = useState(false);
@@ -78,8 +78,12 @@ export default function CategorySelectModal({ isOpen, onClose, onSelect, type, s
 
   const filteredData = useMemo(() => {
     if (search) {
-      // If searching, just return a flat grouped list of matched items
-      const matched = availableCategories.filter(c => c.toLowerCase().includes(search.toLowerCase()));
+      // If searching, just return a flat grouped list of matched items (bilingual search)
+      const q = search.toLowerCase().trim();
+      const matched = availableCategories.filter(c => {
+        const localized = getCategoryDisplayName(c, language).toLowerCase();
+        return c.toLowerCase().includes(q) || localized.includes(q);
+      });
       const customOrder = type === 'income' ? userGroups?.income : userGroups?.expense;
       return getAllCategoriesGrouped(matched, appCategories || undefined, customOrder);
     }
@@ -90,7 +94,7 @@ export default function CategorySelectModal({ isOpen, onClose, onSelect, type, s
     
     // If a specific tab is selected
     return { [activeTab]: groupedAll[activeTab] || [] };
-  }, [availableCategories, search, activeTab, groupedAll, appCategories, type, userGroups, t]);
+  }, [availableCategories, search, activeTab, groupedAll, appCategories, type, userGroups, t, language]);
 
   if (!isOpen) return null;
 
@@ -126,10 +130,10 @@ export default function CategorySelectModal({ isOpen, onClose, onSelect, type, s
             <button
               onClick={() => setIsManagerModalOpen(true)}
               className="p-2 rounded-2xl bg-purple-100 hover:bg-purple-200 dark:bg-white/10 dark:hover:bg-white/20 text-purple-700 dark:text-purple-300 transition-colors flex items-center gap-1 text-xs font-bold shrink-0 shadow-sm"
-              title="จัดการ / เพิ่มหมวดหมู่ใหม่"
+              title={t('settings.manageCategories')}
             >
               <Settings2 className="w-4 h-4" />
-              <span className="hidden sm:inline">จัดการหมวดหมู่</span>
+              <span className="hidden sm:inline">{t('settings.manageCategories')}</span>
             </button>
           </div>
 
@@ -150,19 +154,23 @@ export default function CategorySelectModal({ isOpen, onClose, onSelect, type, s
           {/* Dynamic Tabs */}
           {!search && tabs.length > 2 && (
             <div className="px-6 flex gap-2 overflow-x-auto no-scrollbar pb-3 shrink-0">
-              {tabs.map(tab => (
-                <button 
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 rounded-[14px] whitespace-nowrap text-xs font-bold transition-all shadow-sm ${
-                    activeTab === tab 
-                      ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20' 
-                      : 'bg-white/60 dark:bg-white/10 text-[#2E1065]/70 dark:text-white/70 border border-white/50 dark:border-white/5 hover:bg-white/80'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
+              {tabs.map(tab => {
+                const isAllTab = tab === t('transactions.filterAll');
+                const label = isAllTab ? tab : getGroupDisplayName(tab, language);
+                return (
+                  <button 
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`px-4 py-2 rounded-[14px] whitespace-nowrap text-xs font-bold transition-all shadow-sm ${
+                      activeTab === tab 
+                        ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20' 
+                        : 'bg-white/60 dark:bg-white/10 text-[#2E1065]/70 dark:text-white/70 border border-white/50 dark:border-white/5 hover:bg-white/80'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
           )}
 
@@ -176,7 +184,7 @@ export default function CategorySelectModal({ isOpen, onClose, onSelect, type, s
                   className="mt-2 px-4 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold shadow-md hover:bg-purple-700 transition-colors inline-flex items-center gap-1.5"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  + เพิ่มหมวดหมู่นี้
+                  + {t('settings.addCategory')}
                 </button>
               </div>
             ) : (
@@ -187,7 +195,9 @@ export default function CategorySelectModal({ isOpen, onClose, onSelect, type, s
                     <div key={group} className="flex flex-col gap-3">
                       <div className="flex items-center gap-2 px-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                        <h3 className="text-xs font-black text-[#2E1065]/70 dark:text-white/70 uppercase tracking-wider">{group}</h3>
+                        <h3 className="text-xs font-black text-[#2E1065]/70 dark:text-white/70 uppercase tracking-wider">
+                          {getGroupDisplayName(group, language)}
+                        </h3>
                       </div>
                       
                       <div className="grid grid-cols-4 gap-y-5 gap-x-2">
@@ -196,6 +206,7 @@ export default function CategorySelectModal({ isOpen, onClose, onSelect, type, s
                           const isSelected = cat === selectedCategory;
                           const isFavorite = favoriteCategories.includes(cat);
                           const isCustom = !!appCategories?.[cat]?.isCustom;
+                          const displayName = getCategoryDisplayName(cat, language);
 
                           return (
                             <div key={cat} className="flex flex-col items-center gap-1.5 group relative">
@@ -203,7 +214,7 @@ export default function CategorySelectModal({ isOpen, onClose, onSelect, type, s
                                 
                                 {/* Custom badge */}
                                 {isCustom && (
-                                  <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-white dark:border-slate-900 z-20" title="หมวดหมู่ที่กำหนดเอง" />
+                                  <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-white dark:border-slate-900 z-20" title={t('categoryManager.customCategoryBadge')} />
                                 )}
 
                                 {/* Favorite Toggle */}
@@ -245,7 +256,7 @@ export default function CategorySelectModal({ isOpen, onClose, onSelect, type, s
                                 <AutoShrinkText 
                                   origin="center" 
                                   className="text-[11px] font-bold text-[#2E1065]/80 dark:text-white/80" 
-                                  text={cat} 
+                                  text={displayName} 
                                 />
                               </div>
                             </div>

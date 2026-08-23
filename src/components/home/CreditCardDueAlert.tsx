@@ -32,6 +32,7 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
   const transactions = useTransactionStore(s => s.transactions);
   const { t, language } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
 
   const alerts = useMemo(() => {
     const ccWallets = wallets.filter(w => w.type === 'credit_card');
@@ -177,14 +178,30 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
   const config = getUrgencyConfig();
   const hasMultiple = alerts.length > 1;
 
-  const handlePrev = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handlePrev = (e?: React.MouseEvent | React.TouchEvent) => {
+    e?.stopPropagation();
     setCurrentIndex(prev => (prev > 0 ? prev - 1 : alerts.length - 1));
   };
 
-  const handleNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleNext = (e?: React.MouseEvent | React.TouchEvent) => {
+    e?.stopPropagation();
     setCurrentIndex(prev => (prev < alerts.length - 1 ? prev + 1 : 0));
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart === null) return;
+    const touchEnd = e.changedTouches[0].clientX;
+    const diff = touchStart - touchEnd;
+    if (diff > 45) {
+      handleNext(e);
+    } else if (diff < -45) {
+      handlePrev(e);
+    }
+    setTouchStart(null);
   };
 
   const formattedDueDate = new Intl.DateTimeFormat(language === 'en' ? 'en-US' : 'th-TH', { 
@@ -193,9 +210,24 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
   }).format(alert.dueDate);
 
   return (
-    <div className="px-6 mb-4 sm:mb-5 animate-fade-in">
+    <div className="px-6 mb-4 sm:mb-5 animate-fade-in relative group/alert">
+      {/* Left Chevron Button directly on the Left Border Line (Ultra-Glass Micro Pill) */}
+      {hasMultiple && (
+        <button
+          type="button"
+          onClick={handlePrev}
+          className="absolute left-6 -translate-x-1/2 top-1/2 -translate-y-1/2 z-30 w-5 h-5 sm:w-5.5 sm:h-5.5 rounded-full bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl saturate-180 shadow-[0_2px_8px_rgba(0,0,0,0.08),inset_0_1px_1px_rgba(255,255,255,0.8)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.35),inset_0_1px_1px_rgba(255,255,255,0.2)] border border-white/80 dark:border-white/20 flex items-center justify-center text-slate-800 dark:text-slate-100 hover:bg-white/70 dark:hover:bg-slate-900/70 hover:scale-110 active:scale-80 transition-all cursor-pointer select-none"
+          aria-label="Previous card"
+        >
+          <ChevronLeft className="w-3 h-3" strokeWidth={2.5} />
+        </button>
+      )}
+
+      {/* Main Clickable Alert Card with Touch Swipe Support */}
       <div 
         onClick={() => onPayClick(alert.wallet.id)}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === 'Enter' && onPayClick(alert.wallet.id)}
@@ -207,8 +239,8 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
         {/* Ambient Radial Mesh Glow */}
         <div className={`absolute -right-6 -top-6 w-40 h-40 rounded-full bg-gradient-to-br ${config.glowGradient} blur-2xl pointer-events-none`} />
 
-        {/* Card Content Layout (Single-Row Horizontal Flow: Left Info | Right Actions) */}
-        <div className="relative z-10 flex items-center justify-between gap-2 sm:gap-3">
+        {/* Card Main Row (Balanced Layout with Edge Clearance) */}
+        <div className={`relative z-10 flex items-center justify-between gap-2 sm:gap-2.5 ${hasMultiple ? 'pl-0.5 sm:pl-1 pr-2.5 sm:pr-3' : ''}`}>
           
           {/* Left: 3D Modern Dynamic Alert Icon + Text Stack */}
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
@@ -218,7 +250,7 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
               <Alert3DIcon urgency={alert.urgency} size="sm" className="w-9 h-9 sm:w-10 sm:h-10" />
             </div>
 
-            {/* Content Stack */}
+            {/* Content Stack (100% Free Breathing Room) */}
             <div className="min-w-0 flex-1">
               {/* Row 1: Status Title */}
               <div className="flex items-center gap-1.5 leading-tight mb-0.5 min-w-0">
@@ -235,53 +267,24 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
 
               {/* Row 2: Card Name + Amount + Due Date hint */}
               <div className="flex items-center gap-1 sm:gap-1.5 text-[10.5px] sm:text-[11px] text-slate-600 dark:text-slate-300 min-w-0">
-                <CreditCard className="w-3 h-3 text-slate-400 dark:text-slate-500 shrink-0" />
-                <span className="font-semibold truncate max-w-[65px] xs:max-w-[90px] sm:max-w-[130px] text-slate-700 dark:text-slate-200">
+                <CreditCard className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+                <span className="font-semibold truncate max-w-[90px] xs:max-w-[125px] sm:max-w-[170px] text-slate-700 dark:text-slate-200">
                   {alert.wallet.name}
                 </span>
                 <span className="text-slate-300 dark:text-slate-600 shrink-0">•</span>
                 <span className="font-extrabold text-slate-900 dark:text-white tabular-nums shrink-0 whitespace-nowrap">
                   ฿{alert.amountToPay.toLocaleString(language === 'en' ? 'en-US' : 'th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                 </span>
-                <span className="text-slate-300 dark:text-slate-600 hidden sm:inline shrink-0">•</span>
-                <span className="text-slate-500 dark:text-slate-400 text-[10px] hidden sm:inline font-medium whitespace-nowrap">
+                <span className="text-slate-300 dark:text-slate-600 hidden xs:inline shrink-0">•</span>
+                <span className="text-slate-500 dark:text-slate-400 text-[10px] hidden xs:inline font-medium whitespace-nowrap">
                   ({formattedDueDate})
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Right: Same-Row Action Cluster (Micro Pager + CTA Button) */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 relative z-10">
-            {/* Micro Multi-Card Pager (On same horizontal level as Pay button) */}
-            {hasMultiple && (
-              <div 
-                onClick={(e) => e.stopPropagation()}
-                className="flex items-center bg-black/5 dark:bg-white/10 rounded-full p-0.5 border border-black/5 dark:border-white/10 shadow-xs shrink-0 select-none"
-              >
-                <button
-                  type="button"
-                  onClick={handlePrev}
-                  className="w-4 h-4 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/15 active:scale-75 transition-all"
-                  aria-label="Previous card"
-                >
-                  <ChevronLeft className="w-2.5 h-2.5" strokeWidth={2.5} />
-                </button>
-                <span className="text-[9px] font-extrabold px-0.5 text-slate-700 dark:text-slate-200 tabular-nums leading-none">
-                  {safeIndex + 1}/{alerts.length}
-                </span>
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  className="w-4 h-4 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/15 active:scale-75 transition-all"
-                  aria-label="Next card"
-                >
-                  <ChevronRight className="w-2.5 h-2.5" strokeWidth={2.5} />
-                </button>
-              </div>
-            )}
-
-            {/* 3D Tactile CTA Button */}
+          {/* Right: Tactile CTA Button (With Clear Margin from Right Edge Arrow) */}
+          <div className="flex items-center shrink-0 relative z-10">
             <button 
               type="button"
               onClick={(e) => {
@@ -299,6 +302,18 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
           </div>
         </div>
       </div>
+
+      {/* Right Chevron Button directly on the Right Border Line (Ultra-Glass Micro Pill) */}
+      {hasMultiple && (
+        <button
+          type="button"
+          onClick={handleNext}
+          className="absolute right-6 translate-x-1/2 top-1/2 -translate-y-1/2 z-30 w-5 h-5 sm:w-5.5 sm:h-5.5 rounded-full bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl saturate-180 shadow-[0_2px_8px_rgba(0,0,0,0.08),inset_0_1px_1px_rgba(255,255,255,0.8)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.35),inset_0_1px_1px_rgba(255,255,255,0.2)] border border-white/80 dark:border-white/20 flex items-center justify-center text-slate-800 dark:text-slate-100 hover:bg-white/70 dark:hover:bg-slate-900/70 hover:scale-110 active:scale-80 transition-all cursor-pointer select-none"
+          aria-label="Next card"
+        >
+          <ChevronRight className="w-3 h-3" strokeWidth={2.5} />
+        </button>
+      )}
     </div>
   );
 }
