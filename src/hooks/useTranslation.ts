@@ -12,18 +12,30 @@ export function useTranslation() {
   const language = useSettingsStore((s) => s.language);
   const translations = language === 'en' ? en : th;
 
-  const t = (path: TranslationPaths, fallback?: string): string => {
+  const t = (
+    path: TranslationPaths, 
+    paramsOrFallback?: string | Record<string, string | number>,
+    maybeFallback?: string
+  ): string => {
     const keys = path.split('.');
     let current: any = translations;
     
     for (const key of keys) {
       if (current[key] === undefined) {
-        return fallback || path; // Fallback to key if not found
+        return typeof paramsOrFallback === 'string' ? paramsOrFallback : (maybeFallback || path);
       }
       current = current[key];
     }
     
-    return current;
+    if (typeof current === 'string' && typeof paramsOrFallback === 'object' && paramsOrFallback !== null) {
+      let result = current;
+      Object.entries(paramsOrFallback).forEach(([k, v]) => {
+        result = result.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
+      });
+      return result;
+    }
+    
+    return typeof current === 'string' ? current : (maybeFallback || path);
   };
 
   return { t, language };

@@ -77,7 +77,7 @@ export default function SettingsView() {
         {
           icon: Tag,
           label: t('settings.manageCategories', 'จัดการหมวดหมู่และกลุ่ม'),
-          sublabel: 'กำหนดหมวดหมู่รายรับ-รายจ่ายของคุณ',
+          sublabel: t('settings.categoriesDesc', 'กำหนดหมวดหมู่รายรับ-รายจ่ายของคุณ'),
           action: 'categories',
           iconColor: '#ec4899',
           iconBg: '#ec489918',
@@ -340,7 +340,7 @@ export default function SettingsView() {
                 </div>
                 <div className="text-left">
                   <div className="font-bold text-[#2E1065] dark:text-white text-[15px]">{t('settings.appInfo', 'ตั้งค่าแอปพลิเคชัน')}</div>
-                  <div className="text-[12px] font-medium text-[#2E1065]/50 dark:text-white/50">ชื่อ, โลโก้, สีธีม</div>
+                  <div className="text-[12px] font-medium text-[#2E1065]/50 dark:text-white/50">{t('settings.adminAppDesc', 'ชื่อ, โลโก้, สีธีม')}</div>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-[#2E1065]/30 dark:text-white/30" />
@@ -356,7 +356,7 @@ export default function SettingsView() {
                 </div>
                 <div className="text-left">
                   <div className="font-bold text-[#2E1065] dark:text-white text-[15px]">{t('settings.manageCategories', 'จัดการหมวดหมู่')}</div>
-                  <div className="text-[12px] font-medium text-[#2E1065]/50 dark:text-white/50">เพิ่ม/แก้ไข หมวดหมู่รายการ</div>
+                  <div className="text-[12px] font-medium text-[#2E1065]/50 dark:text-white/50">{t('settings.adminCatDesc', 'เพิ่ม/แก้ไข หมวดหมู่รายการ')}</div>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-[#2E1065]/30 dark:text-white/30" />
@@ -371,8 +371,8 @@ export default function SettingsView() {
                   <SettingsIcon className="w-5 h-5 text-purple-500" />
                 </div>
                 <div className="text-left">
-                  <div className="font-bold text-[#2E1065] dark:text-white text-[15px]">ตั้งค่าระบบ AI</div>
-                  <div className="text-[12px] font-medium text-[#2E1065]/50 dark:text-white/50">จัดการ API Keys</div>
+                  <div className="font-bold text-[#2E1065] dark:text-white text-[15px]">{t('settings.adminAi', 'ตั้งค่าระบบ AI')}</div>
+                  <div className="text-[12px] font-medium text-[#2E1065]/50 dark:text-white/50">{t('settings.adminAiDesc', 'จัดการ API Keys')}</div>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-[#2E1065]/30 dark:text-white/30" />
@@ -387,8 +387,8 @@ export default function SettingsView() {
                   <Users className="w-5 h-5 text-blue-500" />
                 </div>
                 <div className="text-left">
-                  <div className="font-bold text-[#2E1065] dark:text-white text-[15px]">ผู้ใช้งานทั้งหมด</div>
-                  <div className="text-[12px] font-medium text-[#2E1065]/50 dark:text-white/50">ดูจำนวนผู้ใช้ในระบบ</div>
+                  <div className="font-bold text-[#2E1065] dark:text-white text-[15px]">{t('settings.adminUsers', 'ผู้ใช้งานทั้งหมด')}</div>
+                  <div className="text-[12px] font-medium text-[#2E1065]/50 dark:text-white/50">{t('settings.adminUsersDesc', 'ดูจำนวนผู้ใช้ในระบบ')}</div>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-[#2E1065]/30 dark:text-white/30" />

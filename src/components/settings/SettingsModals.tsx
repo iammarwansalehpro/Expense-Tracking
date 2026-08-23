@@ -41,6 +41,8 @@ import {
   CATEGORY_SEED, 
   DEFAULT_EXPENSE_GROUPS,
   DEFAULT_INCOME_GROUPS,
+  getCategoryDisplayName,
+  getGroupDisplayName,
   type DBCategory, 
   type CategoryTab 
 } from '@/utils/categoryStyles';
@@ -972,14 +974,12 @@ export function AdminAppInfoModal({ isOpen, onClose }: ModalProps) {
   const handleSave = async () => {
     setLoading(true);
     try {
-      // Save to Firebase (if needed)
       await set(ref(db, 'settings/appInfo'), {
         name: appName || 'PaySave',
         subtitle: subtitle || 'Smart Financial Assistant',
         icon: appIcon || 'Type'
       });
       
-      // Update store directly
       setAppInfo(
         appName || 'PaySave', 
         subtitle || 'Smart Financial Assistant',
@@ -1075,22 +1075,23 @@ export function AdminAppInfoModal({ isOpen, onClose }: ModalProps) {
             className="flex-1 py-4 rounded-[20px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-[15px] hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors active:scale-95"
           >
             ยกเลิก
-            </button>
-            <button 
-              onClick={handleSave}
-              disabled={loading}
-              className="flex-1 py-4 rounded-[20px] bg-blue-500 text-white font-bold text-[15px] shadow-lg shadow-blue-500/30 hover:bg-blue-600 transition-all active:scale-95 disabled:opacity-50"
-            >
-              {loading ? 'กำลังบันทึก...' : 'บันทึก'}
-            </button>
-          </div>
+          </button>
+          <button 
+            onClick={handleSave}
+            disabled={loading}
+            className="flex-1 py-4 rounded-[20px] bg-blue-500 text-white font-bold text-[15px] shadow-lg shadow-blue-500/30 hover:bg-blue-600 transition-all active:scale-95 disabled:opacity-50"
+          >
+            {loading ? 'กำลังบันทึก...' : 'บันทึก'}
+          </button>
         </div>
       </div>
+    </div>
   );
 }
 
 // 6. Admin Category & Group Modal (Full System Default CRUD)
 export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
+  const { t, language } = useTranslation();
   const appCategories = useAppStore(s => s.appCategories);
   const [categories, setCategories] = useState<Record<string, DBCategory>>({});
   const [groups, setGroups] = useState<{ expense: string[], income: string[] }>({
@@ -1099,13 +1100,11 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
   });
   const [saving, setSaving] = useState(false);
   
-  // Navigation & Filter state
   const [mainTab, setMainTab] = useState<'categories' | 'groups'>('categories');
   const [filterTab, setFilterTab] = useState<CategoryTab | 'all' | 'expense'>('expense');
   const [groupType, setGroupType] = useState<'expense' | 'income'>('expense');
   const [isManageMode, setIsManageMode] = useState(false);
 
-  // Category Form state
   const [isAdding, setIsAdding] = useState(false);
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [newName, setNewName] = useState('');
@@ -1114,7 +1113,6 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
   const [newIcon, setNewIcon] = useState('Tag');
   const [newColorIdx, setNewColorIdx] = useState(0);
 
-  // Group Form state
   const [newGroupName, setNewGroupName] = useState('');
   const [editingGroup, setEditingGroup] = useState<{
     isOpen: boolean;
@@ -1128,12 +1126,10 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
     type: 'expense'
   });
 
-  // Current active groups for selected category form tab
   const currentFormGroups = useMemo(() => {
     return newTab === 'income' ? groups.income : groups.expense;
   }, [newTab, groups]);
 
-  // Load initial data
   useEffect(() => {
     if (isOpen) {
       if (appCategories && Object.keys(appCategories).length > 0) {
@@ -1150,14 +1146,12 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
     }
   }, [isOpen, appCategories]);
 
-  // Update group when category tab changes
   useEffect(() => {
     if (!currentFormGroups.includes(newGroup)) {
       setNewGroup(currentFormGroups[0] || 'อื่นๆ');
     }
   }, [newTab, currentFormGroups, newGroup]);
 
-  // Filtered categories
   const filteredCategories = useMemo(() => {
     if (filterTab === 'all') return categories;
     const filtered: Record<string, DBCategory> = {};
@@ -1177,7 +1171,6 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
     return getAllCategoriesGrouped(Object.keys(filteredCategories), filteredCategories, customOrder);
   }, [filteredCategories, filterTab, groups]);
 
-  // Group category counts
   const groupCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     Object.values(categories).forEach(cat => {
@@ -1188,23 +1181,21 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
 
   if (!isOpen) return null;
 
-  // Save All System Defaults (Categories + Groups)
   const handleSave = async () => {
     setSaving(true);
     try {
       await set(ref(db, 'app_categories'), categories);
       await saveAdminDefaultGroups(groups);
       useAppStore.getState().setAppCategories(categories);
-      useToastStore.getState().addToast('บันทึกหมวดหมู่และกลุ่มเริ่มต้นของระบบสำเร็จ', 'success');
+      useToastStore.getState().addToast(t('settings.adminCategoryModal.toastSaveSuccess'), 'success');
       onClose();
     } catch (e) {
-      useToastStore.getState().addToast('เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
+      useToastStore.getState().addToast(t('settings.adminCategoryModal.toastSaveError'), 'error');
     } finally {
       setSaving(false);
     }
   };
 
-  // Add / Update Category
   const handleAdd = () => {
     const cleanName = newName.trim();
     if (!cleanName) return;
@@ -1261,10 +1252,10 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
 
   const handleDelete = (catName: string) => {
     useConfirmStore.getState().showConfirm({
-      title: 'ลบหมวดหมู่ระบบ',
-      message: `คุณแน่ใจหรือไม่ว่าต้องการลบหมวดหมู่เริ่มต้น "${catName}"?`,
-      confirmText: 'ลบหมวดหมู่',
-      cancelText: 'ยกเลิก',
+      title: t('settings.adminCategoryModal.confirmDeleteCatTitle'),
+      message: t('settings.adminCategoryModal.confirmDeleteCatMsg', { name: getCategoryDisplayName(catName, language) }),
+      confirmText: t('settings.adminCategoryModal.confirmDeleteCatBtn'),
+      cancelText: t('settings.adminCategoryModal.cancel'),
       isDestructive: true,
       onConfirm: () => {
         setCategories(prev => {
@@ -1272,18 +1263,17 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
           delete next[catName];
           return next;
         });
-        useToastStore.getState().addToast('ลบหมวดหมู่เรียบร้อยแล้ว', 'success');
+        useToastStore.getState().addToast(t('settings.adminCategoryModal.toastCatDeleted'), 'success');
       }
     });
   };
 
-  // Group Actions (Admin)
   const handleAddGroup = () => {
     const clean = newGroupName.trim();
     if (!clean) return;
     const list = groupType === 'income' ? groups.income : groups.expense;
     if (list.includes(clean)) {
-      useToastStore.getState().addToast('มีกลุ่มนี้อยู่แล้ว', 'error');
+      useToastStore.getState().addToast(t('settings.adminCategoryModal.toastGroupExists'), 'error');
       return;
     }
 
@@ -1292,7 +1282,7 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
       [groupType]: [...prev[groupType], clean]
     }));
     setNewGroupName('');
-    useToastStore.getState().addToast(`เพิ่มกลุ่ม "${clean}" สำเร็จ`, 'success');
+    useToastStore.getState().addToast(t('settings.adminCategoryModal.toastGroupAdded', { name: clean }), 'success');
   };
 
   const handleSaveRenameGroup = () => {
@@ -1305,17 +1295,15 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
 
     const list = editingGroup.type === 'income' ? groups.income : groups.expense;
     if (list.includes(cleanNew)) {
-      useToastStore.getState().addToast('มีกลุ่มชื่อนี้อยู่แล้ว', 'error');
+      useToastStore.getState().addToast(t('settings.adminCategoryModal.toastGroupExists'), 'error');
       return;
     }
 
-    // Rename in group list
     setGroups(prev => ({
       ...prev,
       [editingGroup.type]: prev[editingGroup.type].map(g => g === editingGroup.oldName ? cleanNew : g)
     }));
 
-    // Cascade rename in categories
     setCategories(prev => {
       const next: Record<string, DBCategory> = {};
       Object.keys(prev).forEach(k => {
@@ -1330,29 +1318,27 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
     });
 
     setEditingGroup(prev => ({ ...prev, isOpen: false }));
-    useToastStore.getState().addToast(`เปลี่ยนชื่อกลุ่มเป็น "${cleanNew}" สำเร็จ`, 'success');
+    useToastStore.getState().addToast(t('settings.adminCategoryModal.toastGroupRenamed', { name: cleanNew }), 'success');
   };
 
   const handleDeleteGroup = (groupName: string) => {
     if (groupName === 'อื่นๆ') {
-      useToastStore.getState().addToast('ไม่สามารถลบกลุ่ม "อื่นๆ" ได้', 'error');
+      useToastStore.getState().addToast(t('settings.adminCategoryModal.toastCannotDeleteOther'), 'error');
       return;
     }
 
     useConfirmStore.getState().showConfirm({
-      title: 'ลบกลุ่มเริ่มต้นของระบบ',
-      message: `คุณต้องการลบกลุ่ม "${groupName}" หรือไม่? หมวดหมู่ในกลุ่มนี้จะถูกย้ายไปยังกลุ่ม "อื่นๆ"`,
-      confirmText: 'ลบกลุ่ม',
-      cancelText: 'ยกเลิก',
+      title: t('settings.adminCategoryModal.confirmDeleteGroupTitle'),
+      message: t('settings.adminCategoryModal.confirmDeleteGroupMsg', { name: getGroupDisplayName(groupName, language) }),
+      confirmText: t('settings.adminCategoryModal.confirmDeleteGroupBtn'),
+      cancelText: t('settings.adminCategoryModal.cancel'),
       isDestructive: true,
       onConfirm: () => {
-        // Remove from groups
         setGroups(prev => ({
           ...prev,
           [groupType]: prev[groupType].filter(g => g !== groupName)
         }));
 
-        // Migrate categories to 'อื่นๆ'
         setCategories(prev => {
           const next: Record<string, DBCategory> = {};
           Object.keys(prev).forEach(k => {
@@ -1366,7 +1352,7 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
           return next;
         });
 
-        useToastStore.getState().addToast(`ลบกลุ่ม "${groupName}" สำเร็จ`, 'success');
+        useToastStore.getState().addToast(t('settings.adminCategoryModal.toastGroupDeleted', { name: getGroupDisplayName(groupName, language) }), 'success');
       }
     });
   };
@@ -1377,14 +1363,12 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
       
       <div className="relative bg-white dark:bg-[#120B24] rounded-[28px] sm:rounded-[36px] shadow-2xl w-full max-w-lg mx-auto max-h-[90vh] flex flex-col animate-slide-up border border-purple-100 dark:border-purple-900/40 overflow-hidden">
         
-        {/* Header */}
         <div className="px-6 pt-5 pb-4 flex items-center justify-between shrink-0 bg-gradient-to-r from-purple-50/90 via-pink-50/40 to-indigo-50/90 dark:from-purple-950/40 dark:via-[#1A0F33]/60 dark:to-indigo-950/40 border-b border-purple-100/60 dark:border-purple-900/30 z-10">
           <div className="flex items-center gap-3">
             {isAdding ? (
               <button 
                 onClick={() => setIsAdding(false)} 
                 className="w-10 h-10 flex items-center justify-center rounded-2xl bg-purple-100/80 hover:bg-purple-200 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 transition-colors shadow-sm"
-                title="ย้อนกลับ"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
@@ -1395,10 +1379,10 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
             )}
             <div>
               <h3 className="text-base sm:text-lg font-black text-[#2E1065] dark:text-white tracking-tight">
-                {isAdding ? (editingKey ? 'แก้ไขหมวดหมู่ระบบ' : 'เพิ่มหมวดหมู่ระบบ') : 'จัดการหมวดหมู่และกลุ่ม (Admin)'}
+                {isAdding ? (editingKey ? t('settings.adminCategoryModal.titleEdit') : t('settings.adminCategoryModal.titleCreate')) : t('settings.adminCategoryModal.title')}
               </h3>
               <p className="text-[11px] font-bold text-purple-600/70 dark:text-purple-300/70">
-                กำหนดค่าเริ่มต้นของระบบสำหรับผู้ใช้ทุกคน
+                {t('settings.adminCategoryModal.subtitle')}
               </p>
             </div>
           </div>
@@ -1407,251 +1391,90 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
           </button>
         </div>
 
-        {/* Top Segmented Tab Switcher (Categories vs Groups) */}
         {!isAdding && (
           <div className="px-6 pt-3 pb-2 bg-white dark:bg-[#120B24] shrink-0 border-b border-purple-100/60 dark:border-purple-900/30">
             <div className="grid grid-cols-2 p-1.5 bg-purple-50/80 dark:bg-purple-950/30 rounded-2xl border border-purple-100/60 dark:border-purple-900/30">
               <button
                 onClick={() => setMainTab('categories')}
-                className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                  mainTab === 'categories'
-                    ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md shadow-purple-500/25'
-                    : 'text-[#2E1065]/70 dark:text-white/70 hover:text-purple-700 dark:hover:text-white'
-                }`}
+                className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${mainTab === 'categories' ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md shadow-purple-500/25' : 'text-[#2E1065]/70 dark:text-white/70'}`}
               >
                 <Tag className="w-3.5 h-3.5" />
-                หมวดหมู่เริ่มต้น ({Object.keys(categories).length})
+                {t('settings.adminCategoryModal.tabCategories', { count: Object.keys(categories).length })}
               </button>
               <button
                 onClick={() => setMainTab('groups')}
-                className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                  mainTab === 'groups'
-                    ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md shadow-purple-500/25'
-                    : 'text-[#2E1065]/70 dark:text-white/70 hover:text-purple-700 dark:hover:text-white'
-                }`}
+                className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${mainTab === 'groups' ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md shadow-purple-500/25' : 'text-[#2E1065]/70 dark:text-white/70'}`}
               >
                 <FolderTree className="w-3.5 h-3.5" />
-                กลุ่มเริ่มต้น ({groups.expense.length + groups.income.length})
+                {t('settings.adminCategoryModal.tabGroups', { count: groups.expense.length + groups.income.length })}
               </button>
             </div>
           </div>
         )}
 
-        {/* Content Body */}
         <div className="flex-1 overflow-y-auto no-scrollbar p-5 bg-white dark:bg-[#120B24] relative">
-          
           {isAdding ? (
-            /* Category Form (Admin) */
             <div className="bg-gradient-to-br from-[#FAF5FF] to-[#EDE9FE] dark:from-[#1A0F33] dark:to-[#251542] p-5 rounded-3xl shadow-sm border border-purple-200 dark:border-purple-800 animate-fade-in space-y-4">
               <h4 className="font-black text-sm text-[#2E1065] dark:text-white text-center">
-                {editingKey ? 'แก้ไขหมวดหมู่ระบบ' : 'เพิ่มหมวดหมู่ระบบใหม่'}
+                {editingKey ? t('settings.adminCategoryModal.titleEdit') : t('settings.adminCategoryModal.titleCreate')}
               </h4>
-              
               <div>
-                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1 block">ชื่อหมวดหมู่</label>
-                <input 
-                  type="text" 
-                  value={newName} 
-                  onChange={e => setNewName(e.target.value)} 
-                  className="w-full bg-[#FFF9F2] dark:bg-white/5 rounded-2xl px-4 py-2.5 text-xs font-bold border border-purple-100 dark:border-white/10 outline-none focus:ring-2 focus:ring-purple-400/40 text-[#2E1065] dark:text-white" 
-                  placeholder="เช่น ค่าเดินทาง, เงินเดือน" 
-                />
+                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1 block">{t('settings.adminCategoryModal.categoryName')}</label>
+                <input type="text" value={newName} onChange={e => setNewName(e.target.value)} className="w-full bg-[#FFF9F2] dark:bg-white/5 rounded-2xl px-4 py-2.5 text-xs font-bold border border-purple-100 dark:border-white/10 outline-none focus:ring-2 focus:ring-purple-400/40 text-[#2E1065] dark:text-white" placeholder={t('settings.adminCategoryModal.categoryNamePlaceholder')} />
               </div>
-
               <div>
-                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1 block">ประเภทรายการ</label>
+                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1 block">{t('settings.adminCategoryModal.itemType')}</label>
                 <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNewTab('lifestyle');
-                      if (!groups.expense.includes(newGroup)) {
-                        setNewGroup(groups.expense[0] || 'อื่นๆ');
-                      }
-                    }}
-                    className={`py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border transition-all ${
-                      newTab !== 'income'
-                        ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md'
-                        : 'bg-white dark:bg-white/5 text-rose-700 border-rose-200'
-                    }`}
-                  >
+                  <button type="button" onClick={() => { setNewTab('lifestyle'); if (!groups.expense.includes(newGroup)) setNewGroup(groups.expense[0] || 'อื่นๆ'); }} className={`py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border transition-all ${newTab !== 'income' ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md' : 'bg-white dark:bg-white/5 text-rose-700 border-rose-200'}`}>
                     <ArrowDownRight className="w-3.5 h-3.5" />
-                    รายจ่าย
+                    {t('settings.adminCategoryModal.expense')}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNewTab('income');
-                      if (!groups.income.includes(newGroup)) {
-                        setNewGroup(groups.income[0] || 'อื่นๆ');
-                      }
-                    }}
-                    className={`py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border transition-all ${
-                      newTab === 'income'
-                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md'
-                        : 'bg-white dark:bg-white/5 text-emerald-700 border-emerald-200'
-                    }`}
-                  >
+                  <button type="button" onClick={() => { setNewTab('income'); if (!groups.income.includes(newGroup)) setNewGroup(groups.income[0] || 'อื่นๆ'); }} className={`py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border transition-all ${newTab === 'income' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md' : 'bg-white dark:bg-white/5 text-emerald-700 border-emerald-200'}`}>
                     <ArrowUpRight className="w-3.5 h-3.5" />
-                    รายรับ
+                    {t('settings.adminCategoryModal.income')}
                   </button>
                 </div>
               </div>
-              
               <div>
-                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1 block">
-                  กลุ่มที่สังกัด
-                </label>
+                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1 block">{t('settings.adminCategoryModal.assignedGroup')}</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-[100px] overflow-y-auto no-scrollbar p-2 bg-white/80 dark:bg-white/5 rounded-2xl border border-purple-100 dark:border-white/10">
                   {currentFormGroups.map(g => (
-                    <button
-                      key={g}
-                      type="button"
-                      onClick={() => setNewGroup(g)}
-                      className={`py-1.5 px-2 rounded-xl text-xs font-bold transition-all text-left truncate ${
-                        newGroup === g
-                          ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm'
-                          : 'bg-purple-50/60 dark:bg-white/5 text-[#2E1065]/70 dark:text-white/70'
-                      }`}
-                    >
-                      {g}
+                    <button key={g} type="button" onClick={() => setNewGroup(g)} className={`py-1.5 px-2 rounded-xl text-xs font-bold transition-all text-left truncate ${newGroup === g ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm' : 'bg-purple-50/60 dark:bg-white/5 text-[#2E1065]/70 dark:text-white/70'}`}>
+                      {getGroupDisplayName(g, language)}
                     </button>
                   ))}
                 </div>
               </div>
-
-              <div>
-                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1.5 block">เลือกสี</label>
-                <div className="grid grid-cols-8 gap-2 p-2.5 bg-white/80 dark:bg-white/5 rounded-2xl border border-purple-100 dark:border-white/10">
-                  {AVAILABLE_COLORS.map((c: any, idx: number) => {
-                    const isSel = newColorIdx === idx;
-                    return (
-                      <button 
-                        key={idx} 
-                        type="button"
-                        onClick={() => setNewColorIdx(idx)}
-                        title={c.name}
-                        className={`aspect-square rounded-full flex items-center justify-center p-0.5 transition-all ${
-                          isSel 
-                            ? 'border-2 border-purple-600 dark:border-purple-400 bg-white dark:bg-[#120B24] shadow-sm' 
-                            : 'border-2 border-transparent hover:scale-105'
-                        }`}
-                      >
-                        <span 
-                          className={`w-full h-full rounded-full ${c.solidColor} shadow-inner transition-transform duration-150 ${
-                            isSel ? 'scale-85' : 'scale-100 opacity-80 hover:opacity-100'
-                          }`} 
-                        />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1.5 block">เลือกไอคอน</label>
-                <div className="grid grid-cols-7 gap-1.5 max-h-[120px] overflow-y-auto no-scrollbar p-2 bg-white/80 dark:bg-white/5 rounded-2xl border border-purple-100 dark:border-white/10">
-                  {AVAILABLE_ICONS.map(iconName => {
-                    const IconComp = getIconComponent(iconName);
-                    const isSel = newIcon === iconName;
-                    return (
-                      <button 
-                        key={iconName}
-                        onClick={() => setNewIcon(iconName)}
-                        className={`aspect-square rounded-xl flex items-center justify-center transition-all ${
-                          isSel 
-                            ? 'bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-md' 
-                            : 'bg-white dark:bg-white/5 text-purple-900 dark:text-white hover:bg-purple-100'
-                        }`}
-                      >
-                        <IconComp className="w-4 h-4" />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              
-              {/* Action Buttons (Standard Left: Cancel, Right: Confirm, Isolated Destructive Action) */}
               <div className="space-y-2.5 pt-2">
                 <div className="flex gap-2.5">
-                  <button 
-                    type="button"
-                    onClick={() => setIsAdding(false)} 
-                    className="flex-1 py-2.5 rounded-2xl font-bold bg-purple-100/80 text-purple-800 hover:bg-purple-200 dark:bg-white/10 dark:text-purple-200 transition-colors text-xs"
-                  >
-                    ยกเลิก
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={handleAdd} 
-                    disabled={!newName.trim()} 
-                    className="flex-[2] py-2.5 rounded-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/25 disabled:opacity-50 hover:brightness-105 transition-all text-xs flex items-center justify-center gap-1.5"
-                  >
-                    {editingKey ? 'บันทึกการแก้ไข' : 'ยืนยันการเพิ่ม'}
+                  <button type="button" onClick={() => setIsAdding(false)} className="flex-1 py-2.5 rounded-2xl font-bold bg-purple-100/80 text-purple-800 dark:bg-white/10 dark:text-purple-200 transition-colors text-xs">{t('settings.adminCategoryModal.cancel')}</button>
+                  <button type="button" onClick={handleAdd} disabled={!newName.trim()} className="flex-[2] py-2.5 rounded-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/25 disabled:opacity-50 transition-all text-xs flex items-center justify-center gap-1.5">
+                    {editingKey ? t('settings.adminCategoryModal.saveEdit') : t('settings.adminCategoryModal.confirmAdd')}
                   </button>
                 </div>
-
-                {/* Isolated Destructive Row */}
                 {editingKey && (
-                  <div className="pt-2 border-t border-purple-200/60 dark:border-purple-800/60">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        handleDelete(editingKey);
-                        setIsAdding(false);
-                      }}
-                      className="w-full py-2.5 rounded-2xl font-bold text-xs bg-rose-50/70 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 border border-rose-200/70 dark:border-rose-900/40 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>ลบหมวดหมู่เริ่มต้นนี้</span>
-                    </button>
-                  </div>
+                  <button type="button" onClick={() => { handleDelete(editingKey); setIsAdding(false); }} className="w-full py-2.5 rounded-2xl font-bold text-xs bg-rose-50/70 text-rose-600 border border-rose-200/70 shadow-sm flex items-center justify-center gap-1.5">
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>{t('settings.adminCategoryModal.deleteSystemCategory')}</span>
+                  </button>
                 )}
               </div>
             </div>
           ) : mainTab === 'categories' ? (
-            /* Categories Tab (Admin) */
             <div className="space-y-4">
-              {/* Category Type Filter & Delete Mode Toggle (Unclipped Soft Shadows) */}
               <div className="flex items-center justify-between gap-2 py-0.5">
                 <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1 px-1 -mx-1 flex-1 items-center">
-                  {[
-                    { id: 'all', label: 'ทั้งหมด' },
-                    { id: 'expense', label: 'รายจ่าย' },
-                    { id: 'income', label: 'รายรับ' }
-                  ].map(t => (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => setFilterTab(t.id as any)}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all active:scale-95 ${
-                        filterTab === t.id 
-                          ? 'bg-gradient-to-r from-[#6D28D9] via-[#7C3AED] to-[#8B5CF6] text-white shadow-md shadow-purple-500/30 scale-[1.02]' 
-                          : 'bg-purple-50/80 dark:bg-white/5 text-[#2E1065]/70 dark:text-purple-200/70 hover:bg-purple-100/80 dark:hover:bg-white/10 hover:text-purple-900 dark:hover:text-white border border-purple-100/60 dark:border-white/5'
-                      }`}
-                    >
-                      {t.label}
+                  {[ { id: 'all', label: t('settings.adminCategoryModal.filterAll') }, { id: 'expense', label: t('settings.adminCategoryModal.filterExpense') }, { id: 'income', label: t('settings.adminCategoryModal.filterIncome') } ].map(tabItem => (
+                    <button key={tabItem.id} type="button" onClick={() => setFilterTab(tabItem.id as any)} className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${filterTab === tabItem.id ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md shadow-purple-500/30' : 'bg-purple-50/80 dark:bg-white/5 text-[#2E1065]/70 dark:text-purple-200/70'}`}>
+                      {tabItem.label}
                     </button>
                   ))}
                 </div>
-
-                {/* Quick Delete Mode Toggle */}
-                <button
-                  type="button"
-                  onClick={() => setIsManageMode(!isManageMode)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1 shrink-0 border active:scale-95 ${
-                    isManageMode
-                      ? 'bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/30 ring-1 ring-rose-400/40'
-                      : 'bg-rose-50/80 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-200/80 dark:border-rose-800/40 hover:bg-rose-100/80 hover:text-rose-700'
-                  }`}
-                  title="เปิด/ปิด โหมดลบหมวดหมู่ด่วน"
-                >
+                <button type="button" onClick={() => setIsManageMode(!isManageMode)} className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1 border ${isManageMode ? 'bg-rose-500 text-white border-rose-500' : 'bg-rose-50/80 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-200/80'}`}>
                   <Trash2 className="w-3.5 h-3.5" />
-                  <span>{isManageMode ? 'เสร็จสิ้น' : 'โหมดลบ'}</span>
+                  <span>{isManageMode ? t('settings.adminCategoryModal.done') : t('settings.adminCategoryModal.deleteMode')}</span>
                 </button>
               </div>
-
-              {/* Grouped Category Cards */}
               <div className="space-y-4">
                 {Object.entries(groupedAll).map(([group, cats]) => {
                   if (cats.length === 0) return null;
@@ -1659,43 +1482,20 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
                     <div key={group} className="space-y-2">
                       <div className="flex items-center gap-2 px-1">
                         <span className="w-2 h-2 rounded-full bg-purple-500" />
-                        <h3 className="text-xs font-black text-[#2E1065] dark:text-purple-200 uppercase">{group}</h3>
-                        <span className="text-[10px] font-bold text-purple-700 bg-purple-100 dark:bg-purple-950 px-1.5 py-0.2 rounded-md">
-                          {cats.length}
-                        </span>
+                        <h3 className="text-xs font-black text-[#2E1065] dark:text-purple-200 uppercase">{getGroupDisplayName(group, language)}</h3>
                       </div>
                       <div className="grid grid-cols-4 gap-y-4 gap-x-2">
                         {cats.map((cat) => {
                           const { icon: Icon, color, textColor } = getCategoryStyle(cat, categories);
                           return (
                             <div key={cat} className="flex flex-col items-center gap-1 group relative">
-                              <div 
-                                onClick={() => openEdit(cat)}
-                                className={`w-14 h-14 rounded-[22px] flex items-center justify-center shadow-sm border relative ${color} ${textColor} cursor-pointer hover:scale-105 active:scale-95 transition-all`}
-                              >
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDelete(cat);
-                                  }}
-                                  className={`absolute -top-1.5 -right-1.5 rounded-full flex items-center justify-center transition-all z-20 shadow-md ${
-                                    isManageMode
-                                      ? 'w-6 h-6 bg-rose-500 text-white border-2 border-white dark:border-slate-900 scale-110 opacity-100 animate-pulse cursor-pointer'
-                                      : 'w-5 h-5 bg-white dark:bg-slate-800 text-rose-500 border border-slate-200 opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-rose-500 hover:text-white'
-                                  }`}
-                                  title="ลบหมวดหมู่นี้"
-                                >
+                              <div onClick={() => openEdit(cat)} className={`w-14 h-14 rounded-[22px] flex items-center justify-center shadow-sm border relative ${color} ${textColor} cursor-pointer`}>
+                                <button onClick={(e) => { e.stopPropagation(); handleDelete(cat); }} className={`absolute -top-1.5 -right-1.5 rounded-full flex items-center justify-center transition-all z-20 shadow-md ${isManageMode ? 'w-6 h-6 bg-rose-500 text-white animate-pulse' : 'w-5 h-5 bg-white text-rose-500 opacity-0 group-hover:opacity-100'}`}>
                                   <Trash2 className="w-3 h-3" />
                                 </button>
                                 <Icon className="w-6 h-6" strokeWidth={2.2} />
                               </div>
-                              <div className="w-full text-center px-0.5 mt-0.5">
-                                <AutoShrinkText 
-                                  origin="center" 
-                                  className="text-[11px] font-bold text-[#2E1065]/80 dark:text-white/80" 
-                                  text={cat} 
-                                />
-                              </div>
+                              <AutoShrinkText origin="center" className="text-[11px] font-bold text-[#2E1065]/80 dark:text-white/80" text={getCategoryDisplayName(cat, language)} />
                             </div>
                           );
                         })}
@@ -1706,119 +1506,49 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
               </div>
             </div>
           ) : (
-            /* Groups Tab (Admin) */
             <div className="space-y-4">
-              {/* Group Type Switcher */}
               <div className="grid grid-cols-2 p-1.5 bg-purple-50/80 dark:bg-purple-950/30 rounded-2xl border border-purple-100/60 dark:border-purple-900/30">
-                <button
-                  type="button"
-                  onClick={() => setGroupType('expense')}
-                  className={`py-2 rounded-xl text-xs font-bold transition-all ${
-                    groupType === 'expense'
-                      ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md'
-                      : 'text-[#2E1065]/70 dark:text-white/70'
-                  }`}
-                >
-                  กลุ่มรายจ่ายเริ่มต้น ({groups.expense.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGroupType('income')}
-                  className={`py-2 rounded-xl text-xs font-bold transition-all ${
-                    groupType === 'income'
-                      ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md'
-                      : 'text-[#2E1065]/70 dark:text-white/70'
-                  }`}
-                >
-                  กลุ่มรายรับเริ่มต้น ({groups.income.length})
-                </button>
+                <button type="button" onClick={() => setGroupType('expense')} className={`py-2 rounded-xl text-xs font-bold transition-all ${groupType === 'expense' ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md' : 'text-[#2E1065]/70'}`}>{t('settings.adminCategoryModal.expenseGroups', { count: groups.expense.length })}</button>
+                <button type="button" onClick={() => setGroupType('income')} className={`py-2 rounded-xl text-xs font-bold transition-all ${groupType === 'income' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md' : 'text-[#2E1065]/70'}`}>{t('settings.adminCategoryModal.incomeGroups', { count: groups.income.length })}</button>
               </div>
-
-              {/* Add New Default Group Input */}
               <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newGroupName}
-                  onChange={(e) => setNewGroupName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddGroup()}
-                  placeholder={`ระบุชื่อกลุ่มเริ่มต้น${groupType === 'income' ? 'รายรับ' : 'รายจ่าย'}ใหม่...`}
-                  className="flex-1 bg-[#FFF9F2] dark:bg-white/5 border border-purple-100 dark:border-white/10 rounded-2xl px-4 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-purple-400/40 text-[#2E1065] dark:text-white"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddGroup}
-                  disabled={!newGroupName.trim()}
-                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl text-xs font-bold disabled:opacity-50 shadow-md shadow-purple-500/20 flex items-center gap-1 shrink-0"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  เพิ่มกลุ่ม
+                <input type="text" value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddGroup()} placeholder={groupType === 'income' ? t('settings.adminCategoryModal.newGroupPlaceholderIncome') : t('settings.adminCategoryModal.newGroupPlaceholderExpense')} className="flex-1 bg-[#FFF9F2] dark:bg-white/5 border border-purple-100 rounded-2xl px-4 py-2 text-xs font-bold" />
+                <button type="button" onClick={handleAddGroup} disabled={!newGroupName.trim()} className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl text-xs font-bold flex items-center gap-1">
+                  <Plus className="w-3.5 h-3.5" /> {t('settings.adminCategoryModal.addGroup')}
                 </button>
               </div>
-
-              {/* Groups List */}
               <div className="space-y-2.5">
-                {(groupType === 'income' ? groups.income : groups.expense).map(g => {
-                  const count = groupCounts[g] || 0;
-                  const isProtected = g === 'อื่นๆ';
-
-                  return (
-                    <div 
-                      key={g}
-                      className="p-3.5 rounded-2xl bg-purple-50/60 dark:bg-white/5 border border-purple-100/80 dark:border-purple-900/40 flex items-center justify-between shadow-sm"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0">
-                          <FolderTree className="w-4 h-4" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <AutoShrinkText origin="left" className="text-xs font-bold text-[#2E1065] dark:text-white" text={g} />
-                          <span className="text-[10px] font-bold text-purple-600/70 dark:text-purple-300/70 block">
-                            {count} หมวดหมู่
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {!isProtected && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => setEditingGroup({ isOpen: true, oldName: g, newName: g, type: groupType })}
-                              className="w-8 h-8 rounded-xl bg-white dark:bg-white/10 text-purple-700 hover:text-purple-900 border border-purple-100 flex items-center justify-center shadow-sm"
-                              title="แก้ไขชื่อกลุ่ม"
-                            >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteGroup(g)}
-                              className="w-8 h-8 rounded-xl bg-white dark:bg-white/10 text-rose-500 hover:text-rose-700 border border-rose-100 flex items-center justify-center shadow-sm"
-                              title="ลบกลุ่ม"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </>
-                        )}
+                {(groupType === 'income' ? groups.income : groups.expense).map(g => (
+                  <div key={g} className="p-3.5 rounded-2xl bg-purple-50/60 dark:bg-white/5 border border-purple-100/80 flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center shrink-0"><FolderTree className="w-4 h-4" /></div>
+                      <div className="min-w-0 flex-1">
+                        <AutoShrinkText origin="left" className="text-xs font-bold text-[#2E1065] dark:text-white" text={getGroupDisplayName(g, language)} />
+                        <span className="text-[10px] font-bold text-purple-600/70 block">{t('settings.adminCategoryModal.categoriesCount', { count: groupCounts[g] || 0 })}</span>
                       </div>
                     </div>
-                  );
-                })}
+                    {g !== 'อื่นๆ' && (
+                      <div className="flex items-center gap-1.5">
+                        <button type="button" onClick={() => setEditingGroup({ isOpen: true, oldName: g, newName: g, type: groupType })} className="w-8 h-8 rounded-xl bg-white text-purple-700 flex items-center justify-center"><Edit2 className="w-3.5 h-3.5" /></button>
+                        <button type="button" onClick={() => handleDeleteGroup(g)} className="w-8 h-8 rounded-xl bg-white text-rose-500 flex items-center justify-center"><Trash2 className="w-3.5 h-3.5" /></button>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           )}
-
         </div>
         
-        {/* Actions Bar (Standardized UX) */}
         <div className="p-4 bg-white dark:bg-[#120B24] shrink-0 border-t border-purple-100/60 dark:border-purple-900/30 flex items-center gap-2.5 z-10">
           {!isAdding && (
             <button 
               onClick={openAdd} 
               className="px-4 py-3 rounded-2xl bg-purple-100/80 hover:bg-purple-200 text-purple-800 dark:bg-white/10 dark:text-purple-200 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-sm shrink-0"
-              title="เพิ่มหมวดหมู่ใหม่"
+              title={t('settings.adminCategoryModal.addCategoryBtn')}
             >
               <Plus className="w-4 h-4" strokeWidth={2.5} />
-              <span>เพิ่มหมวดหมู่</span>
+              <span>{t('settings.adminCategoryModal.addCategoryBtn')}</span>
             </button>
           )}
           <button 
@@ -1826,7 +1556,9 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
             disabled={saving || isAdding} 
             className="flex-1 py-3 rounded-2xl font-black bg-gradient-to-r from-[#6D28D9] via-[#7C3AED] to-[#8B5CF6] hover:brightness-105 text-white shadow-lg shadow-purple-500/30 disabled:opacity-50 transition-all active:scale-98 text-xs sm:text-sm flex items-center justify-center gap-2"
           >
-            {saving ? 'กำลังบันทึกข้อมูลระบบ...' : 'บันทึกข้อมูลระบบ (Admin)'}
+            {saving 
+              ? t('settings.adminCategoryModal.savingSystemDefaults') 
+              : t('settings.adminCategoryModal.saveSystemDefaults')}
           </button>
         </div>
 
@@ -1846,8 +1578,14 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
                   <FolderTree className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-[#2E1065] dark:text-white">แก้ไขชื่อกลุ่มระบบ</h3>
-                  <p className="text-[11px] font-bold text-purple-600/70">กลุ่ม{editingGroup.type === 'income' ? 'รายรับ' : 'รายจ่าย'}</p>
+                  <h3 className="text-base font-black text-[#2E1065] dark:text-white">
+                    {t('settings.adminCategoryModal.editGroupTitle')}
+                  </h3>
+                  <p className="text-[11px] font-bold text-purple-600/70">
+                    {editingGroup.type === 'income' 
+                      ? t('settings.adminCategoryModal.editGroupSubtitleIncome') 
+                      : t('settings.adminCategoryModal.editGroupSubtitleExpense')}
+                  </p>
                 </div>
               </div>
               <button 
@@ -1860,7 +1598,10 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
 
             <div>
               <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1.5 block">
-                ชื่อกลุ่มเดิม: <span className="text-purple-700 dark:text-purple-300 font-black">{editingGroup.oldName}</span>
+                {t('settings.adminCategoryModal.originalGroupName')}{' '}
+                <span className="text-purple-700 dark:text-purple-300 font-black">
+                  {getGroupDisplayName(editingGroup.oldName, language)}
+                </span>
               </label>
               <input
                 type="text"
@@ -1868,7 +1609,7 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
                 value={editingGroup.newName}
                 onChange={(e) => setEditingGroup(prev => ({ ...prev, newName: e.target.value }))}
                 onKeyDown={(e) => e.key === 'Enter' && handleSaveRenameGroup()}
-                placeholder="ระบุชื่อกลุ่มใหม่..."
+                placeholder={t('settings.adminCategoryModal.enterNewGroupName')}
                 className="w-full bg-[#FFF9F2] dark:bg-white/5 rounded-2xl px-4 py-2.5 text-xs font-bold border border-purple-100 dark:border-white/10 outline-none focus:ring-2 focus:ring-purple-400/40 text-[#2E1065] dark:text-white"
               />
             </div>
@@ -1879,7 +1620,7 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
                 onClick={() => setEditingGroup(prev => ({ ...prev, isOpen: false }))}
                 className="flex-1 py-2.5 rounded-2xl font-bold text-xs bg-purple-100/70 text-purple-800"
               >
-                ยกเลิก
+                {t('settings.adminCategoryModal.cancel')}
               </button>
               <button
                 type="button"
@@ -1887,7 +1628,7 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
                 disabled={!editingGroup.newName.trim()}
                 className="flex-[2] py-2.5 rounded-2xl font-bold text-xs bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md disabled:opacity-50"
               >
-                บันทึกการแก้ไข
+                {t('settings.adminCategoryModal.saveEdit')}
               </button>
             </div>
           </div>
