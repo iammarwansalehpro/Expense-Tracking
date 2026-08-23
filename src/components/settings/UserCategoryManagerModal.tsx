@@ -1022,20 +1022,14 @@ export default function UserCategoryManagerModal({
                   return (
                     <div key={groupName} className="space-y-3">
                       {/* Group Header */}
-                      <div className="flex items-center justify-between px-1">
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <span className="w-2 h-2 rounded-full bg-purple-500 shrink-0" />
-                          <div className="min-w-0 flex-1">
-                            <AutoShrinkText 
-                              origin="left" 
-                              className="text-xs font-black text-[#2E1065] dark:text-purple-200 uppercase tracking-wide"
-                              text={localizedGroupName}
-                            />
-                          </div>
-                          <span className="text-[10px] font-bold text-purple-700 bg-purple-100 dark:bg-purple-950 dark:text-purple-300 px-1.5 py-0.2 rounded-md shrink-0">
-                            {cats.length}
-                          </span>
-                        </div>
+                      <div className="flex items-center gap-2 px-1">
+                        <span className="w-2 h-2 rounded-full bg-purple-500 shrink-0" />
+                        <h4 className="text-xs font-black text-[#2E1065] dark:text-purple-200 uppercase tracking-wide whitespace-nowrap">
+                          {localizedGroupName}
+                        </h4>
+                        <span className="text-[10px] font-bold text-purple-700 bg-purple-100 dark:bg-purple-950 dark:text-purple-300 px-1.5 py-0.2 rounded-md shrink-0">
+                          {cats.length}
+                        </span>
                       </div>
 
                       {/* Category Grid Cards */}

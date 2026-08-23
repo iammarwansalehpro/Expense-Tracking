@@ -1484,11 +1484,14 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
                   if (cats.length === 0) return null;
                   return (
                     <div key={group} className="space-y-2">
-                      <div className="flex items-center gap-2 px-1 min-w-0">
+                      <div className="flex items-center gap-2 px-1">
                         <span className="w-2 h-2 rounded-full bg-purple-500 shrink-0" />
-                        <div className="min-w-0 flex-1">
-                          <AutoShrinkText origin="left" className="text-xs font-black text-[#2E1065] dark:text-purple-200 uppercase" text={getGroupDisplayName(group, language)} />
-                        </div>
+                        <h3 className="text-xs font-black text-[#2E1065] dark:text-purple-200 uppercase tracking-wide whitespace-nowrap">
+                          {getGroupDisplayName(group, language)}
+                        </h3>
+                        <span className="text-[10px] font-bold text-purple-700 bg-purple-100 dark:bg-purple-950 dark:text-purple-300 px-1.5 py-0.2 rounded-md shrink-0">
+                          {cats.length}
+                        </span>
                       </div>
                       <div className="grid grid-cols-4 gap-y-4 gap-x-2">
                         {cats.map((cat) => {
