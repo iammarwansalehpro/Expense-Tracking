@@ -150,7 +150,7 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
         return {
           title: alert.daysUntilDue === 1
             ? (language === 'en' ? 'Due tomorrow' : 'ครบกำหนดชำระพรุ่งนี้')
-            : (language === 'en' ? `Due in ${alert.daysUntilDue} days` : `จะครบกำหนดในอีก ${alert.daysUntilDue} วัน`),
+            : (language === 'en' ? `Due in ${alert.daysUntilDue} days` : `ครบกำหนดในอีก ${alert.daysUntilDue} วัน`),
           badgeText: language === 'en' ? 'SOON' : 'ใกล้ถึง',
           cardBg: 'bg-gradient-to-r from-amber-100/90 via-yellow-50/85 to-amber-50/90 dark:from-amber-950/70 dark:via-yellow-900/45 dark:to-amber-950/55',
           cardBorder: 'border-amber-300/80 dark:border-amber-600/60 shadow-[0_8px_28px_rgba(217,119,6,0.12)]',
@@ -162,7 +162,7 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
       case 'warning':
       default:
         return {
-          title: language === 'en' ? `Due in ${alert.daysUntilDue} days` : `จะครบกำหนดในอีก ${alert.daysUntilDue} วัน`,
+          title: language === 'en' ? `Due in ${alert.daysUntilDue} days` : `ครบกำหนดในอีก ${alert.daysUntilDue} วัน`,
           badgeText: language === 'en' ? 'UPCOMING' : 'เตือนความจำ',
           cardBg: 'bg-gradient-to-r from-purple-100/90 via-violet-50/85 to-indigo-50/90 dark:from-purple-950/70 dark:via-violet-900/45 dark:to-indigo-950/55',
           cardBorder: 'border-purple-300/80 dark:border-purple-600/60 shadow-[0_8px_28px_rgba(139,92,246,0.12)]',
@@ -207,95 +207,96 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
         {/* Ambient Radial Mesh Glow */}
         <div className={`absolute -right-6 -top-6 w-40 h-40 rounded-full bg-gradient-to-br ${config.glowGradient} blur-2xl pointer-events-none`} />
 
-        {/* Card Content Layout */}
-        <div className="relative z-10 flex items-center justify-between gap-3">
+        {/* Card Content Layout (Single-Row Horizontal Flow: Left Info | Right Actions) */}
+        <div className="relative z-10 flex items-center justify-between gap-2 sm:gap-3">
           
-          {/* Left: 3D Modern Icon + Text Stack */}
-          <div className="flex items-center gap-3 min-w-0 flex-1">
+          {/* Left: 3D Modern Dynamic Alert Icon + Text Stack */}
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
             
-            {/* 💎 3D Modern Dynamic Alert Icon Component */}
-            <div className="shrink-0 transition-transform duration-300 group-hover:scale-105 group-hover:rotate-1">
-              <Alert3DIcon urgency={alert.urgency} size="md" />
+            {/* 💎 3D Modern Dynamic Alert Icon */}
+            <div className="shrink-0 transition-transform duration-300 group-hover:scale-105">
+              <Alert3DIcon urgency={alert.urgency} size="sm" className="w-9 h-9 sm:w-10 sm:h-10" />
             </div>
 
             {/* Content Stack */}
             <div className="min-w-0 flex-1">
-              {/* Row 1: Status Title & Multi-card Pill */}
-              <div className="flex items-center gap-1.5 leading-tight mb-0.5">
-                <span className={`font-black text-xs sm:text-[13px] tracking-tight ${config.accentText}`}>
+              {/* Row 1: Status Title */}
+              <div className="flex items-center gap-1.5 leading-tight mb-0.5 min-w-0">
+                <span className={`font-black text-xs sm:text-[13px] tracking-tight whitespace-nowrap truncate ${config.accentText}`}>
                   {config.title}
                 </span>
-
-                {hasMultiple ? (
-                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-black/5 dark:bg-white/10 text-slate-600 dark:text-slate-300">
-                    {safeIndex + 1}/{alerts.length}
-                  </span>
-                ) : (
-                  <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full border uppercase tracking-wider hidden sm:inline-flex items-center gap-0.5 ${config.badgeBg}`}>
-                    <Sparkles className="w-2.5 h-2.5" />
+                {!hasMultiple && (
+                  <span className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded-full border uppercase tracking-wider hidden sm:inline-flex items-center gap-0.5 shrink-0 ${config.badgeBg}`}>
+                    <Sparkles className="w-2 h-2" />
                     {config.badgeText}
                   </span>
                 )}
               </div>
 
               {/* Row 2: Card Name + Amount + Due Date hint */}
-              <div className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-300">
+              <div className="flex items-center gap-1 sm:gap-1.5 text-[10.5px] sm:text-[11px] text-slate-600 dark:text-slate-300 min-w-0">
                 <CreditCard className="w-3 h-3 text-slate-400 dark:text-slate-500 shrink-0" />
-                <span className="font-semibold truncate max-w-[85px] sm:max-w-[120px] inline-block text-slate-700 dark:text-slate-200">
+                <span className="font-semibold truncate max-w-[65px] xs:max-w-[90px] sm:max-w-[130px] text-slate-700 dark:text-slate-200">
                   {alert.wallet.name}
                 </span>
-                <span className="text-slate-300 dark:text-slate-600">•</span>
-                <span className="font-extrabold text-slate-900 dark:text-white tabular-nums">
+                <span className="text-slate-300 dark:text-slate-600 shrink-0">•</span>
+                <span className="font-extrabold text-slate-900 dark:text-white tabular-nums shrink-0 whitespace-nowrap">
                   ฿{alert.amountToPay.toLocaleString(language === 'en' ? 'en-US' : 'th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                 </span>
-                <span className="text-slate-300 dark:text-slate-600 hidden sm:inline">•</span>
-                <span className="text-slate-500 dark:text-slate-400 text-[10px] hidden sm:inline font-medium">
+                <span className="text-slate-300 dark:text-slate-600 hidden sm:inline shrink-0">•</span>
+                <span className="text-slate-500 dark:text-slate-400 text-[10px] hidden sm:inline font-medium whitespace-nowrap">
                   ({formattedDueDate})
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Right: Actions (Multi-card pagination + CTA Button) */}
-          <div className="flex items-center gap-1.5 shrink-0 relative z-10">
+          {/* Right: Same-Row Action Cluster (Micro Pager + CTA Button) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 relative z-10">
+            {/* Micro Multi-Card Pager (On same horizontal level as Pay button) */}
             {hasMultiple && (
-              <div className="flex items-center gap-0.5 mr-0.5">
+              <div 
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center bg-black/5 dark:bg-white/10 rounded-full p-0.5 border border-black/5 dark:border-white/10 shadow-xs shrink-0 select-none"
+              >
                 <button
                   type="button"
                   onClick={handlePrev}
-                  className="w-6 h-6 rounded-lg bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/15 flex items-center justify-center text-slate-600 dark:text-slate-300 transition-colors active:scale-90"
+                  className="w-4 h-4 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/15 active:scale-75 transition-all"
                   aria-label="Previous card"
                 >
-                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <ChevronLeft className="w-2.5 h-2.5" strokeWidth={2.5} />
                 </button>
+                <span className="text-[9px] font-extrabold px-0.5 text-slate-700 dark:text-slate-200 tabular-nums leading-none">
+                  {safeIndex + 1}/{alerts.length}
+                </span>
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="w-6 h-6 rounded-lg bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/15 flex items-center justify-center text-slate-600 dark:text-slate-300 transition-colors active:scale-90"
+                  className="w-4 h-4 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/15 active:scale-75 transition-all"
                   aria-label="Next card"
                 >
-                  <ChevronRight className="w-3.5 h-3.5" />
+                  <ChevronRight className="w-2.5 h-2.5" strokeWidth={2.5} />
                 </button>
               </div>
             )}
 
-            {/* 3D Tactile High-Conversion CTA Button */}
+            {/* 3D Tactile CTA Button */}
             <button 
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onPayClick(alert.wallet.id);
               }}
-              className={`h-8 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1.5 active:scale-95 transition-all duration-150 relative overflow-hidden group/btn ${config.buttonBg}`}
+              className={`h-7 sm:h-7.5 px-2.5 sm:px-3 rounded-xl font-bold text-[11px] sm:text-xs flex items-center gap-1 active:scale-95 transition-all duration-150 relative overflow-hidden group/btn shrink-0 ${config.buttonBg}`}
             >
               {/* Button Specular Glint Effect */}
               <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/15 to-white/30 pointer-events-none opacity-80 group-hover/btn:opacity-100" />
               
-              <span className="relative z-10 font-bold">{t('home.payShort') || (language === 'en' ? 'Pay' : 'ชำระเลย')}</span>
-              <ArrowRight className="w-3.5 h-3.5 relative z-10 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
+              <span className="relative z-10 font-bold whitespace-nowrap">{t('home.payShort') || (language === 'en' ? 'Pay' : 'ชำระเลย')}</span>
+              <ArrowRight className="w-3 h-3 relative z-10 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
             </button>
           </div>
-
         </div>
       </div>
     </div>
