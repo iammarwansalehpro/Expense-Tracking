@@ -510,13 +510,15 @@ export default function AnalyticsPage() {
               <div className="flex-1 max-h-40 overflow-y-auto no-scrollbar space-y-3 pr-1">
                 {categoryTotals.map((cat, i) => (
                   <div key={i} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 overflow-hidden mr-2">
-                       <div className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" style={{backgroundColor: cat.fill}} />
-                       <span className="text-[12px] font-bold text-[#2E1065] truncate">{cat.name}</span>
+                    <div className="flex items-center gap-2 overflow-hidden mr-2 min-w-0 flex-1">
+                      <div className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" style={{backgroundColor: cat.fill}} />
+                      <div className="min-w-0 flex-1">
+                        <AutoShrinkText origin="left" className="text-[12px] font-bold text-[#2E1065] dark:text-white" text={cat.name} />
+                      </div>
                     </div>
                     <div className="flex flex-col items-end shrink-0">
-                       <span className="text-[12px] font-black text-[#2E1065]">฿{cat.amount.toLocaleString()}</span>
-                       <span className="text-[9px] font-bold text-[#2E1065]/50">{((cat.amount / currentMonthTotal) * 100).toFixed(1)}%</span>
+                      <span className="text-[12px] font-black text-[#2E1065] dark:text-white">฿{cat.amount.toLocaleString()}</span>
+                      <span className="text-[9px] font-bold text-[#2E1065]/50 dark:text-white/50">{((cat.amount / currentMonthTotal) * 100).toFixed(1)}%</span>
                     </div>
                   </div>
                 ))}

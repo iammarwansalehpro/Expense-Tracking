@@ -1439,8 +1439,8 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
                 <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1 block">{t('settings.adminCategoryModal.assignedGroup')}</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-[100px] overflow-y-auto no-scrollbar p-2 bg-white/80 dark:bg-white/5 rounded-2xl border border-purple-100 dark:border-white/10">
                   {currentFormGroups.map(g => (
-                    <button key={g} type="button" onClick={() => setNewGroup(g)} className={`py-1.5 px-2 rounded-xl text-xs font-bold transition-all text-left truncate ${newGroup === g ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm' : 'bg-purple-50/60 dark:bg-white/5 text-[#2E1065]/70 dark:text-white/70'}`}>
-                      {getGroupDisplayName(g, language)}
+                    <button key={g} type="button" onClick={() => setNewGroup(g)} className={`py-1.5 px-2 rounded-xl text-xs font-bold transition-all text-left flex items-center min-w-0 ${newGroup === g ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm' : 'bg-purple-50/60 dark:bg-white/5 text-[#2E1065]/70 dark:text-white/70'}`}>
+                      <AutoShrinkText origin="left" text={getGroupDisplayName(g, language)} />
                     </button>
                   ))}
                 </div>
@@ -1480,9 +1480,11 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
                   if (cats.length === 0) return null;
                   return (
                     <div key={group} className="space-y-2">
-                      <div className="flex items-center gap-2 px-1">
-                        <span className="w-2 h-2 rounded-full bg-purple-500" />
-                        <h3 className="text-xs font-black text-[#2E1065] dark:text-purple-200 uppercase">{getGroupDisplayName(group, language)}</h3>
+                      <div className="flex items-center gap-2 px-1 min-w-0">
+                        <span className="w-2 h-2 rounded-full bg-purple-500 shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <AutoShrinkText origin="left" className="text-xs font-black text-[#2E1065] dark:text-purple-200 uppercase" text={getGroupDisplayName(group, language)} />
+                        </div>
                       </div>
                       <div className="grid grid-cols-4 gap-y-4 gap-x-2">
                         {cats.map((cat) => {

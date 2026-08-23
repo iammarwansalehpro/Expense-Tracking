@@ -12,6 +12,7 @@ import type { Wallet } from '@/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { calculateCreditCardStats } from '@/utils/creditCardUtils';
 import Alert3DIcon from '@/components/ui/Alert3DIcon';
+import AutoShrinkText from '@/components/ui/AutoShrinkText';
 
 interface CreditCardAlert {
   wallet: Wallet;
@@ -250,13 +251,15 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
               <Alert3DIcon urgency={alert.urgency} size="sm" className="w-9 h-9 sm:w-10 sm:h-10" />
             </div>
 
-            {/* Content Stack (100% Free Breathing Room) */}
+            {/* Content Stack (100% Free Breathing Room with Smart Auto Fit) */}
             <div className="min-w-0 flex-1">
               {/* Row 1: Status Title */}
               <div className="flex items-center gap-1.5 leading-tight mb-0.5 min-w-0">
-                <span className={`font-black text-xs sm:text-[13px] tracking-tight whitespace-nowrap truncate ${config.accentText}`}>
-                  {config.title}
-                </span>
+                <AutoShrinkText 
+                  origin="left" 
+                  className={`font-black text-xs sm:text-[13px] tracking-tight ${config.accentText}`}
+                  text={config.title}
+                />
                 {!hasMultiple && (
                   <span className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded-full border uppercase tracking-wider hidden sm:inline-flex items-center gap-0.5 shrink-0 ${config.badgeBg}`}>
                     <Sparkles className="w-2 h-2" />
@@ -268,9 +271,13 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
               {/* Row 2: Card Name + Amount + Due Date hint */}
               <div className="flex items-center gap-1 sm:gap-1.5 text-[10.5px] sm:text-[11px] text-slate-600 dark:text-slate-300 min-w-0">
                 <CreditCard className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-                <span className="font-semibold truncate max-w-[90px] xs:max-w-[125px] sm:max-w-[170px] text-slate-700 dark:text-slate-200">
-                  {alert.wallet.name}
-                </span>
+                <div className="min-w-0 max-w-[120px] xs:max-w-[160px] sm:max-w-[200px]">
+                  <AutoShrinkText 
+                    origin="left" 
+                    className="font-semibold text-slate-700 dark:text-slate-200"
+                    text={alert.wallet.name}
+                  />
+                </div>
                 <span className="text-slate-300 dark:text-slate-600 shrink-0">•</span>
                 <span className="font-extrabold text-slate-900 dark:text-white tabular-nums shrink-0 whitespace-nowrap">
                   ฿{alert.amountToPay.toLocaleString(language === 'en' ? 'en-US' : 'th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}

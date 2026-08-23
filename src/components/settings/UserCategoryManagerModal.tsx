@@ -542,20 +542,24 @@ export default function UserCategoryManagerModal({
               </div>
             )}
             
-            <div>
-              <h3 className="text-base sm:text-lg font-black text-[#2E1065] dark:text-white tracking-tight">
-                {isEditingCategory 
+            <div className="min-w-0 flex-1">
+              <AutoShrinkText 
+                origin="left" 
+                className="text-base sm:text-lg font-black text-[#2E1065] dark:text-white tracking-tight"
+                text={isEditingCategory 
                   ? (editingCatKey ? t('categoryManager.titleEdit') : t('categoryManager.titleCreate'))
                   : (mainTab === 'categories' ? t('categoryManager.title') : t('categoryManager.titleGroups'))}
-              </h3>
-              <p className="text-[11px] font-bold text-purple-600/70 dark:text-purple-300/70">
-                {isEditingCategory 
+              />
+              <AutoShrinkText 
+                origin="left" 
+                className="text-[11px] font-bold text-purple-600/70 dark:text-purple-300/70"
+                text={isEditingCategory 
                   ? t('categoryManager.subtitleEdit')
                   : t('categoryManager.subtitleStats')
                       .replace('{total}', String(stats.total))
                       .replace('{custom}', String(stats.customCount))
                       .replace('{groups}', String(currentExpenseGroups.length + currentIncomeGroups.length))}
-              </p>
+              />
             </div>
           </div>
 
@@ -1015,12 +1019,16 @@ export default function UserCategoryManagerModal({
                     <div key={groupName} className="space-y-3">
                       {/* Group Header */}
                       <div className="flex items-center justify-between px-1">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-purple-500" />
-                          <h4 className="text-xs font-black text-[#2E1065] dark:text-purple-200 uppercase tracking-wide">
-                            {localizedGroupName}
-                          </h4>
-                          <span className="text-[10px] font-bold text-purple-700 bg-purple-100 dark:bg-purple-950 dark:text-purple-300 px-1.5 py-0.2 rounded-md">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <span className="w-2 h-2 rounded-full bg-purple-500 shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <AutoShrinkText 
+                              origin="left" 
+                              className="text-xs font-black text-[#2E1065] dark:text-purple-200 uppercase tracking-wide"
+                              text={localizedGroupName}
+                            />
+                          </div>
+                          <span className="text-[10px] font-bold text-purple-700 bg-purple-100 dark:bg-purple-950 dark:text-purple-300 px-1.5 py-0.2 rounded-md shrink-0">
                             {cats.length}
                           </span>
                         </div>

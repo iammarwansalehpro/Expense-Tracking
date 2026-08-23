@@ -5,7 +5,7 @@ import { useWalletStore } from '@/store/useWalletStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTranslation } from '@/hooks/useTranslation';
-import { getIconComponent, getCategoryStyle } from '@/utils/categoryStyles';
+import { getIconComponent, getCategoryStyle, getCategoryDisplayName } from '@/utils/categoryStyles';
 import WalletFormModal from '@/components/ui/WalletFormModal';
 import AppHeader from '@/components/layout/AppHeader';
 import { useConfirmStore } from '@/store/useConfirmStore';
@@ -228,13 +228,17 @@ export default function HomePage() {
             <div className="w-8 h-8 rounded-xl bg-white/25 dark:bg-white/[0.07] backdrop-blur-2xl flex items-center justify-center shrink-0 shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.8)] dark:shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.15)] border border-white/70 dark:border-white/20">
               <greetingConfig.Icon className={`w-4 h-4 ${greetingConfig.iconColor}`} />
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col min-w-0">
               <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-none">
                 {greetingConfig.text}
               </span>
-              <span className="text-[13px] font-black text-[#2E1065] dark:text-white leading-tight mt-0.5 max-w-[85px] sm:max-w-[120px] truncate">
-                {greetingConfig.userName || appName}
-              </span>
+              <div className="min-w-0 max-w-[90px] sm:max-w-[130px]">
+                <AutoShrinkText 
+                  origin="left" 
+                  className="text-[13px] font-black text-[#2E1065] dark:text-white leading-tight mt-0.5"
+                  text={greetingConfig.userName || appName}
+                />
+              </div>
             </div>
           </div>
 
@@ -656,7 +660,11 @@ export default function HomePage() {
                       <IconComponent className="w-6 h-6" />
                     </div>
                     <div className="flex-1 min-w-0 pr-2">
-                      <h4 className="font-bold text-[#2E1065] text-[15px] mb-0.5 truncate">{tx.title || tx.category}</h4>
+                      <AutoShrinkText 
+                        origin="left" 
+                        className="font-bold text-[#2E1065] text-[15px] mb-0.5" 
+                        text={tx.title || getCategoryDisplayName(tx.category, language)} 
+                      />
                       <p className="text-[11px] font-medium text-[#2E1065]/60 whitespace-nowrap">
                         {new Date(tx.date).toLocaleDateString(language === 'en' ? 'en-US' : 'th-TH', { day: '2-digit', month: 'long', year: 'numeric' })}
                       </p>

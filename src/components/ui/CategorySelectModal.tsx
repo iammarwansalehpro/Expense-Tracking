@@ -193,11 +193,15 @@ export default function CategorySelectModal({ isOpen, onClose, onSelect, type, s
                   if (cats.length === 0) return null;
                   return (
                     <div key={group} className="flex flex-col gap-3">
-                      <div className="flex items-center gap-2 px-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                        <h3 className="text-xs font-black text-[#2E1065]/70 dark:text-white/70 uppercase tracking-wider">
-                          {getGroupDisplayName(group, language)}
-                        </h3>
+                      <div className="flex items-center gap-2 px-1 min-w-0">
+                        <span className="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <AutoShrinkText 
+                            origin="left" 
+                            className="text-xs font-black text-[#2E1065]/70 dark:text-white/70 uppercase tracking-wider"
+                            text={getGroupDisplayName(group, language)}
+                          />
+                        </div>
                       </div>
                       
                       <div className="grid grid-cols-4 gap-y-5 gap-x-2">

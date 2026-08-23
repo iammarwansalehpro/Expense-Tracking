@@ -8,7 +8,7 @@ import AppHeader from '@/components/layout/AppHeader';
 import { useState, useMemo } from 'react';
 import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip, Legend, LineChart, Line } from 'recharts';
 import TransactionDetailsModal from '@/components/ui/TransactionDetailsModal';
-import { getCategoryStyle } from '@/utils/categoryStyles';
+import { getCategoryStyle, getCategoryDisplayName } from '@/utils/categoryStyles';
 
 const SortAltIcon = ({ className }: { className?: string }) => (
   <svg
@@ -282,13 +282,13 @@ export default function OverviewPage() {
         <div className="flex gap-4 mb-8 shrink-0">
           {/* Income Card */}
           <div className="flex-1 bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-xl rounded-[24px] p-4 border border-white/60 shadow-[0_8px_32px_rgba(31,38,135,0.05)] relative overflow-hidden flex flex-col gap-2 min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 shadow-sm border border-emerald-50">
                 <ArrowDown className="w-3.5 h-3.5 text-emerald-600" />
               </div>
-              <p className="text-[12px] font-bold text-[#2E1065]/70 tracking-wide uppercase truncate">
-                {t('overview.totalIncome')}
-              </p>
+              <div className="min-w-0 flex-1">
+                <AutoShrinkText origin="left" className="text-[12px] font-bold text-[#2E1065]/70 tracking-wide uppercase" text={t('overview.totalIncome')} />
+              </div>
             </div>
             <div className="w-full mt-1">
               <AutoShrinkText className="font-black text-[26px] text-[#2E1065] tracking-tight w-full">
@@ -300,13 +300,13 @@ export default function OverviewPage() {
 
           {/* Expense Card */}
           <div className="flex-1 bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-xl rounded-[24px] p-4 border border-white/60 shadow-[0_8px_32px_rgba(31,38,135,0.05)] relative overflow-hidden flex flex-col gap-2 min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <div className="w-7 h-7 rounded-full bg-rose-100 flex items-center justify-center shrink-0 shadow-sm border border-rose-50">
                 <ArrowUp className="w-3.5 h-3.5 text-rose-600" />
               </div>
-              <p className="text-[12px] font-bold text-[#2E1065]/70 tracking-wide uppercase truncate">
-                {t('overview.totalExpenses')}
-              </p>
+              <div className="min-w-0 flex-1">
+                <AutoShrinkText origin="left" className="text-[12px] font-bold text-[#2E1065]/70 tracking-wide uppercase" text={t('overview.totalExpenses')} />
+              </div>
             </div>
             <div className="w-full mt-1">
               <AutoShrinkText className="font-black text-[26px] text-[#2E1065] tracking-tight w-full">
@@ -499,7 +499,11 @@ export default function OverviewPage() {
                     <IconComponent className="w-6 h-6" />
                   </div>
                   <div className="flex-1 min-w-0 pr-2">
-                    <h4 className="font-bold text-[#2E1065] text-[15px] mb-0.5 truncate">{tx.title || tx.category}</h4>
+                    <AutoShrinkText 
+                      origin="left" 
+                      className="font-bold text-[#2E1065] text-[15px] mb-0.5" 
+                      text={tx.title || getCategoryDisplayName(tx.category, language)} 
+                    />
                     <p className="text-[11px] font-medium text-[#2E1065]/60 whitespace-nowrap">
                       {new Date(tx.date).toLocaleDateString(language === 'en' ? 'en-US' : 'th-TH', { day: '2-digit', month: 'long', year: 'numeric' })}
                     </p>
