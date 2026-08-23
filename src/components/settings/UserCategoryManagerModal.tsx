@@ -577,25 +577,29 @@ export default function UserCategoryManagerModal({
             <div className="grid grid-cols-2 p-1.5 bg-purple-50/80 dark:bg-purple-950/30 rounded-2xl border border-purple-100/60 dark:border-purple-900/30">
               <button
                 onClick={() => setMainTab('categories')}
-                className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all min-w-0 ${
                   mainTab === 'categories'
                     ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md shadow-purple-500/25'
                     : 'text-[#2E1065]/70 dark:text-white/70 hover:text-purple-700 dark:hover:text-white'
                 }`}
               >
-                <Tag className="w-3.5 h-3.5" />
-                {t('categoryManager.tabCategories')}
+                <Tag className="w-3.5 h-3.5 shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <AutoShrinkText origin="center" text={t('categoryManager.tabCategories')} />
+                </div>
               </button>
               <button
                 onClick={() => setMainTab('groups')}
-                className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all min-w-0 ${
                   mainTab === 'groups'
                     ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md shadow-purple-500/25'
                     : 'text-[#2E1065]/70 dark:text-white/70 hover:text-purple-700 dark:hover:text-white'
                 }`}
               >
-                <FolderTree className="w-3.5 h-3.5" />
-                {t('categoryManager.tabGroups')}
+                <FolderTree className="w-3.5 h-3.5 shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <AutoShrinkText origin="center" text={t('categoryManager.tabGroups')} />
+                </div>
               </button>
             </div>
           </div>
@@ -1130,24 +1134,24 @@ export default function UserCategoryManagerModal({
                 <button
                   type="button"
                   onClick={() => setGroupType('expense')}
-                  className={`py-2 rounded-xl text-xs font-bold transition-all ${
+                  className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all min-w-0 flex items-center justify-center ${
                     groupType === 'expense'
                       ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md shadow-rose-500/25'
                       : 'text-[#2E1065]/70 dark:text-white/70'
                   }`}
                 >
-                  {t('categoryManager.expenseGroups')} ({currentExpenseGroups.length})
+                  <AutoShrinkText origin="center" text={`${t('categoryManager.expenseGroups')} (${currentExpenseGroups.length})`} />
                 </button>
                 <button
                   type="button"
                   onClick={() => setGroupType('income')}
-                  className={`py-2 rounded-xl text-xs font-bold transition-all ${
+                  className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all min-w-0 flex items-center justify-center ${
                     groupType === 'income'
                       ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-500/25'
                       : 'text-[#2E1065]/70 dark:text-white/70'
                   }`}
                 >
-                  {t('categoryManager.incomeGroups')} ({currentIncomeGroups.length})
+                  <AutoShrinkText origin="center" text={`${t('categoryManager.incomeGroups')} (${currentIncomeGroups.length})`} />
                 </button>
               </div>
 

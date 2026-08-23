@@ -1396,17 +1396,21 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
             <div className="grid grid-cols-2 p-1.5 bg-purple-50/80 dark:bg-purple-950/30 rounded-2xl border border-purple-100/60 dark:border-purple-900/30">
               <button
                 onClick={() => setMainTab('categories')}
-                className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${mainTab === 'categories' ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md shadow-purple-500/25' : 'text-[#2E1065]/70 dark:text-white/70'}`}
+                className={`py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all min-w-0 ${mainTab === 'categories' ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md shadow-purple-500/25' : 'text-[#2E1065]/70 dark:text-white/70'}`}
               >
-                <Tag className="w-3.5 h-3.5" />
-                {t('settings.adminCategoryModal.tabCategories', { count: Object.keys(categories).length })}
+                <Tag className="w-3.5 h-3.5 shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <AutoShrinkText origin="center" text={t('settings.adminCategoryModal.tabCategories', { count: Object.keys(categories).length })} />
+                </div>
               </button>
               <button
                 onClick={() => setMainTab('groups')}
-                className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${mainTab === 'groups' ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md shadow-purple-500/25' : 'text-[#2E1065]/70 dark:text-white/70'}`}
+                className={`py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all min-w-0 ${mainTab === 'groups' ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white shadow-md shadow-purple-500/25' : 'text-[#2E1065]/70 dark:text-white/70'}`}
               >
-                <FolderTree className="w-3.5 h-3.5" />
-                {t('settings.adminCategoryModal.tabGroups', { count: groups.expense.length + groups.income.length })}
+                <FolderTree className="w-3.5 h-3.5 shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <AutoShrinkText origin="center" text={t('settings.adminCategoryModal.tabGroups', { count: groups.expense.length + groups.income.length })} />
+                </div>
               </button>
             </div>
           </div>
@@ -1510,8 +1514,20 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
           ) : (
             <div className="space-y-4">
               <div className="grid grid-cols-2 p-1.5 bg-purple-50/80 dark:bg-purple-950/30 rounded-2xl border border-purple-100/60 dark:border-purple-900/30">
-                <button type="button" onClick={() => setGroupType('expense')} className={`py-2 rounded-xl text-xs font-bold transition-all ${groupType === 'expense' ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md' : 'text-[#2E1065]/70'}`}>{t('settings.adminCategoryModal.expenseGroups', { count: groups.expense.length })}</button>
-                <button type="button" onClick={() => setGroupType('income')} className={`py-2 rounded-xl text-xs font-bold transition-all ${groupType === 'income' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md' : 'text-[#2E1065]/70'}`}>{t('settings.adminCategoryModal.incomeGroups', { count: groups.income.length })}</button>
+                <button 
+                  type="button" 
+                  onClick={() => setGroupType('expense')} 
+                  className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all min-w-0 flex items-center justify-center ${groupType === 'expense' ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md' : 'text-[#2E1065]/70'}`}
+                >
+                  <AutoShrinkText origin="center" text={t('settings.adminCategoryModal.expenseGroups', { count: groups.expense.length })} />
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setGroupType('income')} 
+                  className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all min-w-0 flex items-center justify-center ${groupType === 'income' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md' : 'text-[#2E1065]/70'}`}
+                >
+                  <AutoShrinkText origin="center" text={t('settings.adminCategoryModal.incomeGroups', { count: groups.income.length })} />
+                </button>
               </div>
               <div className="flex gap-2">
                 <input type="text" value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddGroup()} placeholder={groupType === 'income' ? t('settings.adminCategoryModal.newGroupPlaceholderIncome') : t('settings.adminCategoryModal.newGroupPlaceholderExpense')} className="flex-1 bg-[#FFF9F2] dark:bg-white/5 border border-purple-100 rounded-2xl px-4 py-2 text-xs font-bold" />
