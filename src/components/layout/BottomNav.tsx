@@ -1,7 +1,7 @@
-import { 
-  Home, 
-  BarChart3, 
-  Wallet, 
+import {
+  Home,
+  BarChart3,
+  Wallet,
   User,
   Plus,
   PenLine,
@@ -35,7 +35,7 @@ export default function BottomNav() {
 
   useEffect(() => {
     if (!isScanning) return;
-    
+
     const texts = [
       t('scanner.preparing'),
       t('scanner.reading'),
@@ -45,12 +45,12 @@ export default function BottomNav() {
       t('scanner.verifying')
     ];
     let step = 0;
-    
+
     const interval = setInterval(() => {
       step = (step + 1) % texts.length;
       setScanText(texts[step]);
     }, 1500);
-    
+
     return () => clearInterval(interval);
   }, [isScanning]);
 
@@ -84,21 +84,20 @@ export default function BottomNav() {
 
   const { notchPath, topRimPath, cx, notchDepth } = useMemo(() => {
     const w = navWidth || 380;
-    const h = 64;
-    const r = 32; // capsule corner radius
+    const h = 64; // Reverted back to 64px
+    const r = 32; // Corner radius 32px
     const center = w / 2;
 
-    // True concentric circular notch cradle hugging the 56px circular button
-    // Button top is at y = -20px, bottom at y = 36px, cradle bottom is at y = 41px (constant 5px gap)
-    const cradleBottom = 41;
+    // Adjusted concentric circular notch cradle with center raised slightly (cradleBottom = 35px)
+    const cradleBottom = 35;
 
     const path = [
       `M ${r} 0`,
-      `L ${center - 45} 0`,
-      `C ${center - 36} 0, ${center - 30} 4, ${center - 26} 14`,
-      `C ${center - 20} 32, ${center - 12} ${cradleBottom}, ${center} ${cradleBottom}`,
-      `C ${center + 12} ${cradleBottom}, ${center + 20} 32, ${center + 26} 14`,
-      `C ${center + 30} 4, ${center + 36} 0, ${center + 45} 0`,
+      `L ${center - 60} 0`,
+      `C ${center - 48} 0, ${center - 40} 4, ${center - 33} 13`,
+      `C ${center - 24} 27, ${center - 13} ${cradleBottom}, ${center} ${cradleBottom}`,
+      `C ${center + 13} ${cradleBottom}, ${center + 24} 27, ${center + 33} 13`,
+      `C ${center + 40} 4, ${center + 48} 0, ${center + 60} 0`,
       `L ${w - r} 0`,
       `A ${r} ${r} 0 0 1 ${w} ${r}`,
       `A ${r} ${r} 0 0 1 ${w - r} ${h}`,
@@ -110,18 +109,18 @@ export default function BottomNav() {
 
     const rim = [
       `M ${r} 0.75`,
-      `L ${center - 45} 0.75`,
-      `C ${center - 36} 0.75, ${center - 30} 4.75, ${center - 26} 14.75`,
-      `C ${center - 20} 32.75, ${center - 12} ${cradleBottom + 0.75}, ${center} ${cradleBottom + 0.75}`,
-      `C ${center + 12} ${cradleBottom + 0.75}, ${center + 20} 32.75, ${center + 26} 14.75`,
-      `C ${center + 30} 4.75, ${center + 36} 0.75, ${center + 45} 0.75`,
+      `L ${center - 60} 0.75`,
+      `C ${center - 48} 0.75, ${center - 40} 4.75, ${center - 33} 13.75`,
+      `C ${center - 24} 27.75, ${center - 13} ${cradleBottom + 0.75}, ${center} ${cradleBottom + 0.75}`,
+      `C ${center + 13} ${cradleBottom + 0.75}, ${center + 24} 27.75, ${center + 33} 13.75`,
+      `C ${center + 40} 4.75, ${center + 48} 0.75, ${center + 60} 0.75`,
       `L ${w - r} 0.75`
     ].join(' ');
 
-    return { 
-      notchPath: path, 
-      topRimPath: rim, 
-      cx: center, 
+    return {
+      notchPath: path,
+      topRimPath: rim,
+      cx: center,
       notchDepth: cradleBottom
     };
   }, [navWidth]);
@@ -150,7 +149,7 @@ export default function BottomNav() {
     setScanProgress({ current: 1, total: files.length });
     setScanText("กำลังเตรียมไฟล์...");
     setIsScanning(true);
-    
+
     try {
       const results = [];
       for (let i = 0; i < files.length; i++) {
@@ -159,9 +158,9 @@ export default function BottomNav() {
         // Update image preview and progress for the current file
         setScanImageUrl(previewUrl);
         setScanProgress({ current: i + 1, total: files.length });
-        
+
         const dataList = await extractDataFromSlip(file);
-        
+
         for (const data of dataList) {
           const bankStr = data.bank || 'Slip';
           results.push({
@@ -176,7 +175,7 @@ export default function BottomNav() {
           });
         }
       }
-      
+
       if (results.length > 0) {
         setScannedSlips(results);
         setReviewModalOpen(true);
@@ -200,23 +199,21 @@ export default function BottomNav() {
   return (
     <>
       {/* Speed Dial Full-screen Overlay */}
-      <div 
+      <div
         className={`fixed inset-0 bg-slate-900/30 z-[45] transition-opacity duration-300 backdrop-blur-[4px] ${isAddMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setAddMenuOpen(false)}
       />
 
-      <div 
-        className={`fixed bottom-0 left-0 right-0 z-50 px-3.5 sm:px-6 pt-2 pb-[max(0.625rem,env(safe-area-inset-bottom,0.625rem))] pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-          isSettingsModalOpen ? 'translate-y-[200%] opacity-0' : 'translate-y-0 opacity-100'
-        }`}
+      <div
+        className={`fixed bottom-0 left-0 right-0 z-50 px-3.5 sm:px-6 pt-2 pb-[max(0.625rem,env(safe-area-inset-bottom,0.625rem))] pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isSettingsModalOpen ? 'translate-y-[200%] opacity-0' : 'translate-y-0 opacity-100'
+          }`}
       >
         <div className="max-w-md mx-auto relative pointer-events-auto">
 
           {/* Speed Dial Menu (Smart-Delivery Style) */}
-          <div className={`absolute left-1/2 -translate-x-1/2 flex flex-col-reverse items-center gap-3.5 z-50 pointer-events-auto transition-all duration-300 ${
-            isAddMenuOpen ? 'bottom-[96px]' : 'bottom-[64px] pointer-events-none'
-          }`}>
-            
+          <div className={`absolute left-1/2 -translate-x-1/2 flex flex-col-reverse items-center gap-3.5 z-50 pointer-events-auto transition-all duration-300 ${isAddMenuOpen ? 'bottom-[96px]' : 'bottom-[64px] pointer-events-none'
+            }`}>
+
             {/* Option 1: Scan Slip (Icon: ScanLine) */}
             <div className={`relative flex items-center justify-center w-[52px] h-[52px] group transition-all duration-300 delay-[0ms] ${isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}>
               <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 flex items-center">
@@ -230,7 +227,7 @@ export default function BottomNav() {
                   </div>
                 </div>
               </div>
-              
+
               <button
                 onClick={handleScanClick}
                 className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_32px_rgba(16,185,129,0.3)] border bg-gradient-to-tr from-emerald-400 to-emerald-500 border-white/30 text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
@@ -255,7 +252,7 @@ export default function BottomNav() {
                   </div>
                 </div>
               </div>
-              
+
               <button
                 onClick={() => {
                   setCurrentPage('add');
@@ -283,7 +280,7 @@ export default function BottomNav() {
                   </div>
                 </div>
               </div>
-              
+
               <button
                 onClick={() => {
                   useAppStore.getState().setTransferModalOpen(true);
@@ -311,7 +308,7 @@ export default function BottomNav() {
                   </div>
                 </div>
               </div>
-              
+
               <button
                 onClick={() => {
                   useAppStore.getState().setVoiceModalOpen(true);
@@ -326,12 +323,12 @@ export default function BottomNav() {
           </div>
 
           {/* Floating Navigation Bar (Curved Notched Glassmorphism Cradle) */}
-          <div 
+          <div
             ref={navContainerRef}
-            className="relative h-16 w-full filter drop-shadow-[0_10px_26px_rgba(46,16,101,0.08)] dark:drop-shadow-[0_10px_28px_rgba(0,0,0,0.55)] transition-all duration-500"
+            className="relative h-16 w-full filter drop-shadow-[0_8px_24px_rgba(46,16,101,0.08)] dark:drop-shadow-[0_8px_28px_rgba(0,0,0,0.55)] transition-all duration-500"
           >
             {/* 1. Unified Single-Layer SVG (Glass Fill + Crisp Border + Cradle Glow) */}
-            <svg 
+            <svg
               className="absolute inset-0 w-full h-full pointer-events-none overflow-visible"
               viewBox={`0 0 ${navWidth} 64`}
               fill="none"
@@ -377,10 +374,11 @@ export default function BottomNav() {
                   <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.3" />
                 </linearGradient>
 
-                {/* Notch Inner Shadow / Depth Glow */}
-                <radialGradient id="notch-depth-glow" cx={cx} cy={20} r={40} gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor="#6D28D9" stopOpacity="0.1" />
-                  <stop offset="80%" stopColor="#6D28D9" stopOpacity="0" />
+                {/* Notch Ambient 3D Depth Glow (Soft Photorealistic Dimple - No Hard Lines) */}
+                <radialGradient id="notch-depth-glow" cx={cx} cy={20} r={46} gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#3B1278" stopOpacity="0.18" />
+                  <stop offset="60%" stopColor="#6D28D9" stopOpacity="0.08" />
+                  <stop offset="100%" stopColor="#6D28D9" stopOpacity="0" />
                 </radialGradient>
               </defs>
 
@@ -396,7 +394,7 @@ export default function BottomNav() {
                 d={topRimPath}
                 stroke="url(#nav-shimmer)"
                 strokeWidth="0.8"
-                strokeOpacity="0.75"
+                strokeOpacity="0.8"
                 fill="none"
               />
 
@@ -404,22 +402,21 @@ export default function BottomNav() {
               <circle
                 cx={cx}
                 cy={18}
-                r={36}
+                r={44}
                 fill="url(#notch-depth-glow)"
               />
             </svg>
 
             {/* 2. Navigation Grid (5-column layout with mathematically centered cells) */}
             <div className="grid grid-cols-5 h-16 w-full relative items-center z-10">
-              
-              {/* Animated Active Capsule Pill (Translucent Purple Glass Capsule) */}
-              <div 
-                className={`absolute h-[42px] bg-gradient-to-b from-purple-600/15 via-purple-600/10 to-purple-800/5 dark:from-purple-400/25 dark:via-purple-500/15 dark:to-purple-900/10 rounded-full transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-0 shadow-[0_2px_10px_rgba(109,40,217,0.12),inset_0_1px_1.5px_rgba(255,255,255,0.7)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.15)] border border-purple-500/25 dark:border-purple-400/30 backdrop-blur-md saturate-[180%] ${
-                  isNavActive ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
-                }`}
-                style={{ 
-                  width: 'calc(20% - 14px)', 
-                  left: `calc(${Math.max(0, activeIndex) * 20}% + 7px)`,
+
+              {/* Animated Active Capsule Pill (Enlarged Translucent Purple Glass Capsule) */}
+              <div
+                className={`absolute h-[46px] bg-gradient-to-b from-purple-600/18 via-purple-600/12 to-purple-800/6 dark:from-purple-400/25 dark:via-purple-500/15 dark:to-purple-900/10 rounded-full transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-0 shadow-[0_4px_14px_rgba(109,40,217,0.15),inset_0_1px_1.5px_rgba(255,255,255,0.7)] dark:shadow-[0_4px_14px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.15)] border border-purple-500/30 dark:border-purple-400/35 backdrop-blur-md saturate-[180%] ${isNavActive ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
+                  }`}
+                style={{
+                  width: 'calc(20% - 10px)',
+                  left: `calc(${Math.max(0, activeIndex) * 20}% + 5px)`,
                   top: '50%',
                   transform: 'translateY(-50%)'
                 }}
@@ -429,21 +426,20 @@ export default function BottomNav() {
                 if (item.id === 'empty') {
                   return <div key="empty" className="w-full h-16 pointer-events-none" />;
                 }
-                
+
                 const Icon = item.icon!;
                 const isActive = currentPage === item.id;
-                
+
                 return (
                   <button
                     key={item.id}
                     onClick={() => setCurrentPage(item.id as PageId)}
-                    className={`w-full h-16 flex items-center justify-center relative z-10 transition-all duration-300 active:scale-90 ${
-                      isActive ? 'text-[#6D28D9] dark:text-purple-300' : 'text-[#2E1065]/40 dark:text-white/40 hover:text-[#2E1065] dark:hover:text-white'
-                    }`}
+                    className={`w-full h-16 flex items-center justify-center relative z-10 transition-all duration-300 active:scale-90 ${isActive ? 'text-[#6D28D9] dark:text-purple-300' : 'text-[#2E1065]/40 dark:text-white/40 hover:text-[#2E1065] dark:hover:text-white'
+                      }`}
                   >
-                    <Icon 
-                      className={`w-6 h-6 transition-all duration-300 ${isActive ? 'scale-110 drop-shadow-[0_2px_8px_rgba(109,40,217,0.35)]' : 'scale-100'}`} 
-                      strokeWidth={isActive ? 2.5 : 2} 
+                    <Icon
+                      className={`w-6 h-6 transition-all duration-300 ${isActive ? 'scale-110 drop-shadow-[0_2px_8px_rgba(109,40,217,0.35)]' : 'scale-100'}`}
+                      strokeWidth={isActive ? 2.5 : 2}
                     />
                   </button>
                 );
@@ -453,18 +449,17 @@ export default function BottomNav() {
             {/* 3. Floating Action Button (FAB) nested in the Concentric Notch Cradle */}
             <button
               onClick={() => setAddMenuOpen(!isAddMenuOpen)}
-              className={`absolute left-1/2 -translate-x-1/2 -top-5 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-[0_8px_24px_rgba(46,16,101,0.45)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.6)] z-50 transition-all duration-300 ease-out border-2 border-white/60 dark:border-white/30 backdrop-blur-md active:scale-90 ${
-                isAddMenuOpen ? 'rotate-[135deg] bg-gradient-to-tr from-pink-400 to-rose-400' : 'bg-gradient-to-tr from-[#2E1065] via-[#3B1278] to-[#581C87] hover:scale-105'
-              }`}
+              className={`absolute left-1/2 -translate-x-1/2 -top-[37px] w-16 h-16 rounded-full flex items-center justify-center text-white shadow-[0_12px_28px_rgba(46,16,101,0.45)] dark:shadow-[0_12px_28px_rgba(0,0,0,0.6)] z-50 transition-all duration-300 ease-out border-2 border-white/70 dark:border-white/30 backdrop-blur-md active:scale-90 ${isAddMenuOpen ? 'rotate-[135deg] bg-gradient-to-tr from-pink-400 to-rose-400' : 'bg-gradient-to-tr from-[#2E1065] via-[#3B1278] to-[#581C87] hover:scale-105'
+                }`}
             >
-              <Plus className="w-6 h-6" strokeWidth={2.5} />
+              <Plus className="w-8 h-8" strokeWidth={2.6} />
             </button>
           </div>
         </div>
       </div>
 
       {/* Hidden File Input */}
-      <input 
+      <input
         id="slip-upload"
         type="file"
         accept="image/*"
@@ -478,7 +473,7 @@ export default function BottomNav() {
       {isScanning && (
         <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-xl flex flex-col items-center justify-center p-6 animate-fade-in">
           <div className="w-full max-w-sm bg-white/95 p-6 rounded-[32px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] border border-white flex flex-col items-center overflow-hidden relative">
-            
+
             {/* Multi-slip progress indicator */}
             {scanProgress.total > 1 && (
               <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-md px-3 py-1 rounded-full border border-[#8B5CF6]/20 shadow-sm z-30">
@@ -487,7 +482,7 @@ export default function BottomNav() {
                 </span>
               </div>
             )}
-            
+
             {/* Cool Scanning Animation Container */}
             <div className="relative w-48 h-64 bg-slate-100 rounded-2xl overflow-hidden mb-8 shadow-inner border border-slate-200 isolate">
               {scanImageUrl ? (
@@ -497,13 +492,13 @@ export default function BottomNav() {
                   <ScanLine className="w-12 h-12 text-slate-400" />
                 </div>
               )}
-              
+
               {/* Overlay darkener */}
               <div className="absolute inset-0 bg-black/10 mix-blend-multiply" />
-              
+
               {/* Laser Line */}
               <div className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#8B5CF6] to-transparent shadow-[0_0_15px_#A855F7] animate-[scan_2s_ease-in-out_infinite] z-20" />
-              
+
               {/* Laser Glow */}
               <div className="absolute left-0 right-0 h-24 bg-gradient-to-b from-[#A855F7]/30 to-transparent animate-[scan-glow_2s_ease-in-out_infinite] z-10" />
             </div>
