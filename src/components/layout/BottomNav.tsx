@@ -210,18 +210,21 @@ export default function BottomNav() {
       >
         <div className="max-w-md mx-auto relative pointer-events-auto">
 
-          {/* Speed Dial Menu (Smart-Delivery Style) */}
-          <div className={`absolute left-1/2 -translate-x-1/2 flex flex-col-reverse items-center gap-3.5 z-50 pointer-events-auto transition-all duration-300 ${isAddMenuOpen ? 'bottom-[96px]' : 'bottom-[64px] pointer-events-none'
-            }`}>
+          {/* Speed Dial Menu (Smart-Delivery Style - Elevated to clear CTA button) */}
+          <div className={`absolute left-1/2 -translate-x-1/2 flex flex-col-reverse items-center gap-3 z-50 pointer-events-auto transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+            isAddMenuOpen ? 'bottom-[120px] opacity-100' : 'bottom-[72px] opacity-0 pointer-events-none'
+          }`}>
 
             {/* Option 1: Scan Slip (Icon: ScanLine) */}
-            <div className={`relative flex items-center justify-center w-[52px] h-[52px] group transition-all duration-300 delay-[0ms] ${isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}>
+            <div className={`relative flex items-center justify-center w-[50px] h-[50px] group transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] delay-[0ms] ${
+              isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-6'
+            }`}>
               <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 flex items-center">
                 <div
-                  className="px-4 py-2 bg-white/50 dark:bg-[#1E1035]/90 backdrop-blur-[40px] saturate-[200%] rounded-[20px] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/60 dark:border-white/15 cursor-pointer hover:bg-white/70 dark:hover:bg-[#1E1035] hover:-translate-y-0.5 transition-all duration-300"
+                  className="px-3.5 py-1.5 bg-white/70 dark:bg-[#1E1035]/90 backdrop-blur-[32px] saturate-[180%] rounded-2xl shadow-[0_8px_24px_-6px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] border border-white/80 dark:border-white/15 cursor-pointer hover:bg-white/90 dark:hover:bg-[#251442] hover:-translate-y-0.5 transition-all duration-300"
                   onClick={handleScanClick}
                 >
-                  <div className="flex flex-col items-end text-right w-max max-w-[125px] whitespace-normal break-words">
+                  <div className="flex flex-col items-end text-right w-max max-w-[130px] whitespace-normal break-words">
                     <span className="text-[13px] font-bold text-[#2E1065] dark:text-white drop-shadow-sm leading-tight">{t('nav.scanSlipTitle')}</span>
                     <span className="text-[10px] font-medium text-[#2E1065]/70 dark:text-white/70 leading-tight">{t('nav.scanSlipDesc')}</span>
                   </div>
@@ -230,23 +233,25 @@ export default function BottomNav() {
 
               <button
                 onClick={handleScanClick}
-                className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_32px_rgba(16,185,129,0.3)] border bg-gradient-to-tr from-emerald-400 to-emerald-500 border-white/30 text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
+                className="relative w-[50px] h-[50px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_24px_rgba(16,185,129,0.35)] border border-white/40 bg-gradient-to-tr from-emerald-400 to-emerald-500 text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
               >
                 <ScanLine className="w-[22px] h-[22px] relative z-10" />
               </button>
             </div>
 
             {/* Option 2: Add Manual (Icon: PenLine) */}
-            <div className={`relative flex items-center justify-center w-[52px] h-[52px] group transition-all duration-300 delay-[50ms] ${isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}>
+            <div className={`relative flex items-center justify-center w-[50px] h-[50px] group transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] delay-[40ms] ${
+              isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-6'
+            }`}>
               <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 flex items-center">
                 <div
-                  className="px-4 py-2 bg-white/50 dark:bg-[#1E1035]/90 backdrop-blur-[40px] saturate-[200%] rounded-[20px] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/60 dark:border-white/15 cursor-pointer hover:bg-white/70 dark:hover:bg-[#1E1035] hover:-translate-y-0.5 transition-all duration-300"
+                  className="px-3.5 py-1.5 bg-white/70 dark:bg-[#1E1035]/90 backdrop-blur-[32px] saturate-[180%] rounded-2xl shadow-[0_8px_24px_-6px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] border border-white/80 dark:border-white/15 cursor-pointer hover:bg-white/90 dark:hover:bg-[#251442] hover:-translate-y-0.5 transition-all duration-300"
                   onClick={() => {
                     setCurrentPage('add');
                     setAddMenuOpen(false);
                   }}
                 >
-                  <div className="flex flex-col items-end text-right w-max max-w-[125px] whitespace-normal break-words">
+                  <div className="flex flex-col items-end text-right w-max max-w-[130px] whitespace-normal break-words">
                     <span className="text-[13px] font-bold text-[#2E1065] dark:text-white drop-shadow-sm leading-tight">{t('nav.addManualTitle')}</span>
                     <span className="text-[10px] font-medium text-[#2E1065]/70 dark:text-white/70 leading-tight">{t('nav.addManualDesc')}</span>
                   </div>
@@ -258,51 +263,25 @@ export default function BottomNav() {
                   setCurrentPage('add');
                   setAddMenuOpen(false);
                 }}
-                className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_32px_rgba(236,72,153,0.3)] border bg-gradient-to-tr from-pink-500 to-rose-500 border-white/30 text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
+                className="relative w-[50px] h-[50px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_24px_rgba(236,72,153,0.35)] border border-white/40 bg-gradient-to-tr from-pink-500 to-rose-500 text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
               >
                 <PenLine className="w-[22px] h-[22px] relative z-10" />
               </button>
             </div>
 
-            {/* Option 3: Transfer (Icon: ArrowLeftRight) */}
-            <div className={`relative flex items-center justify-center w-[52px] h-[52px] group transition-all duration-300 delay-[100ms] ${isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}>
+            {/* Option 3: Voice Command (Icon: Mic) */}
+            <div className={`relative flex items-center justify-center w-[50px] h-[50px] group transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] delay-[80ms] ${
+              isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-6'
+            }`}>
               <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 flex items-center">
                 <div
-                  className="px-4 py-2 bg-white/50 dark:bg-[#1E1035]/90 backdrop-blur-[40px] saturate-[200%] rounded-[20px] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/60 dark:border-white/15 cursor-pointer hover:bg-white/70 dark:hover:bg-[#1E1035] hover:-translate-y-0.5 transition-all duration-300"
-                  onClick={() => {
-                    useAppStore.getState().setTransferModalOpen(true);
-                    setAddMenuOpen(false);
-                  }}
-                >
-                  <div className="flex flex-col items-end text-right w-max max-w-[125px] whitespace-normal break-words">
-                    <span className="text-[13px] font-bold text-[#2E1065] dark:text-white drop-shadow-sm leading-tight">{t('nav.transferTitle', 'โอนเงิน')}</span>
-                    <span className="text-[10px] font-medium text-[#2E1065]/70 dark:text-white/70 leading-tight">{t('nav.transferDesc', 'โอนข้ามกระเป๋า')}</span>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => {
-                  useAppStore.getState().setTransferModalOpen(true);
-                  setAddMenuOpen(false);
-                }}
-                className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_32px_rgba(249,115,22,0.3)] border bg-gradient-to-tr from-amber-400 to-orange-500 border-white/30 text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
-              >
-                <ArrowLeftRight className="w-[22px] h-[22px] relative z-10" />
-              </button>
-            </div>
-
-            {/* Option 4: Voice Command (Icon: Mic) */}
-            <div className={`relative flex items-center justify-center w-[52px] h-[52px] group transition-all duration-300 delay-[150ms] ${isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}>
-              <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 flex items-center">
-                <div
-                  className="px-4 py-2 bg-white/50 dark:bg-[#1E1035]/90 backdrop-blur-[40px] saturate-[200%] rounded-[20px] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/60 dark:border-white/15 cursor-pointer hover:bg-white/70 dark:hover:bg-[#1E1035] hover:-translate-y-0.5 transition-all duration-300"
+                  className="px-3.5 py-1.5 bg-white/70 dark:bg-[#1E1035]/90 backdrop-blur-[32px] saturate-[180%] rounded-2xl shadow-[0_8px_24px_-6px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] border border-white/80 dark:border-white/15 cursor-pointer hover:bg-white/90 dark:hover:bg-[#251442] hover:-translate-y-0.5 transition-all duration-300"
                   onClick={() => {
                     useAppStore.getState().setVoiceModalOpen(true);
                     setAddMenuOpen(false);
                   }}
                 >
-                  <div className="flex flex-col items-end text-right w-max max-w-[125px] whitespace-normal break-words">
+                  <div className="flex flex-col items-end text-right w-max max-w-[130px] whitespace-normal break-words">
                     <span className="text-[13px] font-bold text-[#2E1065] dark:text-white drop-shadow-sm leading-tight">{t('nav.voiceCommandTitle', 'สั่งงานด้วยเสียง')}</span>
                     <span className="text-[10px] font-medium text-[#2E1065]/70 dark:text-white/70 leading-tight">{t('nav.voiceCommandDesc', 'พูดเพื่อบันทึกรายการ')}</span>
                   </div>
@@ -314,9 +293,39 @@ export default function BottomNav() {
                   useAppStore.getState().setVoiceModalOpen(true);
                   setAddMenuOpen(false);
                 }}
-                className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_32px_rgba(46,16,101,0.35)] border bg-gradient-to-tr from-[#2E1065] to-[#4C1D95] border-white/30 text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
+                className="relative w-[50px] h-[50px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_24px_rgba(46,16,101,0.35)] border border-white/40 bg-gradient-to-tr from-[#2E1065] to-[#4C1D95] text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
               >
                 <Mic className="w-[22px] h-[22px] relative z-10" />
+              </button>
+            </div>
+
+            {/* Option 4: Transfer (Icon: ArrowLeftRight - TOPMOST) */}
+            <div className={`relative flex items-center justify-center w-[50px] h-[50px] group transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] delay-[120ms] ${
+              isAddMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-6'
+            }`}>
+              <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 flex items-center">
+                <div
+                  className="px-3.5 py-1.5 bg-white/70 dark:bg-[#1E1035]/90 backdrop-blur-[32px] saturate-[180%] rounded-2xl shadow-[0_8px_24px_-6px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] border border-white/80 dark:border-white/15 cursor-pointer hover:bg-white/90 dark:hover:bg-[#251442] hover:-translate-y-0.5 transition-all duration-300"
+                  onClick={() => {
+                    useAppStore.getState().setTransferModalOpen(true);
+                    setAddMenuOpen(false);
+                  }}
+                >
+                  <div className="flex flex-col items-end text-right w-max max-w-[130px] whitespace-normal break-words">
+                    <span className="text-[13px] font-bold text-[#2E1065] dark:text-white drop-shadow-sm leading-tight">{t('nav.transferTitle', 'โอนเงิน')}</span>
+                    <span className="text-[10px] font-medium text-[#2E1065]/70 dark:text-white/70 leading-tight">{t('nav.transferDesc', 'โอนข้ามกระเป๋า')}</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  useAppStore.getState().setTransferModalOpen(true);
+                  setAddMenuOpen(false);
+                }}
+                className="relative w-[50px] h-[50px] rounded-full flex items-center justify-center backdrop-blur-xl shadow-[0_8px_24px_rgba(249,115,22,0.35)] border border-white/40 bg-gradient-to-tr from-amber-400 to-orange-500 text-white transition-all duration-300 active:scale-90 hover:scale-110 hover:-translate-y-1 shrink-0"
+              >
+                <ArrowLeftRight className="w-[22px] h-[22px] relative z-10" />
               </button>
             </div>
 
