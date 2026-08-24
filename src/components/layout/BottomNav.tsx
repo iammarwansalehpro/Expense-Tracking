@@ -87,22 +87,18 @@ export default function BottomNav() {
     const h = 64;
     const r = 32; // capsule corner radius
     const center = w / 2;
-    const notchR = 34; // half-width of the circular dip
-    const fillet = 16; // smooth shoulder entry
-    const depth = 38;  // depth of the notch dip
 
-    const _x0 = center - notchR - fillet; // start of left shoulder
-    const _x1 = center - notchR;          // start of circular dip
-    const _x2 = center + notchR;          // end of circular dip
-    const _x3 = center + notchR + fillet; // end of right shoulder
+    // True concentric circular notch cradle hugging the 56px circular button
+    // Button top is at y = -20px, bottom at y = 36px, cradle bottom is at y = 41px (constant 5px gap)
+    const cradleBottom = 41;
 
     const path = [
       `M ${r} 0`,
-      `L ${_x0} 0`,
-      `C ${_x0 + 8} 0, ${_x1 - 4} 6, ${_x1} 18`,
-      `C ${_x1 + 6} 34, ${center - 14} ${depth}, ${center} ${depth}`,
-      `C ${center + 14} ${depth}, ${_x2 - 6} 34, ${_x2} 18`,
-      `C ${_x2 + 4} 6, ${_x3 - 8} 0, ${_x3} 0`,
+      `L ${center - 45} 0`,
+      `C ${center - 36} 0, ${center - 30} 4, ${center - 26} 14`,
+      `C ${center - 20} 32, ${center - 12} ${cradleBottom}, ${center} ${cradleBottom}`,
+      `C ${center + 12} ${cradleBottom}, ${center + 20} 32, ${center + 26} 14`,
+      `C ${center + 30} 4, ${center + 36} 0, ${center + 45} 0`,
       `L ${w - r} 0`,
       `A ${r} ${r} 0 0 1 ${w} ${r}`,
       `A ${r} ${r} 0 0 1 ${w - r} ${h}`,
@@ -114,11 +110,11 @@ export default function BottomNav() {
 
     const rim = [
       `M ${r} 0.75`,
-      `L ${_x0} 0.75`,
-      `C ${_x0 + 8} 0.75, ${_x1 - 4} 6.75, ${_x1} 18.75`,
-      `C ${_x1 + 6} 34.75, ${center - 14} ${depth + 0.75}, ${center} ${depth + 0.75}`,
-      `C ${center + 14} ${depth + 0.75}, ${_x2 - 6} 34.75, ${_x2} 18.75`,
-      `C ${_x2 + 4} 6.75, ${_x3 - 8} 0.75, ${_x3} 0.75`,
+      `L ${center - 45} 0.75`,
+      `C ${center - 36} 0.75, ${center - 30} 4.75, ${center - 26} 14.75`,
+      `C ${center - 20} 32.75, ${center - 12} ${cradleBottom + 0.75}, ${center} ${cradleBottom + 0.75}`,
+      `C ${center + 12} ${cradleBottom + 0.75}, ${center + 20} 32.75, ${center + 26} 14.75`,
+      `C ${center + 30} 4.75, ${center + 36} 0.75, ${center + 45} 0.75`,
       `L ${w - r} 0.75`
     ].join(' ');
 
@@ -126,7 +122,7 @@ export default function BottomNav() {
       notchPath: path, 
       topRimPath: rim, 
       cx: center, 
-      notchDepth: depth
+      notchDepth: cradleBottom
     };
   }, [navWidth]);
 
@@ -413,17 +409,17 @@ export default function BottomNav() {
               />
             </svg>
 
-            {/* 2. Navigation Grid (5-column layout) */}
-            <div className="grid grid-cols-5 h-full relative items-center px-2 z-10">
+            {/* 2. Navigation Grid (5-column layout with mathematically centered cells) */}
+            <div className="grid grid-cols-5 h-16 w-full relative items-center z-10">
               
               {/* Animated Active Capsule Pill (Translucent Purple Glass Capsule) */}
               <div 
-                className={`absolute h-[42px] bg-gradient-to-b from-purple-600/15 via-purple-600/10 to-purple-800/5 dark:from-purple-400/20 dark:via-purple-500/10 dark:to-white/5 rounded-full transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-0 shadow-[0_4px_12px_rgba(109,40,217,0.12),inset_0_1px_1.5px_rgba(255,255,255,0.7)] dark:shadow-[0_4px_14px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] border border-purple-500/25 dark:border-purple-400/30 backdrop-blur-md saturate-[180%] ${
+                className={`absolute h-[42px] bg-gradient-to-b from-purple-600/15 via-purple-600/10 to-purple-800/5 dark:from-purple-400/25 dark:via-purple-500/15 dark:to-purple-900/10 rounded-full transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-0 shadow-[0_2px_10px_rgba(109,40,217,0.12),inset_0_1px_1.5px_rgba(255,255,255,0.7)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.15)] border border-purple-500/25 dark:border-purple-400/30 backdrop-blur-md saturate-[180%] ${
                   isNavActive ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
                 }`}
                 style={{ 
-                  width: 'calc(20% - 10px)', 
-                  left: `calc(${Math.max(0, activeIndex) * 20}% + 5px)`,
+                  width: 'calc(20% - 14px)', 
+                  left: `calc(${Math.max(0, activeIndex) * 20}% + 7px)`,
                   top: '50%',
                   transform: 'translateY(-50%)'
                 }}
@@ -431,7 +427,7 @@ export default function BottomNav() {
 
               {navItems.map((item) => {
                 if (item.id === 'empty') {
-                  return <div key="empty" className="w-full h-full pointer-events-none" />;
+                  return <div key="empty" className="w-full h-16 pointer-events-none" />;
                 }
                 
                 const Icon = item.icon!;
@@ -441,7 +437,7 @@ export default function BottomNav() {
                   <button
                     key={item.id}
                     onClick={() => setCurrentPage(item.id as PageId)}
-                    className={`w-full h-full flex flex-col items-center justify-center relative z-10 transition-all duration-300 active:scale-90 ${
+                    className={`w-full h-16 flex items-center justify-center relative z-10 transition-all duration-300 active:scale-90 ${
                       isActive ? 'text-[#6D28D9] dark:text-purple-300' : 'text-[#2E1065]/40 dark:text-white/40 hover:text-[#2E1065] dark:hover:text-white'
                     }`}
                   >
@@ -454,14 +450,14 @@ export default function BottomNav() {
               })}
             </div>
 
-            {/* 3. Floating Action Button (FAB) nested in the Notch Cradle */}
+            {/* 3. Floating Action Button (FAB) nested in the Concentric Notch Cradle */}
             <button
               onClick={() => setAddMenuOpen(!isAddMenuOpen)}
-              className={`absolute left-1/2 -translate-x-1/2 -top-6.5 w-16 h-16 rounded-full flex items-center justify-center text-white shadow-[0_10px_28px_rgba(46,16,101,0.45)] dark:shadow-[0_10px_28px_rgba(0,0,0,0.6)] z-50 transition-all duration-300 ease-out border-2 border-white/50 dark:border-white/30 backdrop-blur-md active:scale-90 ${
+              className={`absolute left-1/2 -translate-x-1/2 -top-5 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-[0_8px_24px_rgba(46,16,101,0.45)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.6)] z-50 transition-all duration-300 ease-out border-2 border-white/60 dark:border-white/30 backdrop-blur-md active:scale-90 ${
                 isAddMenuOpen ? 'rotate-[135deg] bg-gradient-to-tr from-pink-400 to-rose-400' : 'bg-gradient-to-tr from-[#2E1065] via-[#3B1278] to-[#581C87] hover:scale-105'
               }`}
             >
-              <Plus className="w-7 h-7" strokeWidth={2.5} />
+              <Plus className="w-6 h-6" strokeWidth={2.5} />
             </button>
           </div>
         </div>
