@@ -10,7 +10,7 @@ import {
   ArrowLeftRight,
   Mic
 } from 'lucide-react';
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { PageId } from '@/types';
@@ -56,12 +56,17 @@ export default function BottomNav() {
 
 
   const navContainerRef = useRef<HTMLDivElement>(null);
-  const [navWidth, setNavWidth] = useState(380);
+  const [navWidth, setNavWidth] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return Math.min(window.innerWidth - (window.innerWidth < 640 ? 28 : 48), 448);
+    }
+    return 380;
+  });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const updateWidth = () => {
       if (navContainerRef.current) {
-        const w = navContainerRef.current.offsetWidth;
+        const w = navContainerRef.current.clientWidth;
         if (w > 0) setNavWidth(w);
       }
     };
@@ -77,8 +82,8 @@ export default function BottomNav() {
     };
   }, []);
 
-  const { notchPath, topRimPath, cx, notchDepth, x0, x1, x2, x3 } = useMemo(() => {
-    const w = navWidth;
+  const { notchPath, topRimPath, cx, notchDepth } = useMemo(() => {
+    const w = navWidth || 380;
     const h = 64;
     const r = 32; // capsule corner radius
     const center = w / 2;
@@ -121,11 +126,7 @@ export default function BottomNav() {
       notchPath: path, 
       topRimPath: rim, 
       cx: center, 
-      notchDepth: depth,
-      x0: _x0,
-      x1: _x1,
-      x2: _x2,
-      x3: _x3
+      notchDepth: depth
     };
   }, [navWidth]);
 
@@ -331,27 +332,32 @@ export default function BottomNav() {
           {/* Floating Navigation Bar (Curved Notched Glassmorphism Cradle) */}
           <div 
             ref={navContainerRef}
-            className="relative h-16 w-full filter drop-shadow-[0_10px_30px_rgba(31,38,135,0.12)] dark:drop-shadow-[0_10px_30px_rgba(0,0,0,0.55)] transition-all duration-500"
+            className="relative h-16 w-full filter drop-shadow-[0_10px_26px_rgba(46,16,101,0.08)] dark:drop-shadow-[0_10px_28px_rgba(0,0,0,0.55)] transition-all duration-500"
           >
-            {/* 1. Frosted Glass Fill (Clipped precisely to the Notched Silhouette) */}
-            <div 
-              className="absolute inset-0 bg-white/55 dark:bg-[#1E1035]/85 backdrop-blur-[24px] saturate-[180%] transition-colors duration-500 pointer-events-none"
-              style={{
-                clipPath: `path('${notchPath}')`,
-                WebkitClipPath: `path('${notchPath}')`,
-              }}
-            />
-
-            {/* 2. SVG Vector Layer: 1px Crisp Glass Border & Top Shimmer Rim */}
+            {/* 1. Unified Single-Layer SVG (Glass Fill + Crisp Border + Cradle Glow) */}
             <svg 
               className="absolute inset-0 w-full h-full pointer-events-none overflow-visible"
-              width={navWidth}
-              height={64}
               viewBox={`0 0 ${navWidth} 64`}
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
+              style={{
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+              }}
             >
               <defs>
+                {/* Light Mode Glass Fill */}
+                <linearGradient id="nav-fill-light" x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.80" />
+                  <stop offset="100%" stopColor="#FAF5FF" stopOpacity="0.65" />
+                </linearGradient>
+
+                {/* Dark Mode Glass Fill */}
+                <linearGradient id="nav-fill-dark" x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#1E1035" stopOpacity="0.92" />
+                  <stop offset="100%" stopColor="#120824" stopOpacity="0.88" />
+                </linearGradient>
+
                 {/* Light Mode Border */}
                 <linearGradient id="nav-border-light" x1="0" y1="0" x2={navWidth} y2="0" gradientUnits="userSpaceOnUse">
                   <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.85" />
@@ -361,9 +367,9 @@ export default function BottomNav() {
 
                 {/* Dark Mode Border */}
                 <linearGradient id="nav-border-dark" x1="0" y1="0" x2={navWidth} y2="0" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.12" />
+                  <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.15" />
                   <stop offset="50%" stopColor="#C084FC" stopOpacity="0.35" />
-                  <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.12" />
+                  <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.15" />
                 </linearGradient>
 
                 {/* Top Rim Shimmer Highlight */}
@@ -382,12 +388,11 @@ export default function BottomNav() {
                 </radialGradient>
               </defs>
 
-              {/* Perimeter Glass Border */}
+              {/* Perimeter Glass Fill & Border (Single unified shape - No duplicate layers) */}
               <path
                 d={notchPath}
-                className="stroke-[url(#nav-border-light)] dark:stroke-[url(#nav-border-dark)]"
+                className="fill-[url(#nav-fill-light)] dark:fill-[url(#nav-fill-dark)] stroke-[url(#nav-border-light)] dark:stroke-[url(#nav-border-dark)]"
                 strokeWidth="1.2"
-                fill="none"
               />
 
               {/* Top Shimmer Light Contour */}
@@ -408,17 +413,17 @@ export default function BottomNav() {
               />
             </svg>
 
-            {/* 3. Navigation Grid (5-column layout) */}
+            {/* 2. Navigation Grid (5-column layout) */}
             <div className="grid grid-cols-5 h-full relative items-center px-2 z-10">
               
-              {/* Animated Active Capsule Pill (Ultra-Translucent Frosted Glass) */}
+              {/* Animated Active Capsule Pill (Translucent Purple Glass Capsule) */}
               <div 
-                className={`absolute h-[50px] bg-gradient-to-b from-white/65 via-white/40 to-white/20 dark:from-white/20 dark:via-white/10 dark:to-white/5 rounded-full transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-0 shadow-[0_4px_16px_rgba(46,16,101,0.08),inset_0_1.5px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(255,255,255,0.25)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.4),inset_0_1.5px_1px_rgba(255,255,255,0.25)] border border-white/70 dark:border-white/20 backdrop-blur-xl saturate-[180%] ${
+                className={`absolute h-[42px] bg-gradient-to-b from-purple-600/15 via-purple-600/10 to-purple-800/5 dark:from-purple-400/20 dark:via-purple-500/10 dark:to-white/5 rounded-full transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-0 shadow-[0_4px_12px_rgba(109,40,217,0.12),inset_0_1px_1.5px_rgba(255,255,255,0.7)] dark:shadow-[0_4px_14px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] border border-purple-500/25 dark:border-purple-400/30 backdrop-blur-md saturate-[180%] ${
                   isNavActive ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
                 }`}
                 style={{ 
-                  width: 'calc(20% - 6px)', 
-                  left: `calc(${Math.max(0, activeIndex) * 20}% + 3px)`,
+                  width: 'calc(20% - 10px)', 
+                  left: `calc(${Math.max(0, activeIndex) * 20}% + 5px)`,
                   top: '50%',
                   transform: 'translateY(-50%)'
                 }}
@@ -437,11 +442,11 @@ export default function BottomNav() {
                     key={item.id}
                     onClick={() => setCurrentPage(item.id as PageId)}
                     className={`w-full h-full flex flex-col items-center justify-center relative z-10 transition-all duration-300 active:scale-90 ${
-                      isActive ? 'text-[#2E1065] dark:text-purple-200' : 'text-[#2E1065]/45 dark:text-white/45 hover:text-[#2E1065] dark:hover:text-white'
+                      isActive ? 'text-[#6D28D9] dark:text-purple-300' : 'text-[#2E1065]/40 dark:text-white/40 hover:text-[#2E1065] dark:hover:text-white'
                     }`}
                   >
                     <Icon 
-                      className={`w-6 h-6 transition-all duration-300 ${isActive ? 'scale-110 drop-shadow-[0_2px_8px_rgba(46,16,101,0.25)]' : 'scale-100'}`} 
+                      className={`w-6 h-6 transition-all duration-300 ${isActive ? 'scale-110 drop-shadow-[0_2px_8px_rgba(109,40,217,0.35)]' : 'scale-100'}`} 
                       strokeWidth={isActive ? 2.5 : 2} 
                     />
                   </button>
@@ -449,7 +454,7 @@ export default function BottomNav() {
               })}
             </div>
 
-            {/* 4. Floating Action Button (FAB) nested in the Notch Cradle */}
+            {/* 3. Floating Action Button (FAB) nested in the Notch Cradle */}
             <button
               onClick={() => setAddMenuOpen(!isAddMenuOpen)}
               className={`absolute left-1/2 -translate-x-1/2 -top-6.5 w-16 h-16 rounded-full flex items-center justify-center text-white shadow-[0_10px_28px_rgba(46,16,101,0.45)] dark:shadow-[0_10px_28px_rgba(0,0,0,0.6)] z-50 transition-all duration-300 ease-out border-2 border-white/50 dark:border-white/30 backdrop-blur-md active:scale-90 ${
