@@ -187,6 +187,22 @@ export default function OverviewPage() {
     );
   }
 
+  // Helper to format daily net amount in calendar cells cleanly
+  const formatCalendarAmount = (amount: number): string => {
+    const rounded = Math.round(amount * 100) / 100;
+    if (Math.abs(rounded) < 0.01) return '';
+
+    const sign = rounded > 0 ? '+' : '';
+    const absVal = Math.abs(rounded);
+
+    if (absVal >= 1000) {
+      const inK = rounded / 1000;
+      return `${sign}${inK.toFixed(1)}k`;
+    }
+
+    return `${sign}${rounded}`;
+  };
+
   // Calendar Render Logic
   const renderCalendar = () => {
     const currentYear = viewDate.getFullYear();
@@ -216,10 +232,13 @@ export default function OverviewPage() {
       const isSelected = selectedDate.getDate() === i && selectedDate.getMonth() === currentMonth;
       const isToday = now.getDate() === i;
       const net = dailyTotals[i] || 0;
+      const roundedNet = Math.round(net * 100) / 100;
 
       let textColor = 'text-[#2E1065]/40';
-      if (net > 0) textColor = 'text-emerald-600';
-      else if (net < 0) textColor = 'text-rose-500';
+      if (roundedNet > 0) textColor = 'text-emerald-600';
+      else if (roundedNet < 0) textColor = 'text-rose-500';
+
+      const formattedAmount = formatCalendarAmount(net);
 
       days.push(
         <button
@@ -233,11 +252,11 @@ export default function OverviewPage() {
           <span className={`text-[13px] font-bold ${isToday && !isSelected ? 'text-purple-600' : 'text-[#2E1065]'}`}>
             {i}
           </span>
-          {net !== 0 && (
-            <span className={`text-[9px] font-bold mt-1 ${textColor}`}>
-              {net > 0 ? '+' : ''}{Math.abs(net) >= 1000 ? (net / 1000).toFixed(1) + 'k' : net}
+          {formattedAmount ? (
+            <span className={`text-[9px] font-bold mt-1 max-w-full truncate px-0.5 ${textColor}`}>
+              {formattedAmount}
             </span>
-          )}
+          ) : null}
         </button>
       );
     }
