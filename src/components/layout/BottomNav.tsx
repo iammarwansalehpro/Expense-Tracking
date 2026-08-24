@@ -10,7 +10,7 @@ import {
   ArrowLeftRight,
   Mic
 } from 'lucide-react';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { PageId } from '@/types';
@@ -54,6 +54,80 @@ export default function BottomNav() {
     return () => clearInterval(interval);
   }, [isScanning]);
 
+
+  const navContainerRef = useRef<HTMLDivElement>(null);
+  const [navWidth, setNavWidth] = useState(380);
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (navContainerRef.current) {
+        const w = navContainerRef.current.offsetWidth;
+        if (w > 0) setNavWidth(w);
+      }
+    };
+    updateWidth();
+    const ro = new ResizeObserver(updateWidth);
+    if (navContainerRef.current) {
+      ro.observe(navContainerRef.current);
+    }
+    window.addEventListener('resize', updateWidth);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', updateWidth);
+    };
+  }, []);
+
+  const { notchPath, topRimPath, cx, notchDepth, x0, x1, x2, x3 } = useMemo(() => {
+    const w = navWidth;
+    const h = 64;
+    const r = 32; // capsule corner radius
+    const center = w / 2;
+    const notchR = 34; // half-width of the circular dip
+    const fillet = 16; // smooth shoulder entry
+    const depth = 38;  // depth of the notch dip
+
+    const _x0 = center - notchR - fillet; // start of left shoulder
+    const _x1 = center - notchR;          // start of circular dip
+    const _x2 = center + notchR;          // end of circular dip
+    const _x3 = center + notchR + fillet; // end of right shoulder
+
+    const path = [
+      `M ${r} 0`,
+      `L ${_x0} 0`,
+      `C ${_x0 + 8} 0, ${_x1 - 4} 6, ${_x1} 18`,
+      `C ${_x1 + 6} 34, ${center - 14} ${depth}, ${center} ${depth}`,
+      `C ${center + 14} ${depth}, ${_x2 - 6} 34, ${_x2} 18`,
+      `C ${_x2 + 4} 6, ${_x3 - 8} 0, ${_x3} 0`,
+      `L ${w - r} 0`,
+      `A ${r} ${r} 0 0 1 ${w} ${r}`,
+      `A ${r} ${r} 0 0 1 ${w - r} ${h}`,
+      `L ${r} ${h}`,
+      `A ${r} ${r} 0 0 1 0 ${r}`,
+      `A ${r} ${r} 0 0 1 ${r} 0`,
+      'Z'
+    ].join(' ');
+
+    const rim = [
+      `M ${r} 0.75`,
+      `L ${_x0} 0.75`,
+      `C ${_x0 + 8} 0.75, ${_x1 - 4} 6.75, ${_x1} 18.75`,
+      `C ${_x1 + 6} 34.75, ${center - 14} ${depth + 0.75}, ${center} ${depth + 0.75}`,
+      `C ${center + 14} ${depth + 0.75}, ${_x2 - 6} 34.75, ${_x2} 18.75`,
+      `C ${_x2 + 4} 6.75, ${_x3 - 8} 0.75, ${_x3} 0.75`,
+      `L ${w - r} 0.75`
+    ].join(' ');
+
+    return { 
+      notchPath: path, 
+      topRimPath: rim, 
+      cx: center, 
+      notchDepth: depth,
+      x0: _x0,
+      x1: _x1,
+      x2: _x2,
+      x3: _x3
+    };
+  }, [navWidth]);
 
   const navItems = [
     { id: 'home', icon: Home, index: 0 },
@@ -254,9 +328,88 @@ export default function BottomNav() {
 
           </div>
 
-          {/* Floating Navigation Bar (Glassmorphism Capsule) */}
-          <div className="bg-white/50 dark:bg-[#1E1035]/85 backdrop-blur-[24px] saturate-[180%] h-16 shadow-[0_8px_32px_rgba(31,38,135,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-50 rounded-full border border-white/60 dark:border-white/10 px-2 transition-colors duration-500">
-            <div className="grid grid-cols-5 h-full relative items-center">
+          {/* Floating Navigation Bar (Curved Notched Glassmorphism Cradle) */}
+          <div 
+            ref={navContainerRef}
+            className="relative h-16 w-full filter drop-shadow-[0_10px_30px_rgba(31,38,135,0.12)] dark:drop-shadow-[0_10px_30px_rgba(0,0,0,0.55)] transition-all duration-500"
+          >
+            {/* 1. Frosted Glass Fill (Clipped precisely to the Notched Silhouette) */}
+            <div 
+              className="absolute inset-0 bg-white/55 dark:bg-[#1E1035]/85 backdrop-blur-[24px] saturate-[180%] transition-colors duration-500 pointer-events-none"
+              style={{
+                clipPath: `path('${notchPath}')`,
+                WebkitClipPath: `path('${notchPath}')`,
+              }}
+            />
+
+            {/* 2. SVG Vector Layer: 1px Crisp Glass Border & Top Shimmer Rim */}
+            <svg 
+              className="absolute inset-0 w-full h-full pointer-events-none overflow-visible"
+              width={navWidth}
+              height={64}
+              viewBox={`0 0 ${navWidth} 64`}
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                {/* Light Mode Border */}
+                <linearGradient id="nav-border-light" x1="0" y1="0" x2={navWidth} y2="0" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.85" />
+                  <stop offset="50%" stopColor="#FFFFFF" stopOpacity="0.95" />
+                  <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.85" />
+                </linearGradient>
+
+                {/* Dark Mode Border */}
+                <linearGradient id="nav-border-dark" x1="0" y1="0" x2={navWidth} y2="0" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.12" />
+                  <stop offset="50%" stopColor="#C084FC" stopOpacity="0.35" />
+                  <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.12" />
+                </linearGradient>
+
+                {/* Top Rim Shimmer Highlight */}
+                <linearGradient id="nav-shimmer" x1="0" y1="0" x2={navWidth} y2="0" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.3" />
+                  <stop offset="45%" stopColor="#FFFFFF" stopOpacity="0.9" />
+                  <stop offset="50%" stopColor="#FFFFFF" stopOpacity="1" />
+                  <stop offset="55%" stopColor="#FFFFFF" stopOpacity="0.9" />
+                  <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.3" />
+                </linearGradient>
+
+                {/* Notch Inner Shadow / Depth Glow */}
+                <radialGradient id="notch-depth-glow" cx={cx} cy={20} r={40} gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#6D28D9" stopOpacity="0.1" />
+                  <stop offset="80%" stopColor="#6D28D9" stopOpacity="0" />
+                </radialGradient>
+              </defs>
+
+              {/* Perimeter Glass Border */}
+              <path
+                d={notchPath}
+                className="stroke-[url(#nav-border-light)] dark:stroke-[url(#nav-border-dark)]"
+                strokeWidth="1.2"
+                fill="none"
+              />
+
+              {/* Top Shimmer Light Contour */}
+              <path
+                d={topRimPath}
+                stroke="url(#nav-shimmer)"
+                strokeWidth="0.8"
+                strokeOpacity="0.75"
+                fill="none"
+              />
+
+              {/* Notch Cradle Depth Glow */}
+              <circle
+                cx={cx}
+                cy={18}
+                r={36}
+                fill="url(#notch-depth-glow)"
+              />
+            </svg>
+
+            {/* 3. Navigation Grid (5-column layout) */}
+            <div className="grid grid-cols-5 h-full relative items-center px-2 z-10">
               
               {/* Animated Active Capsule Pill (Ultra-Translucent Frosted Glass) */}
               <div 
@@ -273,7 +426,7 @@ export default function BottomNav() {
 
               {navItems.map((item) => {
                 if (item.id === 'empty') {
-                  return <div key="empty" className="w-full h-full" />;
+                  return <div key="empty" className="w-full h-full pointer-events-none" />;
                 }
                 
                 const Icon = item.icon!;
@@ -296,10 +449,10 @@ export default function BottomNav() {
               })}
             </div>
 
-            {/* Floating Action Button (FAB) - Navy Theme */}
+            {/* 4. Floating Action Button (FAB) nested in the Notch Cradle */}
             <button
               onClick={() => setAddMenuOpen(!isAddMenuOpen)}
-              className={`absolute left-1/2 -translate-x-1/2 -top-6 w-16 h-16 rounded-full flex items-center justify-center text-white shadow-[0_8px_32px_rgba(46,16,101,0.4)] z-50 transition-all duration-300 ease-out border border-white/40 backdrop-blur-md active:scale-90 ${
+              className={`absolute left-1/2 -translate-x-1/2 -top-6.5 w-16 h-16 rounded-full flex items-center justify-center text-white shadow-[0_10px_28px_rgba(46,16,101,0.45)] dark:shadow-[0_10px_28px_rgba(0,0,0,0.6)] z-50 transition-all duration-300 ease-out border-2 border-white/50 dark:border-white/30 backdrop-blur-md active:scale-90 ${
                 isAddMenuOpen ? 'rotate-[135deg] bg-gradient-to-tr from-pink-400 to-rose-400' : 'bg-gradient-to-tr from-[#2E1065] via-[#3B1278] to-[#581C87] hover:scale-105'
               }`}
             >
