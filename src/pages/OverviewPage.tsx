@@ -197,7 +197,9 @@ export default function OverviewPage() {
 
     if (absVal >= 1000) {
       const inK = rounded / 1000;
-      return `${sign}${inK.toFixed(1)}k`;
+      // Clean decimal: e.g. 1k instead of 1.0k, 1.5k, 24.5k
+      const formattedK = Number(inK.toFixed(1)).toString();
+      return `${sign}${formattedK}k`;
     }
 
     return `${sign}${rounded}`;
@@ -244,18 +246,23 @@ export default function OverviewPage() {
         <button
           key={`day-${i}`}
           onClick={() => setSelectedDate(new Date(currentYear, currentMonth, i))}
-          className={`h-14 flex flex-col items-center justify-start pt-1.5 pb-1 rounded-[16px] transition-all relative ${isSelected
+          className={`h-14 flex flex-col items-center justify-start pt-1.5 pb-1 rounded-[16px] transition-all relative overflow-hidden px-0.5 ${isSelected
               ? 'bg-white/80 shadow-sm border border-white/80'
               : 'hover:bg-white/30 border border-transparent'
             }`}
         >
-          <span className={`text-[13px] font-bold ${isToday && !isSelected ? 'text-purple-600' : 'text-[#2E1065]'}`}>
+          <span className={`text-[13px] font-bold tabular-nums leading-tight ${isToday && !isSelected ? 'text-purple-600' : 'text-[#2E1065]'}`}>
             {i}
           </span>
           {formattedAmount ? (
-            <span className={`text-[9px] font-bold mt-1 max-w-full truncate px-0.5 ${textColor}`}>
-              {formattedAmount}
-            </span>
+            <div className="w-full mt-0.5 flex justify-center items-center min-w-0 px-0.5">
+              <AutoShrinkText 
+                origin="center" 
+                minScale={0.65} 
+                className={`text-[9.5px] font-bold tabular-nums tracking-tight leading-none ${textColor}`} 
+                text={formattedAmount} 
+              />
+            </div>
           ) : null}
         </button>
       );
@@ -310,8 +317,8 @@ export default function OverviewPage() {
               </div>
             </div>
             <div className="w-full mt-1">
-              <AutoShrinkText className="font-black text-[26px] text-[#2E1065] tracking-tight w-full">
-                <span className="text-emerald-500 mr-1">+</span>
+              <AutoShrinkText origin="left" minScale={0.4} className="font-black text-[26px] tabular-nums text-[#2E1065] tracking-tight w-full">
+                <span className="text-emerald-500 mr-1 font-bold">+</span>
                 {totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </AutoShrinkText>
             </div>
@@ -328,8 +335,8 @@ export default function OverviewPage() {
               </div>
             </div>
             <div className="w-full mt-1">
-              <AutoShrinkText className="font-black text-[26px] text-[#2E1065] tracking-tight w-full">
-                <span className="text-rose-500 mr-1">-</span>
+              <AutoShrinkText origin="left" minScale={0.4} className="font-black text-[26px] tabular-nums text-[#2E1065] tracking-tight w-full">
+                <span className="text-rose-500 mr-1 font-bold">-</span>
                 {totalExpense.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </AutoShrinkText>
             </div>
@@ -528,7 +535,7 @@ export default function OverviewPage() {
                     </p>
                   </div>
                 </div>
-                <div className={`font-bold text-[clamp(14px,3.5vw,16px)] shrink-0 whitespace-nowrap pl-2 ${tx.type === 'income' ? 'text-emerald-600' : 'text-rose-500'}`}>
+                <div className={`font-bold text-[clamp(14px,3.5vw,16px)] tabular-nums shrink-0 whitespace-nowrap pl-2 ${tx.type === 'income' ? 'text-emerald-600' : 'text-rose-500'}`}>
                   {tx.type === 'income' ? '+' : '-'}฿{tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </div>
               </div>

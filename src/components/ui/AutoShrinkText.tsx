@@ -109,9 +109,12 @@ export default function AutoShrinkText({
           transform: scale < 1 ? `scale(${scale})` : 'none', 
           transformOrigin, 
           whiteSpace: 'nowrap', 
-          display: 'inline-block',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: origin === 'right' ? 'flex-end' : origin === 'center' ? 'center' : 'flex-start',
           willChange: 'transform',
           maxWidth: 'none',
+          width: 'max-content',
           textOverflow: 'clip'
         }}
       >
