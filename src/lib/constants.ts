@@ -25,4 +25,4 @@ export function getCategoryById(id: string): Category | undefined {
   return ALL_CATEGORIES.find((c) => c.id === id);
 }
 
-export const APP_VERSION = import.meta.env.VITE_APP_VERSION || '1.0.2';
+export const APP_VERSION = import.meta.env.VITE_APP_VERSION || '1.0.3';

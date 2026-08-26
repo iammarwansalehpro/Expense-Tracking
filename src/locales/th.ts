@@ -238,8 +238,15 @@ export const th = {
       toastGroupExists: 'มีกลุ่มนี้อยู่แล้ว',
       toastGroupAdded: 'เพิ่มกลุ่ม "{name}" สำเร็จ',
       toastGroupRenamed: 'เปลี่ยนชื่อกลุ่มเป็น "{name}" สำเร็จ',
+      toastGroupDeleted: 'ลบกลุ่ม "{name}" สำเร็จ',
       toastCannotDeleteOther: 'ไม่สามารถลบกลุ่ม "อื่นๆ" ได้',
-      toastGroupDeleted: 'ลบกลุ่ม "{name}" สำเร็จ'
+      resetToDefault: 'รีเซ็ตเป็นค่าเริ่มต้นระบบ',
+      confirmResetTitle: 'รีเซ็ตเป็นค่าเริ่มต้นระบบ',
+      confirmResetMsg: 'คุณต้องการรีเซ็ตหมวดหมู่และกลุ่มของระบบทั้งหมดกลับเป็นค่าเริ่มต้นมาตรฐานหรือไม่? (ข้อมูลจะถูกบันทึกจริงเมื่อกดบันทึกข้อมูลระบบ)',
+      confirmResetBtn: 'รีเซ็ตทันที',
+      toastResetSuccess: 'รีเซ็ตกลับเป็นค่าเริ่มต้นมาตรฐานแล้ว (กดปุ่มบันทึกเพื่อยืนยัน)',
+      loading: 'กำลังโหลดข้อมูลระบบ...',
+      noIconsFound: 'ไม่พบไอคอนที่ค้นหา'
     },
     privacyModal: {
       title: 'นโยบายความเป็นส่วนตัว',
@@ -330,6 +337,7 @@ export const th = {
     week: 'สัปดาห์ที่',
     income: 'รายรับ',
     expense: 'รายจ่าย',
+    transfer: 'โอนเงิน',
     gettingStarted: 'เริ่มต้นใช้งาน',
     welcome: 'ยินดีต้อนรับสู่ ',
     welcomeDesc: 'เริ่มบันทึกรายรับหรือสแกนสลิปรายจ่ายแรกของคุณ เพื่อดูข้อมูลวิเคราะห์อัจฉริยะได้เลย!',
@@ -453,6 +461,7 @@ export const th = {
     selectIcon: 'เลือกไอคอน',
     searchIconsPlaceholder: 'ค้นหาไอคอน...',
     iconCategoryAll: 'ทั้งหมด',
+    noIconsFound: 'ไม่พบไอคอนที่ค้นหา',
     saveChanges: 'บันทึกการแก้ไข',
     confirmAdd: 'ยืนยันการเพิ่ม',
     saving: 'กำลังบันทึก...',

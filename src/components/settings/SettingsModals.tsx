@@ -3,7 +3,8 @@ import {
   X, CheckCircle2, Upload, Download, Type, User, Tag, Plus, Trash2, 
   ArrowUpRight, ArrowDownRight, ShieldCheck, Lock, EyeOff, Database, 
   UserCheck, FileSpreadsheet, FileJson, AlertTriangle, Calendar, 
-  Loader2, ChevronRight, FileCheck, FolderTree, Edit2, ArrowLeft, ChevronLeft
+  Loader2, ChevronRight, FileCheck, FolderTree, Edit2, ArrowLeft, ChevronLeft,
+  Search, Check, RotateCcw
 } from 'lucide-react';
 import { updateProfile } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
@@ -16,6 +17,8 @@ import { useThemeStore, type AppFont } from '@/store/useThemeStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { 
   fetchCategories, 
+  fetchUserCategories,
+  fetchUserGroups,
   getApiKeys, 
   setApiKeys as saveApiKeysToDb,
   fetchAdminDefaultGroups,
@@ -37,12 +40,15 @@ import {
   getAllCategoriesGrouped, 
   AVAILABLE_ICONS, 
   AVAILABLE_COLORS, 
+  ICON_CATEGORIES,
   getIconComponent, 
   CATEGORY_SEED, 
   DEFAULT_EXPENSE_GROUPS,
   DEFAULT_INCOME_GROUPS,
   getCategoryDisplayName,
   getGroupDisplayName,
+  getIconCategoryLabel,
+  matchIconSearch,
   type DBCategory, 
   type CategoryTab 
 } from '@/utils/categoryStyles';
@@ -1092,12 +1098,13 @@ export function AdminAppInfoModal({ isOpen, onClose }: ModalProps) {
 // 6. Admin Category & Group Modal (Full System Default CRUD)
 export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
   const { t, language } = useTranslation();
-  const appCategories = useAppStore(s => s.appCategories);
+  const user = useAuthStore(s => s.user);
   const [categories, setCategories] = useState<Record<string, DBCategory>>({});
   const [groups, setGroups] = useState<{ expense: string[], income: string[] }>({
     expense: [...DEFAULT_EXPENSE_GROUPS],
     income: [...DEFAULT_INCOME_GROUPS]
   });
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   
   const [mainTab, setMainTab] = useState<'categories' | 'groups'>('categories');
@@ -1112,6 +1119,8 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
   const [newGroup, setNewGroup] = useState('ไลฟ์สไตล์');
   const [newIcon, setNewIcon] = useState('Tag');
   const [newColorIdx, setNewColorIdx] = useState(0);
+  const [iconCategoryFilter, setIconCategoryFilter] = useState('all');
+  const [iconSearch, setIconSearch] = useState('');
 
   const [newGroupName, setNewGroupName] = useState('');
   const [editingGroup, setEditingGroup] = useState<{
@@ -1130,21 +1139,61 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
     return newTab === 'income' ? groups.income : groups.expense;
   }, [newTab, groups]);
 
+  const activeColorObj = AVAILABLE_COLORS[newColorIdx] || AVAILABLE_COLORS[0];
+  const ActiveIconComponent = getIconComponent(newIcon);
+
+  // Filter available icons based on category and search query
+  const filteredIcons = useMemo(() => {
+    let icons = AVAILABLE_ICONS;
+
+    if (iconCategoryFilter !== 'all') {
+      const found = ICON_CATEGORIES.find(c => c.name === iconCategoryFilter);
+      if (found) {
+        icons = found.icons;
+      }
+    }
+
+    if (iconSearch.trim()) {
+      const q = iconSearch.toLowerCase().trim();
+      icons = icons.filter(iconName => matchIconSearch(iconName, q));
+    }
+
+    return icons;
+  }, [iconCategoryFilter, iconSearch]);
+
+  // Fetch pure system categories and groups directly from database (isolated from user custom state)
   useEffect(() => {
     if (isOpen) {
-      if (appCategories && Object.keys(appCategories).length > 0) {
-        setCategories({ ...appCategories });
-      } else {
-        setCategories({ ...CATEGORY_SEED });
-      }
+      setLoading(true);
+      Promise.all([fetchCategories(), fetchAdminDefaultGroups()])
+        .then(([sysCats, sysGroups]) => {
+          if (sysCats && Object.keys(sysCats).length > 0) {
+            setCategories({ ...sysCats });
+          } else {
+            setCategories({ ...CATEGORY_SEED });
+          }
 
-      fetchAdminDefaultGroups().then(adminGroups => {
-        if (adminGroups) {
-          setGroups(adminGroups);
-        }
-      });
+          if (sysGroups) {
+            setGroups({
+              expense: sysGroups.expense && sysGroups.expense.length > 0 ? sysGroups.expense : [...DEFAULT_EXPENSE_GROUPS],
+              income: sysGroups.income && sysGroups.income.length > 0 ? sysGroups.income : [...DEFAULT_INCOME_GROUPS]
+            });
+          } else {
+            setGroups({
+              expense: [...DEFAULT_EXPENSE_GROUPS],
+              income: [...DEFAULT_INCOME_GROUPS]
+            });
+          }
+        })
+        .catch(err => {
+          console.error("Error fetching admin system defaults:", err);
+          setCategories({ ...CATEGORY_SEED });
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     }
-  }, [isOpen, appCategories]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!currentFormGroups.includes(newGroup)) {
@@ -1181,12 +1230,40 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
 
   if (!isOpen) return null;
 
+  const handleResetDefaults = () => {
+    useConfirmStore.getState().showConfirm({
+      title: t('settings.adminCategoryModal.confirmResetTitle', 'รีเซ็ตเป็นค่าเริ่มต้นระบบ'),
+      message: t('settings.adminCategoryModal.confirmResetMsg', 'คุณต้องการรีเซ็ตหมวดหมู่และกลุ่มของระบบทั้งหมดกลับเป็นค่าเริ่มต้นมาตรฐานหรือไม่? (ข้อมูลจะถูกบันทึกจริงเมื่อกดบันทึกข้อมูลระบบ)'),
+      confirmText: t('settings.adminCategoryModal.confirmResetBtn', 'รีเซ็ตทันที'),
+      cancelText: t('settings.adminCategoryModal.cancel', 'ยกเลิก'),
+      isDestructive: true,
+      onConfirm: () => {
+        setCategories({ ...CATEGORY_SEED });
+        setGroups({
+          expense: [...DEFAULT_EXPENSE_GROUPS],
+          income: [...DEFAULT_INCOME_GROUPS]
+        });
+        useToastStore.getState().addToast(t('settings.adminCategoryModal.toastResetSuccess', 'รีเซ็ตกลับเป็นค่าเริ่มต้นมาตรฐานแล้ว (กดปุ่มบันทึกเพื่อยืนยัน)'), 'info');
+      }
+    });
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
       await set(ref(db, 'app_categories'), categories);
       await saveAdminDefaultGroups(groups);
-      useAppStore.getState().setAppCategories(categories);
+
+      // Re-sync active user's categories & groups so the UI updates immediately
+      if (user?.uid) {
+        const userCats = await fetchUserCategories(user.uid);
+        useAppStore.getState().setAppCategories(userCats);
+        const userGrps = await fetchUserGroups(user.uid);
+        useAppStore.getState().setUserGroups(userGrps);
+      } else {
+        useAppStore.getState().setAppCategories(categories);
+      }
+
       useToastStore.getState().addToast(t('settings.adminCategoryModal.toastSaveSuccess'), 'success');
       onClose();
     } catch (e) {
@@ -1201,7 +1278,7 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
     if (!cleanName) return;
     const colorObj = AVAILABLE_COLORS[newColorIdx] || AVAILABLE_COLORS[0];
     const newCatObj: DBCategory = {
-      iconName: newIcon,
+      iconName: newIcon || 'Tag',
       color: colorObj.color + ' border-white/50',
       textColor: colorObj.textColor,
       tab: newTab,
@@ -1223,6 +1300,8 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
     setEditingKey(null);
     setNewName('');
     setNewIcon('Tag');
+    setIconSearch('');
+    setIconCategoryFilter('all');
   };
 
   const openAdd = () => {
@@ -1234,6 +1313,8 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
     setNewGroup(grps[0] || 'อื่นๆ');
     setNewIcon('Tag');
     setNewColorIdx(0);
+    setIconSearch('');
+    setIconCategoryFilter('all');
     setIsAdding(true);
   };
 
@@ -1244,9 +1325,11 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
     setNewName(catName);
     setNewTab(cat.tab);
     setNewGroup(cat.group);
-    setNewIcon(cat.iconName);
-    const colorIdx = AVAILABLE_COLORS.findIndex(c => c.color === cat.color.replace(' border-white/50', ''));
+    setNewIcon(cat.iconName || 'Tag');
+    const colorIdx = AVAILABLE_COLORS.findIndex(c => c.color === cat.color?.replace(' border-white/50', ''));
     setNewColorIdx(colorIdx >= 0 ? colorIdx : 0);
+    setIconSearch('');
+    setIconCategoryFilter('all');
     setIsAdding(true);
   };
 
@@ -1386,9 +1469,22 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-2xl bg-purple-100/60 hover:bg-purple-200 dark:bg-white/10 text-purple-700 dark:text-purple-300 transition-colors">
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            {!isAdding && (
+              <button
+                type="button"
+                onClick={handleResetDefaults}
+                disabled={loading || saving}
+                title={t('settings.adminCategoryModal.resetToDefault', 'รีเซ็ตเป็นค่าเริ่มต้นระบบ')}
+                className="w-9 h-9 flex items-center justify-center rounded-2xl bg-purple-100/60 hover:bg-purple-200 dark:bg-white/10 text-purple-700 dark:text-purple-300 transition-colors"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+            )}
+            <button onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-2xl bg-purple-100/60 hover:bg-purple-200 dark:bg-white/10 text-purple-700 dark:text-purple-300 transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {!isAdding && (
@@ -1417,49 +1513,267 @@ export function AdminCategoryModal({ isOpen, onClose }: ModalProps) {
         )}
 
         <div className="flex-1 overflow-y-auto no-scrollbar p-5 bg-white dark:bg-[#120B24] relative">
-          {isAdding ? (
-            <div className="bg-gradient-to-br from-[#FAF5FF] to-[#EDE9FE] dark:from-[#1A0F33] dark:to-[#251542] p-5 rounded-3xl shadow-sm border border-purple-200 dark:border-purple-800 animate-fade-in space-y-4">
-              <h4 className="font-black text-sm text-[#2E1065] dark:text-white text-center">
-                {editingKey ? t('settings.adminCategoryModal.titleEdit') : t('settings.adminCategoryModal.titleCreate')}
-              </h4>
-              <div>
-                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1 block">{t('settings.adminCategoryModal.categoryName')}</label>
-                <input type="text" value={newName} onChange={e => setNewName(e.target.value)} className="w-full bg-[#FFF9F2] dark:bg-white/5 rounded-2xl px-4 py-2.5 text-xs font-bold border border-purple-100 dark:border-white/10 outline-none focus:ring-2 focus:ring-purple-400/40 text-[#2E1065] dark:text-white" placeholder={t('settings.adminCategoryModal.categoryNamePlaceholder')} />
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
+              <p className="text-xs font-bold text-[#2E1065]/60 dark:text-purple-300/60">
+                {t('settings.adminCategoryModal.loading')}
+              </p>
+            </div>
+          ) : isAdding ? (
+            <div className="bg-gradient-to-br from-[#FAF5FF] via-[#F5F3FF] to-[#EDE9FE] dark:from-[#1A0F33] dark:via-[#20133E] dark:to-[#2A1752] p-5 sm:p-6 rounded-3xl shadow-sm border border-purple-200/70 dark:border-purple-800/40 animate-fade-in space-y-5">
+              
+              {/* Step 1: Live Preview (Warm, Colorful & Friendly) */}
+              <div className="p-5 rounded-3xl bg-white/70 dark:bg-black/20 border border-purple-200/70 dark:border-purple-800/40 flex flex-col items-center justify-center relative shadow-sm">
+                <div className="absolute top-3 right-4 text-[10px] font-black text-purple-500/70 dark:text-purple-300/70 tracking-wider uppercase">
+                  {t('categoryManager.livePreview', 'พรีวิวสด')}
+                </div>
+
+                <div className="flex items-center gap-4 my-1 w-full max-w-xs">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border shadow-md ${activeColorObj.color} ${activeColorObj.textColor} transition-all duration-300`}>
+                    <ActiveIconComponent className="w-7 h-7" strokeWidth={2.5} />
+                  </div>
+                  <div className="text-left min-w-0 flex-1">
+                    <AutoShrinkText 
+                      origin="left"
+                      className="text-base font-black text-[#2E1065] dark:text-white tracking-tight"
+                      text={getCategoryDisplayName(newName.trim(), language) || t('settings.adminCategoryModal.categoryNamePlaceholder', 'ชื่อหมวดหมู่')}
+                    />
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border ${
+                        newTab === 'income' 
+                          ? 'bg-emerald-100/90 text-emerald-800 border-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-800' 
+                          : 'bg-rose-100/90 text-rose-800 border-rose-200 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-800'
+                      }`}>
+                        {newTab === 'income' ? t('settings.adminCategoryModal.income', 'รายรับ') : t('settings.adminCategoryModal.expense', 'รายจ่าย')}
+                      </span>
+                      <span className="text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200 px-2 py-0.5 rounded-lg border border-purple-200 dark:border-purple-800">
+                        {getGroupDisplayName(newGroup, language) || 'อื่นๆ'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              {/* Step 2: Item Type */}
               <div>
-                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1 block">{t('settings.adminCategoryModal.itemType')}</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button type="button" onClick={() => { setNewTab('lifestyle'); if (!groups.expense.includes(newGroup)) setNewGroup(groups.expense[0] || 'อื่นๆ'); }} className={`py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border transition-all ${newTab !== 'income' ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md' : 'bg-white dark:bg-white/5 text-rose-700 border-rose-200'}`}>
-                    <ArrowDownRight className="w-3.5 h-3.5" />
-                    {t('settings.adminCategoryModal.expense')}
+                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1.5 block">
+                  {t('settings.adminCategoryModal.itemType', 'ประเภทรายการ')}
+                </label>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewTab('lifestyle');
+                      if (!groups.expense.includes(newGroup)) {
+                        setNewGroup(groups.expense[0] || 'อื่นๆ');
+                      }
+                    }}
+                    className={`py-3 px-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 border transition-all ${
+                      newTab !== 'income'
+                        ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md shadow-rose-500/25 border-transparent'
+                        : 'bg-rose-50/70 border-rose-200/80 text-rose-700 dark:bg-rose-950/20 dark:border-rose-900/40 dark:text-rose-300 hover:bg-rose-100/70'
+                    }`}
+                  >
+                    <ArrowDownRight className="w-4 h-4" />
+                    {t('settings.adminCategoryModal.expense', 'รายจ่าย')}
                   </button>
-                  <button type="button" onClick={() => { setNewTab('income'); if (!groups.income.includes(newGroup)) setNewGroup(groups.income[0] || 'อื่นๆ'); }} className={`py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border transition-all ${newTab === 'income' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md' : 'bg-white dark:bg-white/5 text-emerald-700 border-emerald-200'}`}>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                    {t('settings.adminCategoryModal.income')}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewTab('income');
+                      if (!groups.income.includes(newGroup)) {
+                        setNewGroup(groups.income[0] || 'อื่นๆ');
+                      }
+                    }}
+                    className={`py-3 px-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 border transition-all ${
+                      newTab === 'income'
+                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-500/25 border-transparent'
+                        : 'bg-emerald-50/70 border-emerald-200/80 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-900/40 dark:text-emerald-300 hover:bg-emerald-100/70'
+                    }`}
+                  >
+                    <ArrowUpRight className="w-4 h-4" />
+                    {t('settings.adminCategoryModal.income', 'รายรับ')}
                   </button>
                 </div>
               </div>
+
+              {/* Step 3: Category Name */}
               <div>
-                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1 block">{t('settings.adminCategoryModal.assignedGroup')}</label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-[100px] overflow-y-auto no-scrollbar p-2 bg-white/80 dark:bg-white/5 rounded-2xl border border-purple-100 dark:border-white/10">
+                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1.5 block">
+                  {t('settings.adminCategoryModal.categoryName', 'ชื่อหมวดหมู่')}
+                </label>
+                <input 
+                  type="text" 
+                  value={newName} 
+                  onChange={e => setNewName(e.target.value)} 
+                  className="w-full bg-[#FFF9F2] dark:bg-white/5 rounded-2xl px-4 py-3 text-xs font-bold border border-purple-100 dark:border-white/10 outline-none focus:ring-2 focus:ring-purple-400/40 text-[#2E1065] dark:text-white placeholder:text-[#2E1065]/40 dark:placeholder:text-white/40 shadow-sm" 
+                  placeholder={t('settings.adminCategoryModal.categoryNamePlaceholder', 'ระบุชื่อหมวดหมู่')} 
+                  maxLength={30}
+                />
+              </div>
+
+              {/* Step 4: Assigned Group */}
+              <div>
+                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1.5 block">
+                  {t('settings.adminCategoryModal.assignedGroup', 'กลุ่มหมวดหมู่')}
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-[110px] overflow-y-auto no-scrollbar p-2 bg-purple-50/50 dark:bg-white/5 rounded-2xl border border-purple-100/60 dark:border-white/10">
                   {currentFormGroups.map(g => (
-                    <button key={g} type="button" onClick={() => setNewGroup(g)} className={`py-1.5 px-2 rounded-xl text-xs font-bold transition-all text-left flex items-center min-w-0 ${newGroup === g ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm' : 'bg-purple-50/60 dark:bg-white/5 text-[#2E1065]/70 dark:text-white/70'}`}>
-                      <AutoShrinkText origin="left" text={getGroupDisplayName(g, language)} />
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setNewGroup(g)}
+                      className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all text-left flex items-center justify-between min-w-0 ${
+                        newGroup === g
+                          ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/20'
+                          : 'bg-white/80 dark:bg-white/10 text-[#2E1065]/70 dark:text-white/70 hover:bg-purple-100/60 dark:hover:bg-white/20 border border-purple-100/50 dark:border-white/5'
+                      }`}
+                    >
+                      <div className="min-w-0 flex-1 pr-1">
+                        <AutoShrinkText origin="left" className="text-xs font-bold" text={getGroupDisplayName(g, language)} />
+                      </div>
+                      {newGroup === g && <Check className="w-3 h-3 shrink-0" strokeWidth={3} />}
                     </button>
                   ))}
                 </div>
               </div>
+
+              {/* Step 5: Color Palette */}
+              <div>
+                <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200 mb-1.5 block">
+                  {t('categoryManager.selectColor', 'เลือกโทนสี')}
+                </label>
+                <div className="grid grid-cols-8 gap-2 p-3 bg-purple-50/50 dark:bg-white/5 rounded-2xl border border-purple-100/60 dark:border-white/10">
+                  {AVAILABLE_COLORS.map((c, idx) => {
+                    const isSelected = newColorIdx === idx;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setNewColorIdx(idx)}
+                        title={c.name}
+                        className={`aspect-square rounded-full flex items-center justify-center p-0.5 transition-all ${
+                          isSelected 
+                            ? 'border-2 border-purple-600 dark:border-purple-400 bg-white dark:bg-[#120B24] shadow-sm' 
+                            : 'border-2 border-transparent hover:scale-105'
+                        }`}
+                      >
+                        <span 
+                          className={`w-full h-full rounded-full ${c.solidColor} shadow-inner transition-transform duration-150 ${
+                            isSelected ? 'scale-85' : 'scale-100 opacity-80 hover:opacity-100'
+                          }`} 
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Step 6: Icon Picker */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-[#2E1065] dark:text-purple-200">
+                    {t('categoryManager.selectIcon', 'เลือกไอคอน')}
+                  </label>
+                  <div className="relative w-36">
+                    <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-purple-400" />
+                    <input
+                      type="text"
+                      value={iconSearch}
+                      onChange={(e) => setIconSearch(e.target.value)}
+                      placeholder={t('categoryManager.searchIconsPlaceholder', 'ค้นหาไอคอน...')}
+                      className="w-full bg-[#FFF9F2] dark:bg-white/5 rounded-xl pl-7 pr-2 py-1.5 text-[11px] font-bold outline-none border border-purple-100 dark:border-white/10 text-[#2E1065] dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Icon Categories */}
+                <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1.5 mb-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setIconCategoryFilter('all')}
+                    className={`px-3 py-1 rounded-xl text-[11px] font-bold whitespace-nowrap transition-colors ${
+                      iconCategoryFilter === 'all'
+                        ? 'bg-purple-600 text-white shadow-sm'
+                        : 'bg-purple-50 dark:bg-white/10 text-purple-700 dark:text-purple-300'
+                    }`}
+                  >
+                    {t('categoryManager.iconCategoryAll', 'ทั้งหมด')}
+                  </button>
+                  {ICON_CATEGORIES.map((cat) => (
+                    <button
+                      key={cat.name}
+                      type="button"
+                      onClick={() => setIconCategoryFilter(cat.name)}
+                      className={`px-3 py-1 rounded-xl text-[11px] font-bold whitespace-nowrap transition-colors ${
+                        iconCategoryFilter === cat.name
+                          ? 'bg-purple-600 text-white shadow-sm'
+                          : 'bg-purple-50 dark:bg-white/10 text-purple-700 dark:text-purple-300'
+                      }`}
+                    >
+                      {getIconCategoryLabel(cat, language)}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Icon Grid */}
+                <div className="grid grid-cols-7 sm:grid-cols-8 gap-1.5 max-h-[140px] overflow-y-auto no-scrollbar p-2.5 bg-purple-50/50 dark:bg-white/5 rounded-2xl border border-purple-100/60 dark:border-white/10">
+                  {filteredIcons.length === 0 ? (
+                    <div className="col-span-full py-6 text-center text-xs font-bold text-[#2E1065]/50 dark:text-white/50">
+                      {t('settings.adminCategoryModal.noIconsFound')}
+                    </div>
+                  ) : (
+                    filteredIcons.map((iconName) => {
+                      const IconComp = getIconComponent(iconName);
+                      const isSelected = newIcon === iconName;
+                      return (
+                        <button
+                          key={iconName}
+                          type="button"
+                          onClick={() => setNewIcon(iconName)}
+                          title={iconName}
+                          className={`aspect-square rounded-xl flex items-center justify-center transition-all ${
+                            isSelected
+                              ? 'bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-md scale-105'
+                              : 'bg-white/80 dark:bg-white/5 text-[#2E1065]/70 dark:text-white/70 hover:bg-purple-100 dark:hover:bg-white/10 hover:text-purple-700 dark:hover:text-white'
+                          }`}
+                        >
+                          <IconComp className="w-5 h-5" strokeWidth={2.2} />
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+              {/* Form Action Buttons */}
               <div className="space-y-2.5 pt-2">
                 <div className="flex gap-2.5">
-                  <button type="button" onClick={() => setIsAdding(false)} className="flex-1 py-2.5 rounded-2xl font-bold bg-purple-100/80 text-purple-800 dark:bg-white/10 dark:text-purple-200 transition-colors text-xs">{t('settings.adminCategoryModal.cancel')}</button>
-                  <button type="button" onClick={handleAdd} disabled={!newName.trim()} className="flex-[2] py-2.5 rounded-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/25 disabled:opacity-50 transition-all text-xs flex items-center justify-center gap-1.5">
-                    {editingKey ? t('settings.adminCategoryModal.saveEdit') : t('settings.adminCategoryModal.confirmAdd')}
+                  <button 
+                    type="button" 
+                    onClick={() => setIsAdding(false)} 
+                    className="flex-1 py-3 rounded-2xl font-bold bg-purple-100/80 hover:bg-purple-200 text-purple-800 dark:bg-white/10 dark:text-purple-200 transition-colors text-xs"
+                  >
+                    {t('settings.adminCategoryModal.cancel', 'ยกเลิก')}
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={handleAdd} 
+                    disabled={!newName.trim()} 
+                    className="flex-[2] py-3 rounded-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/25 disabled:opacity-50 transition-all text-xs flex items-center justify-center gap-1.5"
+                  >
+                    {editingKey ? t('settings.adminCategoryModal.saveEdit', 'บันทึกการแก้ไข') : t('settings.adminCategoryModal.confirmAdd', 'เพิ่มหมวดหมู่')}
                   </button>
                 </div>
                 {editingKey && (
-                  <button type="button" onClick={() => { handleDelete(editingKey); setIsAdding(false); }} className="w-full py-2.5 rounded-2xl font-bold text-xs bg-rose-50/70 text-rose-600 border border-rose-200/70 shadow-sm flex items-center justify-center gap-1.5">
+                  <button 
+                    type="button" 
+                    onClick={() => { handleDelete(editingKey); setIsAdding(false); }} 
+                    className="w-full py-2.5 rounded-2xl font-bold text-xs bg-rose-50/70 text-rose-600 hover:bg-rose-100/70 border border-rose-200/70 shadow-sm flex items-center justify-center gap-1.5 transition-colors"
+                  >
                     <Trash2 className="w-3.5 h-3.5" />
-                    <span>{t('settings.adminCategoryModal.deleteSystemCategory')}</span>
+                    <span>{t('settings.adminCategoryModal.deleteSystemCategory', 'ลบหมวดหมู่ระบบนี้')}</span>
                   </button>
                 )}
               </div>

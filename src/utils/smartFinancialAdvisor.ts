@@ -212,11 +212,13 @@ export function generateSmartInsights({
 
   // --- Insight Layer 2: Credit Card Due Alerts (Caring Reminder) ---
   const creditCards = wallets.filter(w => w.type === 'credit_card');
+  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   for (const card of creditCards) {
     const stats = calculateCreditCardStats(card, transactions, now);
     if (stats.statementBalance > 0 && stats.nextDueDate) {
-      const diffTime = stats.nextDueDate.getTime() - now.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const dueDateOnly = new Date(stats.nextDueDate.getFullYear(), stats.nextDueDate.getMonth(), stats.nextDueDate.getDate());
+      const diffTime = dueDateOnly.getTime() - todayMidnight.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
       
       if (diffDays >= 0 && diffDays <= 5) {
         const daysText = diffDays === 0 

@@ -39,19 +39,19 @@ export default function TodayExpenseWidget() {
     );
 
     const todayExpense = todayTxs
-      .filter((t) => t.type === 'expense' || t.type === 'transfer')
+      .filter((t) => t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0);
 
     const todayIncome = todayTxs
       .filter((t) => t.type === 'income')
       .reduce((sum, t) => sum + t.amount, 0);
 
-    const todayCount = todayTxs.length;
+    const todayCount = todayTxs.filter((t) => t.type === 'expense').length;
 
     // Transactions yesterday
     const yesterdayExpense = transactions
       .filter(
-        (t) => (t.type === 'expense' || t.type === 'transfer') && new Date(t.date).toDateString() === yesterdayStr
+        (t) => t.type === 'expense' && new Date(t.date).toDateString() === yesterdayStr
       )
       .reduce((sum, t) => sum + t.amount, 0);
 

@@ -44,20 +44,16 @@ export default function CreditCardDueAlert({ onPayClick }: Props) {
 
     ccWallets.forEach(wallet => {
       const stats = calculateCreditCardStats(wallet, transactions, now);
-      const amountToPay = stats.statementBalance > 0 ? stats.statementBalance : stats.outstandingBalance;
+      
+      // Only alert if there is an actual unpaid statement balance for the billing cycle
+      if (stats.statementBalance <= 0 || !stats.nextDueDate) return;
 
-      // Nothing due or no outstanding debt
-      if (amountToPay <= 0) return;
-
-      const dueDay = wallet.dueDay || 25;
-      const currentYear = now.getFullYear();
-      const currentMonth = now.getMonth();
-
-      // Check current month's due date
-      let nextDueDate = new Date(currentYear, currentMonth, dueDay);
+      const amountToPay = stats.statementBalance;
+      const nextDueDate = stats.nextDueDate;
+      const dueDateOnly = new Date(nextDueDate.getFullYear(), nextDueDate.getMonth(), nextDueDate.getDate());
 
       // Time difference in calendar days
-      const diffTime = nextDueDate.getTime() - today.getTime();
+      const diffTime = dueDateOnly.getTime() - today.getTime();
       const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
       // Overdue: up to 7 days overdue

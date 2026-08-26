@@ -47,18 +47,20 @@ export default function CreditCardPaymentModal({ isOpen, onClose, creditCardId }
   const minimumPayment = stats?.minimumPayment || 0;
   const revolvingInterest = stats?.revolvingInterest || 0;
 
+  const fullAmount = statementBalance > 0 ? statementBalance : outstandingBalance;
+
   useEffect(() => {
     if (isOpen) {
       setPaymentType('full');
-      setAmount(statementBalance.toString());
+      setAmount(fullAmount > 0 ? fullAmount.toString() : '');
     }
-  }, [isOpen, statementBalance]);
+  }, [isOpen, fullAmount]);
 
   useEffect(() => {
-    if (paymentType === 'full') setAmount(statementBalance.toString());
+    if (paymentType === 'full') setAmount(fullAmount > 0 ? fullAmount.toString() : '');
     else if (paymentType === 'minimum') setAmount(minimumPayment.toString());
     else if (paymentType === 'custom') setAmount('');
-  }, [paymentType, statementBalance, minimumPayment]);
+  }, [paymentType, fullAmount, minimumPayment]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -207,7 +209,7 @@ export default function CreditCardPaymentModal({ isOpen, onClose, creditCardId }
                     <div className="font-bold text-[#2E1065]">เต็มจำนวน</div>
                     <div className="text-xs text-[#2E1065]/60 mt-0.5">ไม่ต้องเสียดอกเบี้ย</div>
                   </div>
-                  <div className="font-bold text-amber-600">฿{statementBalance.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</div>
+                  <div className="font-bold text-amber-600">฿{fullAmount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</div>
                 </label>
 
                 <label className={`flex items-center p-4 rounded-[20px] border-2 cursor-pointer transition-all ${paymentType === 'minimum' ? 'border-amber-500 bg-amber-50/50' : 'border-transparent bg-white hover:bg-slate-50'}`}>

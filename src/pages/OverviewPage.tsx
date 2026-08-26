@@ -52,7 +52,7 @@ export default function OverviewPage() {
   const transactions = useTransactionStore((s) => s.transactions);
   const setCurrentPage = useAppStore((s) => s.setCurrentPage);
   const appCategories = useAppStore(s => s.appCategories);
-  const [activeTab, setActiveTab] = useState<'income' | 'expense'>('expense');
+  const [activeTab, setActiveTab] = useState<'expense' | 'income' | 'transfer'>('expense');
   const [viewMode, setViewMode] = useState<'chart' | 'calendar'>('chart');
 
   const now = useMemo(() => new Date(), []);
@@ -97,18 +97,18 @@ export default function OverviewPage() {
 
         const day = tDate.getDate();
         if (!totalsByDay[day]) totalsByDay[day] = 0;
-        totalsByDay[day] += (t.type === 'income' ? t.amount : -t.amount);
+        totalsByDay[day] += (t.type === 'income' ? t.amount : t.type === 'expense' ? -t.amount : 0);
         let weekIdx = 0;
         if (day > 7 && day <= 14) weekIdx = 1;
         else if (day > 14 && day <= 21) weekIdx = 2;
         else if (day > 21) weekIdx = 3;
 
         if (t.type === 'income') data[weekIdx].income += t.amount;
-        else data[weekIdx].expense += t.amount;
+        else if (t.type === 'expense') data[weekIdx].expense += t.amount;
 
         // Daily chart data aggregation
         if (t.type === 'income') dailyData[day - 1].income += t.amount;
-        else dailyData[day - 1].expense += t.amount;
+        else if (t.type === 'expense') dailyData[day - 1].expense += t.amount;
       }
     });
 
@@ -116,13 +116,13 @@ export default function OverviewPage() {
   }, [transactions, viewDate, t]);
 
   const filteredTransactions = transactions.filter(t => {
-    let effectiveType = t.type;
-    if (t.type === 'transfer') {
-      if (t.linkedTransactionId && t.walletId === t.toWalletId) return false;
-      effectiveType = 'expense';
+    if (activeTab === 'transfer') {
+      // Deduplicate transfers: only display fromWallet record
+      if (t.type !== 'transfer') return false;
+      if (t.linkedTransactionId && t.walletId !== t.fromWalletId) return false;
+    } else {
+      if (t.type !== activeTab) return false;
     }
-
-    if (effectiveType !== activeTab) return false;
 
     const tDate = new Date(t.date);
 
@@ -458,17 +458,24 @@ export default function OverviewPage() {
         <div className="flex bg-white/20 backdrop-blur-xl border border-white/30 p-1.5 rounded-[20px] mb-6 shadow-inner">
           <button
             type="button"
-            className={`flex-1 py-3 rounded-[16px] text-sm font-bold transition-all duration-300 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none select-none ${activeTab === 'income' ? 'bg-white/60 text-[#2E1065] shadow-sm border border-white/50' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80 border border-transparent'}`}
+            className={`flex-1 py-2.5 sm:py-3 rounded-[16px] text-xs sm:text-sm font-bold transition-all duration-300 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none select-none ${activeTab === 'expense' ? 'bg-white/60 text-[#2E1065] shadow-sm border border-white/50' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80 border border-transparent'}`}
+            onClick={() => setActiveTab('expense')}
+          >
+            {t('overview.expense')}
+          </button>
+          <button
+            type="button"
+            className={`flex-1 py-2.5 sm:py-3 rounded-[16px] text-xs sm:text-sm font-bold transition-all duration-300 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none select-none ${activeTab === 'income' ? 'bg-white/60 text-[#2E1065] shadow-sm border border-white/50' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80 border border-transparent'}`}
             onClick={() => setActiveTab('income')}
           >
             {t('overview.income')}
           </button>
           <button
             type="button"
-            className={`flex-1 py-3 rounded-[16px] text-sm font-bold transition-all duration-300 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none select-none ${activeTab === 'expense' ? 'bg-white/60 text-[#2E1065] shadow-sm border border-white/50' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80 border border-transparent'}`}
-            onClick={() => setActiveTab('expense')}
+            className={`flex-1 py-2.5 sm:py-3 rounded-[16px] text-xs sm:text-sm font-bold transition-all duration-300 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none select-none ${activeTab === 'transfer' ? 'bg-white/60 text-[#2E1065] shadow-sm border border-white/50' : 'text-[#2E1065]/60 hover:text-[#2E1065]/80 border border-transparent'}`}
+            onClick={() => setActiveTab('transfer')}
           >
-            {t('overview.expense')}
+            {t('overview.transfer', 'โอนเงิน')}
           </button>
         </div>
 
@@ -535,8 +542,10 @@ export default function OverviewPage() {
                     </p>
                   </div>
                 </div>
-                <div className={`font-bold text-[clamp(14px,3.5vw,16px)] tabular-nums shrink-0 whitespace-nowrap pl-2 ${tx.type === 'income' ? 'text-emerald-600' : 'text-rose-500'}`}>
-                  {tx.type === 'income' ? '+' : '-'}฿{tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                <div className={`font-bold text-[clamp(14px,3.5vw,16px)] tabular-nums shrink-0 whitespace-nowrap pl-2 ${
+                  tx.type === 'income' ? 'text-emerald-600' : tx.type === 'transfer' ? 'text-indigo-600' : 'text-rose-500'
+                }`}>
+                  {tx.type === 'income' ? '+' : tx.type === 'transfer' ? '⇄ ' : '-'}฿{tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </div>
               </div>
             );

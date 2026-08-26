@@ -241,7 +241,14 @@ export const en: Translations = {
       toastGroupAdded: 'Group "{name}" added successfully',
       toastGroupRenamed: 'Group renamed to "{name}" successfully',
       toastCannotDeleteOther: 'Cannot delete default "Other" group',
-      toastGroupDeleted: 'Group "{name}" deleted successfully'
+      toastGroupDeleted: 'Group "{name}" deleted successfully',
+      resetToDefault: 'Reset to System Defaults',
+      confirmResetTitle: 'Reset to System Defaults',
+      confirmResetMsg: 'Do you want to reset all system categories and groups back to standard factory defaults? (Changes apply when you save)',
+      confirmResetBtn: 'Reset Now',
+      toastResetSuccess: 'Reset to factory defaults (Click save to confirm)',
+      loading: 'Loading system data...',
+      noIconsFound: 'No icons found'
     },
     privacyModal: {
       title: 'Privacy Policy',
@@ -332,6 +339,7 @@ export const en: Translations = {
     week: 'Week',
     income: 'Income',
     expense: 'Expense',
+    transfer: 'Transfer',
     gettingStarted: 'Getting Started',
     welcome: 'Welcome to ',
     welcomeDesc: 'Start recording income or scan your first receipt to see smart analytics!',
@@ -455,6 +463,7 @@ export const en: Translations = {
     selectIcon: 'Select Icon',
     searchIconsPlaceholder: 'Search icons...',
     iconCategoryAll: 'All',
+    noIconsFound: 'No icons found',
     saveChanges: 'Save Changes',
     confirmAdd: 'Confirm & Add',
     saving: 'Saving...',
