@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { th } from '@/locales/th';
 import { en } from '@/locales/en';
@@ -12,7 +13,7 @@ export function useTranslation() {
   const language = useSettingsStore((s) => s.language);
   const translations = language === 'en' ? en : th;
 
-  const t = (
+  const t = useCallback((
     path: TranslationPaths, 
     paramsOrFallback?: string | Record<string, string | number>,
     maybeFallback?: string
@@ -36,7 +37,7 @@ export function useTranslation() {
     }
     
     return typeof current === 'string' ? current : (maybeFallback || path);
-  };
+  }, [translations]);
 
   return { t, language };
 }

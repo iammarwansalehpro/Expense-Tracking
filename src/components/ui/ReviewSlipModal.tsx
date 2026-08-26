@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom';
 import * as Icons from 'lucide-react';
 import { AlignLeft, Calendar, FileText, Wallet as WalletIcon, ChevronRight, Check, Search, Pencil, Building2, CreditCard, X, ChevronLeft, ChevronRight as ChevronRightIcon, Trash2 } from 'lucide-react';
-import { getCategoryStyle } from '@/utils/categoryStyles';
+import { getCategoryStyle, getCategoryDisplayName } from '@/utils/categoryStyles';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { addTransaction, setUserFavorites } from '@/services/transactionService';
@@ -20,7 +20,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useDragToClose } from '@/hooks/useDragToClose';
 
 export default function ReviewSlipModal() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const isReviewModalOpen = useAppStore((s) => s.isReviewModalOpen);
   const setReviewModalOpen = useAppStore((s) => s.setReviewModalOpen);
   const scannedSlips = useAppStore((s) => s.scannedSlips);
@@ -417,7 +417,7 @@ export default function ReviewSlipModal() {
                       <div className="mt-2 text-right">
                         <div className="text-xs font-bold text-[#2E1065]/60 mb-0.5">{t('review.category')}</div>
                         <div className="text-sm font-bold text-[#8B5CF6]">
-                            {slip.category ? slip.category : t('review.noCategory')}
+                            {slip.category ? getCategoryDisplayName(slip.category, language) : t('review.noCategory')}
                         </div>
                       </div>
                     </div>
@@ -446,7 +446,7 @@ export default function ReviewSlipModal() {
                         const { icon: Icon, textColor } = getCategoryStyle(currentSlip.category!, appCategories || undefined);
                         return <Icon className={`w-4 h-4 ${textColor.replace('text-', 'text-')}`} />;
                       })()}
-                      {currentSlip.category}
+                      {getCategoryDisplayName(currentSlip.category, language)}
                     </>
                   ) : (
                     <>{t('review.selectCategory')} <ChevronRight className="w-4 h-4" /></>
@@ -476,7 +476,7 @@ export default function ReviewSlipModal() {
                             : 'bg-white/50 border-white/60 text-[#2E1065]/70 hover:bg-white/80 shadow-sm'
                         }`}
                       >
-                        {cat}
+                        {getCategoryDisplayName(cat, language)}
                       </button>
                     );
                   })}

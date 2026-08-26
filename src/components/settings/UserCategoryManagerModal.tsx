@@ -18,6 +18,7 @@ import {
   getGroupDisplayName,
   getIconCategoryLabel,
   matchIconSearch,
+  matchCategorySearch,
   type DBCategory, 
   type CategoryTab 
 } from '@/utils/categoryStyles';
@@ -137,7 +138,7 @@ export default function UserCategoryManagerModal({
     return { total, customCount, expenseCount, incomeCount };
   }, [categoriesMap]);
 
-  // Filtered categories with multilingual search matching
+  // Filtered categories with multilingual & synonym search matching
   const filteredCategories = useMemo(() => {
     return Object.entries(categoriesMap).filter(([name, cat]) => {
       if (cat.hidden) return false;
@@ -147,12 +148,7 @@ export default function UserCategoryManagerModal({
       if (filterTab === 'custom' && !cat.isCustom) return false;
 
       if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase().trim();
-        const localizedName = getCategoryDisplayName(name, language).toLowerCase();
-        const matchesName = name.toLowerCase().includes(query) || localizedName.includes(query);
-        const localizedGroup = getGroupDisplayName(cat.group || '', language).toLowerCase();
-        const matchesGroup = (cat.group?.toLowerCase().includes(query)) || localizedGroup.includes(query);
-        return matchesName || matchesGroup;
+        return matchCategorySearch(name, cat, searchQuery, language);
       }
 
       return true;

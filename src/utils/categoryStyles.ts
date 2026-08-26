@@ -338,6 +338,268 @@ export const matchIconSearch = (iconName: string, query: string): boolean => {
   return false;
 };
 
+// Rich Category Synonyms for intelligent natural language & bilingual search
+export const CATEGORY_SEARCH_SYNONYMS: Record<string, string[]> = {
+  'อาหาร': [
+    'food', 'dining', 'eat', 'restaurant', 'meal', 'lunch', 'dinner', 'breakfast', 'snack', 'rice', 'noodle',
+    'fastfood', 'bakery', 'dessert', 'buffet', 'shabu', 'mookata', 'delivery', 'lineman', 'grabfood', 'foodpanda',
+    'robinhood', 'shopeefood', 'kfc', 'mcdonalds', 'mcdonald', 'pizza', 'burger', 'ข้าว', 'กินข้าว', 'ร้านอาหาร',
+    'มื้ออาหาร', 'มื้อเย็น', 'มื้อเช้า', 'มื้อเที่ยง', 'ก๋วยเตี๋ยว', 'บุฟเฟต์', 'บุฟเฟ่ต์', 'หมูกระทะ', 'ชาบู',
+    'เดลิเวอรี่', 'ทานข้าว', 'กับข้าว', 'ของกิน', 'ตามสั่ง', 'อาหารคลีน', 'ของกินเล่น', 'ขนม', 'สเต็ก', 'ส้มตำ'
+  ],
+  'กาแฟ': [
+    'coffee', 'cafe', 'tea', 'starbucks', 'amazon', 'cafe amazon', 'drink', 'drinks', 'beverage', 'boba',
+    'bubble tea', 'latte', 'espresso', 'cappuccino', 'americano', 'matcha', 'cocoa', 'smoothie', 'ชา', 'ชานม',
+    'ชาไข่มุก', 'คาเฟ่', 'สตาร์บัคส์', 'อเมซอน', 'ชาตรามือ', 'กาแฟสด', 'เครื่องดื่ม', 'น้ำชง', 'โกโก้', 'สมูทตี้',
+    'มัทฉะ', 'น้ำหวาน', 'น้ำผลไม้', 'กาแฟโบราณ', 'โอเลี้ยง'
+  ],
+  'ของใช้': [
+    'groceries', 'grocery', 'supermarket', 'market', 'daily', 'household', '7-11', '7-eleven', 'seven', 'lotus',
+    'big c', 'tops', 'gourmet', 'cj', 'cj express', 'villa market', 'makro', 'แม็คโคร', 'โลตัส', 'บิ๊กซี', 'ท็อปส์',
+    'เซเว่น', 'ของใช้ในบ้าน', 'ของสด', 'ตลาดสด', 'ซูเปอร์มาร์เก็ต', 'สบู่', 'ยาสระผม', 'ผงซักฟอก', 'กระดาษทิชชู่',
+    'ทิชชู่', 'ของชำ', 'น้ำยาล้างจาน', 'ยาสีฟัน', 'ของใช้ส่วนตัว'
+  ],
+  'ซื้อของ': [
+    'shopping', 'shop', 'buy', 'store', 'mall', 'lazada', 'shopee', 'tiktok', 'tiktok shop', 'clothes', 'clothing',
+    'fashion', 'shoes', 'bag', 'cosmetics', 'เครื่องสำอาง', 'เสื้อผ้า', 'แฟชั่น', 'ช้อปปิ้ง', 'ซื้อของออนไลน์',
+    'ห้างสรรพสินค้า', 'ลาซาด้า', 'ช้อปปี้', 'รองเท้า', 'กระเป๋า', 'กางเกง', 'เดรส', 'เครื่องประดับ', 'สั่งของ',
+    'พัสดุ', 'เก็บเงินปลายทาง'
+  ],
+  'เดินทาง': [
+    'transport', 'transportation', 'commute', 'travel', 'transit', 'bus', 'train', 'metro', 'subway', 'bts', 'mrt',
+    'airport rail link', 'arl', 'taxi', 'grab', 'bolt', 'lineman taxi', 'maxme', 'van', 'boat', 'เรือ', 'รถตู้',
+    'รถเมล์', 'รถไฟฟ้า', 'บีทีเอส', 'เอ็มอาร์ที', 'แท็กซี่', 'แกร็บ', 'โบลท์', 'วิน', 'วินมอไซ', 'มอไซค์', 'ค่ารถ',
+    'ค่าเดินทาง', 'สองแถว', 'ตั๋วรถ', 'ตั๋วเครื่องบิน', 'สายการบิน', 'flight', 'airline', 'airasia', 'nokair',
+    'vietjet', 'lionair', 'การบินไทย', 'เดินทาง', 'ขนส่ง'
+  ],
+  'น้ำมัน': [
+    'fuel', 'gas', 'gasoline', 'petrol', 'oil', 'diesel', 'ptt', 'bcp', 'bangchak', 'shell', 'caltex', 'esso',
+    'susco', 'ปั๊ม', 'ปั๊มน้ำมัน', 'ปตท', 'บางจาก', 'เชลล์', 'คาลเท็กซ์', 'เอสโซ่', 'เติมน้ำมัน', 'แก๊ส', 'ดีเซล',
+    'เบนซิน', 'แก๊สโซฮอล์', 'lpg', 'ngv', 'ev', 'ชาร์จไฟรถ', 'ev charging', 'ค่าน้ำมัน'
+  ],
+  'จอดรถ': [
+    'parking', 'park', 'car park', 'parking fee', 'valet', 'toll', 'tollway', 'expressway', 'easypass', 'm-flow',
+    'mflow', 'ค่าจอด', 'ที่จอดรถ', 'ค่าจอดรถ', 'บัตรจอดรถ', 'ทางด่วน', 'ด่านทางด่วน', 'ค่าผ่านทาง'
+  ],
+  'ค่าไฟ': [
+    'electricity', 'electric', 'power', 'mea', 'pea', 'egat', 'electric bill', 'ไฟ', 'ไฟฟ้า', 'การไฟฟ้า', 'กฟน',
+    'กฟภ', 'บิลค่าไฟ', 'ค่าไฟฟ้า', 'พลังงาน'
+  ],
+  'ค่าน้ำ': [
+    'water', 'water bill', 'mwa', 'pwa', 'plumbing', 'น้ำ', 'ประปา', 'การประปา', 'กปน', 'กปภ', 'บิลค่าน้ำ', 'ค่าน้ำประปา'
+  ],
+  'อินเทอร์เน็ต': [
+    'internet', 'wifi', 'broadband', 'fiber', 'ais fibre', 'true online', '3bb', 'nt', 'เน็ต', 'เน็ตบ้าน', 'ไวไฟ',
+    'อินเตอร์เน็ต', 'เราเตอร์', 'ไฟเบอร์', 'ค่าเน็ต'
+  ],
+  'โทรศัพท์': [
+    'phone', 'mobile', 'cellphone', 'bill', 'topup', 'refill', 'ais', 'true', 'truemove', 'dtac', 'mybynt', 'ค่าโทร',
+    'ค่าเน็ตมือถือ', 'เติมเงิน', 'ซิม', 'รายเดือน', 'โทรศัพท์มือถือ', 'สมาร์ทโฟน', 'บิลโทรศัพท์'
+  ],
+  'ค่าเช่า': [
+    'rent', 'rental', 'lease', 'apartment', 'condo', 'dorm', 'dormitory', 'room', 'hostel', 'room rent', 'ค่าเช่า',
+    'ค่าเช่าห้อง', 'ค่าเช่าบ้าน', 'ค่าเช่าคอนโด', 'หอพัก', 'ค่าหอ', 'อพาร์ทเมนท์', 'ค่าส่วนกลาง', 'นิติบุคคล', 'ผ่อนบ้าน'
+  ],
+  'บ้าน': [
+    'home', 'house', 'living', 'furniture', 'home repair', 'homepro', 'ikea', 'index', 'thaiwatsadu', 'do home',
+    'โฮมโปร', 'อิเกีย', 'อินเด็กซ์', 'ไทวัสดุ', 'ดูโฮม', 'แต่งบ้าน', 'ซ่อมบ้าน', 'อุปกรณ์บ้าน', 'เครื่องใช้ไฟฟ้า',
+    'หลอดไฟ', 'เฟอร์นิเจอร์', 'ที่อยู่อาศัย'
+  ],
+  'สมาชิก': [
+    'subscription', 'subs', 'netflix', 'youtube', 'spotify', 'disney', 'disney+', 'apple', 'icloud', 'prime',
+    'amazon prime', 'chatgpt', 'openai', 'midjourney', 'google one', 'canva', 'playstation plus', 'xbox game pass',
+    'เน็ตฟลิกซ์', 'เน็ตฟลิก', 'ยูทูป', 'สปอติฟาย', 'ดิสนีย์', 'แอปเปิ้ล', 'ไอคลาวด์', 'รายเดือน', 'สมาชิกรายปี', 'ค่าบริการ'
+  ],
+  'ประกัน': [
+    'insurance', 'life insurance', 'health insurance', 'car insurance', 'aia', 'muang thai', 'allianz', 'fwd',
+    'tokio marine', 'viriyah', 'dhipaya', 'กรุงเทพประกันภัย', 'วิริยะ', 'ทิพย', 'เมืองไทยประกันชีวิต', 'เอไอเอ',
+    'อลิอันซ์', 'ไทยประกัน', 'ประกันรถ', 'ประกันสุขภาพ', 'ประกันชีวิต', 'เบี้ยประกัน', 'พรบ', 'ภาษีรถ'
+  ],
+  'ภาษี': [
+    'tax', 'taxes', 'vat', 'withholding tax', 'rd', 'revenue department', 'สรรพากร', 'ภาษีมูลค่าเพิ่ม', 'ภาษีเงินได้',
+    'ภงด', 'ภาษีป้าย', 'ภาษีที่ดิน', 'ยื่นภาษี', 'จ่ายภาษี'
+  ],
+  'ท่องเที่ยว': [
+    'travel', 'trip', 'vacation', 'holiday', 'tour', 'hotel', 'resort', 'agoda', 'booking', 'airbnb', 'เที่ยว',
+    'ท่องเที่ยว', 'ทริป', 'โรงแรม', 'ที่พัก', 'รีสอร์ท', 'ต่างประเทศ', 'พักผ่อน', 'ตั๋วเครื่องบิน', 'ไกด์'
+  ],
+  'บันเทิง': [
+    'entertainment', 'fun', 'recreation', 'movie', 'cinema', 'sf', 'sf cinema', 'major', 'major cineplex',
+    'concert', 'ticket', 'show', 'karaoke', 'คาราโอเกะ', 'โรงหนัง', 'ดูหนัง', 'ตั๋วหนัง', 'คอนเสิร์ต', 'ปาร์ตี้',
+    'บอร์ดเกม', 'สวนสนุก', 'อีเวนต์'
+  ],
+  'เกม': [
+    'game', 'gaming', 'steam', 'playstation', 'nintendo', 'switch', 'garena', 'rov', 'genshin', 'valorant',
+    'roblox', 'เติมเกม', 'ซื้อเกม', 'สตรีม', 'การีนา', 'ไอเทม', 'จอยเกม', 'เพลย์สเตชั่น'
+  ],
+  'หนัง': [
+    'movie', 'film', 'cinema', 'theater', 'netflix', 'series', 'ซีรีส์', 'ดูซีรีส์', 'ภาพยนตร์', 'โรงหนัง', 'ตั๋วหนัง'
+  ],
+  'เพลง': [
+    'music', 'song', 'spotify', 'apple music', 'joox', 'youtube music', 'แผ่นเสียง', 'คอนเสิร์ต', 'ฟังเพลง', 'ดนตรี'
+  ],
+  'สุขภาพ': [
+    'health', 'medical', 'hospital', 'clinic', 'doctor', 'physician', 'medicine', 'pharmacy', 'drug', 'dentist',
+    'dental', 'checkup', 'โรงพยาบาล', 'คลินิก', 'หมอ', 'พบแพทย์', 'หาหมอ', 'ยา', 'ค่ายา', 'ร้านขายยา', 'ทำฟัน',
+    'จัดฟัน', 'ขูดหินปูน', 'ตรวจสุขภาพ', 'แว่นตา', 'ตัดแว่น', 'คอนแทคเลนส์', 'วิตามิน', 'อาหารเสริม', 'รักษาสุขภาพ'
+  ],
+  'ฟิตเนส': [
+    'fitness', 'gym', 'workout', 'exercise', 'sport', 'yoga', 'pilates', 'badminton', 'football', 'running',
+    'marathon', 'ยิม', 'ออกกำลังกาย', 'โยคะ', 'พิลาทิส', 'แบดมินตัน', 'ฟุตบอล', 'วิ่ง', 'เทรนเนอร์', 'เวย์โปรตีน',
+    'ค่าฟิตเนส', 'สนามกีฬา', 'ว่ายน้ำ'
+  ],
+  'ความงาม': [
+    'beauty', 'skincare', 'cosmetics', 'salon', 'barber', 'haircut', 'spa', 'massage', 'nail', 'เสริมสวย', 'ตัดผม',
+    'ร้านทำผม', 'ทำเล็บ', 'สปา', 'นวด', 'นวดแผนไทย', 'คลินิกเสริมความงาม', 'ฉีดหน้า', 'โบท็อกซ์', 'ฟิลเลอร์',
+    'เลเซอร์', 'สกินแคร์', 'บำรุงผิว', 'เครื่องสำอาง'
+  ],
+  'สัตว์เลี้ยง': [
+    'pet', 'pets', 'dog', 'cat', 'kitten', 'puppy', 'veterinary', 'pet shop', 'pet food', 'royal canin', 'kaniva',
+    'me-o', 'whiskas', 'ทรายแมว', 'อาหารหมา', 'อาหารแมว', 'สัตว์เลี้ยง', 'หมา', 'แมว', 'รักษาสัตว์', 'วัคซีนหมา',
+    'วัคซีนแมว', 'อาบน้ำตัดขน', 'ของเล่นสัตว์เลี้ยง', 'ทาสแมว', 'สุนัข'
+  ],
+  'ครอบครัว': [
+    'family', 'parents', 'mom', 'dad', 'elder', 'allowance', 'พ่อ', 'แม่', 'ครอบครัว', 'ให้เงินพ่อแม่', 'กตัญญู',
+    'ญาติ', 'คนในบ้าน', 'ค่าใช้จ่ายครอบครัว'
+  ],
+  'เด็ก': [
+    'baby', 'kids', 'child', 'toddler', 'infant', 'diaper', 'milk', 'pampers', 'เด็ก', 'ลูก', 'นมผง', 'แพมเพิส',
+    'ผ้าอ้อม', 'ของเล่นเด็ก', 'เสื้อผ้าเด็ก', 'ของใช้เด็ก'
+  ],
+  'ของขวัญ': [
+    'gift', 'present', 'birthday', 'wedding', 'congratulations', 'angpao', 'ของขวัญ', 'ของฝาก', 'วันเกิด',
+    'งานแต่ง', 'ซองงานแต่ง', 'งานบวช', 'ขึ้นบ้านใหม่', 'ปีใหม่', 'ของที่ระลึก'
+  ],
+  'บริจาค': [
+    'donation', 'donate', 'charity', 'foundation', 'temple', 'merit', 'บริจาค', 'ทำบุญ', 'มูลนิธิ', 'วัด',
+    'สังฆทาน', 'ช่วยเหลือ', 'การกุศล', 'ปล่อยนกปล่อยปลา'
+  ],
+  'เรียน': [
+    'education', 'study', 'school', 'university', 'tuition', 'course', 'class', 'book', 'books', 'stationery',
+    'การศึกษา', 'ค่าเทอม', 'เรียนพิเศษ', 'คอร์สเรียน', 'หนังสือ', 'อุปกรณ์การเรียน', 'เครื่องเขียน', 'อบรม', 'สัมมนา'
+  ],
+  'งาน': [
+    'work', 'job', 'business', 'office', 'career', 'งาน', 'ทำงาน', 'ธุรกิจ', 'อุปกรณ์ทำงาน', 'เครื่องใช้สำนักงาน'
+  ],
+  'ออฟฟิศ': [
+    'office', 'workplace', 'supplies', 'coworking', 'ออฟฟิศ', 'ที่ทำงาน', 'โคเวิร์กกิ้ง', 'โต๊ะทำงาน'
+  ],
+  'เงินเดือน': [
+    'salary', 'wage', 'payroll', 'income', 'monthly salary', 'paycheck', 'เงินเดือน', 'ค่าจ้าง', 'รายได้ประจำ',
+    'เงินโอนเข้า', 'เงินประจำ', 'รับเงินเดือน'
+  ],
+  'พาร์ทไทม์': [
+    'part-time', 'parttime', 'hourly', 'wage', 'พาร์ทไทม์', 'งานพิเศษ', 'รายได้เสริม', 'รับจ้าง', 'ค่าแรง', 'งานนอกเวลา'
+  ],
+  'ฟรีแลนซ์': [
+    'freelance', 'freelancer', 'gig', 'project', 'contract', 'ฟรีแลนซ์', 'รับงาน', 'ค่าจ้างทำของ', 'ค่างาน', 'โปรเจกต์', 'สัญญาจ้าง'
+  ],
+  'ขายของ': [
+    'sales', 'shop', 'seller', 'commerce', 'business', 'ขายของ', 'รายได้ขายของ', 'กำไรขายของ', 'แม่ค้า', 'พ่อค้า',
+    'ยอดขาย', 'ออเดอร์', 'ขายออนไลน์', 'กำไร'
+  ],
+  'โบนัส': [
+    'bonus', 'incentive', 'reward', 'โบนัส', 'เงินพิเศษ', 'รางวัล', 'เงินก้นถุง', 'โบนัสประจำปี', 'อินเซนทีฟ'
+  ],
+  'อั่งเปา': [
+    'angpao', 'red envelope', 'chinese new year', 'gift money', 'อั่งเปา', 'แต๊ะเอีย', 'ตรุษจีน', 'เงินรับขวัญ', 'ซองแดง'
+  ],
+  'ดอกเบี้ย': [
+    'interest', 'yield', 'bank interest', 'ดอกเบี้ย', 'ดอกเบี้ยเงินฝาก', 'ดอกเบี้ยรับ', 'ผลตอบแทน'
+  ],
+  'ปันผล': [
+    'dividend', 'stock dividend', 'share', 'ปันผล', 'เงินปันผล', 'หุ้นปันผล', 'กองทุนปันผล'
+  ],
+  'ขายกองทุน': [
+    'mutual fund', 'fund', 'nav', 'กองทุน', 'ขายกองทุน', 'กำไรกองทุน', 'ssf', 'rmf', 'thaiesg', 'กองทุนรวม'
+  ],
+  'คริปโต': [
+    'crypto', 'cryptocurrency', 'bitcoin', 'btc', 'eth', 'usdt', 'binance', 'bitkub', 'คริปโต', 'บิตคอยน์',
+    'เหรียญดิจิทัล', 'กำไรคริปโต', 'เทรดคริปโต'
+  ],
+  'โอนเงิน': [
+    'transfer', 'money transfer', 'receive', 'โอนเงิน', 'รับเงินโอน', 'โอนเข้า', 'เติมเงินเข้า', 'ได้รับเงิน'
+  ],
+  'คืนเงิน': [
+    'refund', 'cashback', 'rebate', 'return', 'คืนเงิน', 'เงินคืน', 'แคชแบ็ค', 'รีฟันด์', 'ได้เงินคืน'
+  ],
+  'บิล': [
+    'bill', 'bills', 'invoice', 'paper', 'tax', 'statement', 'payment', 'slip', 'บิล', 'ใบเสร็จ', 'ใบแจ้งหนี้',
+    'ค่าน้ำค่าไฟ', 'สลิป', 'ชำระเงิน', 'เอกสาร', 'จ่ายบิล'
+  ],
+  'ยังไม่จัดหมวด': [
+    'uncategorized', 'other', 'general', 'misc', 'ยังไม่จัดหมวด', 'ไม่ระบุ', 'ทั่วไป', 'อื่นๆ'
+  ],
+  'อื่นๆ': [
+    'other', 'others', 'misc', 'miscellaneous', 'etc', 'อื่นๆ', 'อื่น', 'ทั่วไป'
+  ],
+};
+
+/**
+ * Intelligent bilingual category search matcher.
+ * Matches category name, English name, localized name, group name, icon keywords, and synonym dictionary.
+ */
+export const matchCategorySearch = (
+  categoryName: string,
+  categoryData?: DBCategory,
+  query?: string,
+  language?: string
+): boolean => {
+  if (!query || !query.trim()) return true;
+  
+  const rawQ = query.trim().toLowerCase();
+  const tokens = rawQ.split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return true;
+
+  const catKey = categoryName.toLowerCase();
+  const enName = (DEFAULT_CATEGORY_EN_NAMES[categoryName] || '').toLowerCase();
+  const locName = getCategoryDisplayName(categoryName, language).toLowerCase();
+  const group = (categoryData?.group || '').toLowerCase();
+  const enGroup = (DEFAULT_GROUP_EN_NAMES[categoryData?.group || ''] || '').toLowerCase();
+  const locGroup = getGroupDisplayName(categoryData?.group || '', language).toLowerCase();
+  
+  const iconKeywords = (categoryData?.iconName && ICON_KEYWORDS[categoryData.iconName]) || [];
+  const synonyms = CATEGORY_SEARCH_SYNONYMS[categoryName] || [];
+
+  // Build searchable text bag for this category
+  const searchableBag: string[] = [
+    catKey,
+    enName,
+    locName,
+    group,
+    enGroup,
+    locGroup,
+    ...(categoryData?.iconName ? [categoryData.iconName.toLowerCase()] : []),
+    ...iconKeywords.map(k => k.toLowerCase()),
+    ...synonyms.map(s => s.toLowerCase()),
+  ];
+
+  // 1. Direct or partial match on primary names & groups
+  if (
+    catKey.includes(rawQ) ||
+    enName.includes(rawQ) ||
+    locName.includes(rawQ) ||
+    group.includes(rawQ) ||
+    enGroup.includes(rawQ) ||
+    locGroup.includes(rawQ)
+  ) {
+    return true;
+  }
+
+  // 2. Direct match against any synonym or icon keyword
+  const directMatch = searchableBag.some(word => 
+    word.includes(rawQ) || (rawQ.length >= 3 && rawQ.includes(word) && word.length >= 2)
+  );
+  if (directMatch) return true;
+
+  // 3. Multi-token match (e.g. "ค่า ไฟ", "fast food", "กาแฟ สตาร์")
+  const allTokensMatch = tokens.every(token => 
+    searchableBag.some(word => word.includes(token))
+  );
+
+  return allTokensMatch;
+};
+
 export const getIconComponent = (name: string): ElementType => {
   return ICON_MAP[name] || Map;
 };

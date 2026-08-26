@@ -8,7 +8,7 @@ import { useToastStore } from '@/store/useToastStore';
 import { voiceService } from '@/services/voiceService';
 import { extractDataFromVoice, type VoiceExtractResult } from '@/services/aiService';
 import { addTransaction } from '@/services/transactionService';
-import { getCategoryStyle } from '@/utils/categoryStyles';
+import { getCategoryStyle, getCategoryDisplayName } from '@/utils/categoryStyles';
 import { useDragToClose } from '@/hooks/useDragToClose';
 import { useTranslation } from '@/hooks/useTranslation';
 import CategorySelectModal from '@/components/ui/CategorySelectModal';
@@ -430,7 +430,7 @@ export default function VoiceCommandModal() {
                           </div>
                         );
                       })()}
-                      <AutoShrinkText origin="left">{parsedData.category || 'อื่นๆ'}</AutoShrinkText>
+                      <AutoShrinkText origin="left">{getCategoryDisplayName(parsedData.category || 'อื่นๆ', language)}</AutoShrinkText>
                     </span>
                     <div className="w-6 h-6 rounded-full bg-[#8B5CF6]/10 flex items-center justify-center shrink-0">
                       <PlusCircle className="w-4 h-4 text-[#8B5CF6]" />

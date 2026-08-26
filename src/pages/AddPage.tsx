@@ -6,7 +6,7 @@ import CustomSelect from '@/components/ui/CustomSelect';
 import CustomDatePicker from '@/components/ui/CustomDatePicker';
 import CustomTimePicker from '@/components/ui/CustomTimePicker';
 import CategorySelectModal from '@/components/ui/CategorySelectModal';
-import { getCategoryStyle, CATEGORY_SEED } from '@/utils/categoryStyles';
+import { getCategoryStyle, CATEGORY_SEED, getCategoryDisplayName } from '@/utils/categoryStyles';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
@@ -19,7 +19,7 @@ import type { TransactionType, TransactionCategory, Wallet } from '@/types';
 import { useDragToClose } from '@/hooks/useDragToClose';
 
 export default function AddPage() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const setCurrentPage = useAppStore((s) => s.setCurrentPage);
   const user = useAuthStore((s) => s.user);
   const appCategories = useAppStore(s => s.appCategories);
@@ -351,7 +351,7 @@ export default function AddPage() {
                           </div>
                         );
                       })()}
-                      {category}
+                      {getCategoryDisplayName(category, language)}
                     </span>
                   ) : (
                     <span className="font-bold text-[#2E1065]/40">{t('add.selectCategory', 'Select Category')}</span>
@@ -382,7 +382,7 @@ export default function AddPage() {
                                 : 'bg-white/50 border-white/60 text-[#2E1065]/70 hover:bg-white/80 shadow-sm'
                             }`}
                           >
-                            {cat}
+                            {getCategoryDisplayName(cat, language)}
                           </button>
                         );
                       })}
