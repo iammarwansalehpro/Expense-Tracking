@@ -100,7 +100,7 @@ export default function AutoShrinkText({
   return (
     <div 
       ref={containerRef} 
-      className={`w-full max-w-full overflow-hidden flex items-center min-w-0 ${justifyClass} ${className}`}
+      className={`w-full max-w-full overflow-hidden flex items-center min-w-0 py-1 ${justifyClass} ${className}`}
       style={{ overflow: 'hidden' }}
     >
       <span 
